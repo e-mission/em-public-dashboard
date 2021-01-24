@@ -36,9 +36,6 @@
           <li class="nav-item active">
             Width:
             <select id='width'>
-                <option value="200">200</option>
-                <option value="300">300</option>
-                <option value="400">400</option>
             </select>
           </li>
           <li class="nav-item">
@@ -70,6 +67,15 @@
       function getRandomInt (min, max) {
           return Math.floor(Math.random() * (max - min + 1)) + min;
       }
+  </script>
+
+  <script type="text/javascript">
+      $(function() {
+          $(document).ready(function() {
+              $('#width').load('options.html');
+              $('#height').load('options.html');
+          });
+      });
   </script>
   
   <script type="text/javascript">
