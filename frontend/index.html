@@ -12,7 +12,7 @@
 
   <!-- Bootstrap core CSS -->
   <link href="dist/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="css/demo.css">
+  <link rel="stylesheet" type="text/css" href="css/dashboard.css">
   <link rel="stylesheet" type="text/css" href="dist/jquery.gridster.min.css">
 
 </head>
@@ -36,7 +36,6 @@
           <li class="nav-item active">
             Width:
             <select id='width'>
-                <option value="100">100</option>
                 <option value="200">200</option>
                 <option value="300">300</option>
                 <option value="400">400</option>
@@ -45,7 +44,6 @@
           <li class="nav-item">
             Height:
             <select id='height'>
-                <option value="100">100</option>
                 <option value="200">200</option>
                 <option value="300">300</option>
                 <option value="400">400</option>
@@ -61,8 +59,10 @@
 
   <div class="gridster">
       <ul>
+        <!--
           <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">0</li>
           <li data-row="1" data-col="3" data-sizex="1" data-sizey="2">1</li>
+        -->
       </ul>
   </div>
   
@@ -90,7 +90,8 @@
           $('.js-add-new').on('click', function () {
               const width = Number($("#width").val());
               const height = Number($("#height").val());
-              const nw = ["<li>"+width+" "+height+" "
+              const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
+                  +width+" "+height+" "
                   +"<button class='remove'>x</button>"
                   +"<img src='https://picsum.photos/"+width+"/"+height+"' width=90% height=90%>"
                   +"</li>",
