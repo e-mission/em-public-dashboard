@@ -6,3 +6,8 @@ which is available under an MIT license
 
 The source code merges a couple of the demos and then adds additional modifications.
 The binary distributions are directly from the `gh-pages` branch.
+
+The bootstrap template is from:
+https://github.com/StartBootstrap/startbootstrap-bare.git
+with a modified contents, modified navbar
+and theming based on the original web page
