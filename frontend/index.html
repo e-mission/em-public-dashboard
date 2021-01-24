@@ -16,7 +16,7 @@
 <p>Grab the right or bottom border and drag to the desired width or height.</p>
 
 <div class="controls">
-    <button class="js-resize-random">Resize random widget</button>
+    <button class="js-add-new">Add new widget</button>
 </div>
 
 <div class="gridster">
@@ -55,9 +55,9 @@
         }).data('gridster');
 
 
-        $('.js-resize-random').on('click', function () {
-            gridster.resize_widget(gridster.$widgets.eq(getRandomInt(0, 9)),
-                    getRandomInt(1, 4), getRandomInt(1, 4))
+        $('.js-add-new').on('click', function () {
+            const nw = ["<li>new</li>", getRandomInt(0,9, getRandomInt(1,4))];
+            gridster.add_widget.apply(gridster, nw);
         });
 
     });
