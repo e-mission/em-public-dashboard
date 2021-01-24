@@ -79,4 +79,21 @@ li {
 .controls {
   margin-bottom: 20px;
 }
+.bg-main-website {
+  background: url("../img/bg-pattern.png"), #7b4397;
+  background: url("../img/bg-pattern.png"), -webkit-linear-gradient(to left, #7b4397, #dc2430);
+  background: url("../img/bg-pattern.png"), linear-gradient(to left, #7b4397, #dc2430);
+}
+button {
+  background: #ff515d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-left: 5px;
+}
+button.remove {
+  background: #fff0;
+  color: black;
+  border-color: black;
+}
 /*# sourceMappingURL=demos/assets/css/demo.css.map */
