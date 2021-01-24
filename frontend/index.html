@@ -56,8 +56,12 @@
 
 
         $('.js-add-new').on('click', function () {
-            const nw = ["<li>new</li>", getRandomInt(0,9, getRandomInt(1,4))];
+            const nw = ["<li>new <button class='remove'>x</button></li>", getRandomInt(0,9, getRandomInt(1,4))];
             gridster.add_widget.apply(gridster, nw);
+        });
+
+        $('body').on( "click", ".gridster ul > li .remove", function() {
+          gridster.remove_widget($(this).closest('li'));
         });
 
     });
