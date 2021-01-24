@@ -1,0 +1,29 @@
+version: "3"
+services:
+  dashboard:
+    image: danjellz/http-server:latest
+    depends_on:
+      - db
+    ports:
+      # DASH in numbers
+      - "3274:8080"
+    volumes:
+      - ./frontend:/public
+      - plot-data:/plots
+    networks:
+       - emission
+  db:
+    image: mongo:4.4.0
+    volumes:
+      - mongo-data:/data/db
+    networks:
+       - emission
+
+networks:
+  emission:
+
+volumes:
+  mongo-data:
+  plot-data:
+    
+
