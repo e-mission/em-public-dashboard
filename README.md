@@ -2,6 +2,43 @@
 
 Issues: Since this repository is part of a larger project, all issues are tracked in the central docs repository. If you have a question, as suggested by the open source guide, please file an issue instead of sending an email. Since issues are public, other contributors can try to answer the question and benefit from the answer.
 
+## Development
+
+We use docker images for the software dependencies since we will not be modifying them here.
+
+So the steps are:
+
+#### Launch dev environment
+
+```
+$ docker-compose -f docker-compose.dev.yml  up
+Creating network "em-public-dashboard_emission" with the default driver
+Creating em-public-dashboard_db_1 ... done
+Creating em-public-dashboard_plot-gen_1  ... done
+Creating em-public-dashboard_dashboard_1 ... done
+...
+dashboard_1  | Starting up http-server, serving ./
+dashboard_1  | Available on:
+dashboard_1  |   http://127.0.0.1:8080
+dashboard_1  |   http://172.25.0.3:8080
+dashboard_1  | Hit CTRL-C to stop the server
+...
+```
+
+#### Test the frontend install
+
+Go to http://localhost:3274/ to see the front-end. Note that the port is *3274*
+instead of the *8080* in the logs, since we remap it as part of the docker-compose.
+
+#### Load some data
+
+https://github.com/e-mission/e-mission-server/#quick-start
+
+There are multiple sources listed there, or you can use the mongodump from:
+https://github.com/asiripanich/emdash#loading-test-data
+
+### Design decisions
+
 Dashboards! They are fairly essential for user acceptance, but there are many options to build them.
 And the choice of the technology stack for them is particularly fraught.
 And for community projects, especially outside computer stack, choosing a technology stack ensures that half your collaborators cannot access it.
@@ -21,3 +58,15 @@ We have included python examples using ipython notebook and simple python script
 - mode share (notebook)
 - purpose share (notebook)
 - total number of trips per day (python)
+
+In order to get the prototype out, there are a lot of shortcuts. We can revisit
+this later if there is sufficient interest/funding.
+
+- Using gridster (https://github.com/dsmorse/gridster.js/) and bootstrap instead of react
+- Using the pre-built (https://hub.docker.com/r/danjellz/http-server) instead of express
+- Using a mounted volume instead of building a custom docker image to make deployment easier
+- Using the e-mission server codebase to generate graphs instead of a REST API
+
+The one part where we are NOT cutting corners is in the parts where we expect
+contributions from others. We are going to build in automated tests for that
+part to ensure non-bitrotted code.
