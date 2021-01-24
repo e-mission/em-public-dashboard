@@ -1,81 +1,109 @@
-<!doctype html>
-<html>
- <meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-    <title>Demo &raquo; Resize &raquo; gridster.js</title>
-    <link rel="stylesheet" type="text/css" href="css/demo.css">
-    <link rel="stylesheet" type="text/css" href="dist/jquery.gridster.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="dist/jquery.gridster.min.js" type="text/javascript" charset="utf-8"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>CanBikeCO dashboard</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="dist/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="css/demo.css">
+  <link rel="stylesheet" type="text/css" href="dist/jquery.gridster.min.css">
+
 </head>
 
 <body>
-
-<h1>Resize</h1>
-
-<p>Grab the right or bottom border and drag to the desired width or height.</p>
-
-<div class="controls row">
-    <label>Width:</label>
-    <select id='width'>
-        <option value="100">100</option>
-        <option value="200">200</option>
-        <option value="300">300</option>
-        <option value="400">400</option>
-    </select>
-    <label>Height:</label>
-    <select id='height'>
-        <option value="100">100</option>
-        <option value="200">200</option>
-        <option value="300">300</option>
-        <option value="400">400</option>
-    </select>
-    <button class="js-add-new">Add new widget</button>
-</div>
-
-<div class="gridster">
-    <ul>
-        <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">0</li>
-        <li data-row="1" data-col="3" data-sizex="1" data-sizey="2">1</li>
-    </ul>
-</div>
-
-<script type="text/javascript">
-    function getRandomInt (min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-</script>
-
-<script type="text/javascript">
-    var gridster;
-
-    $(function () {
-
-        gridster = $(".gridster ul").gridster({
-            widget_base_dimensions: [100, 100],
-            widget_margins: [5, 5],
-            helper: 'clone',
-            resize: {
-                enabled: true
-            }
-        }).data('gridster');
+  <!-- Bootstrap core JavaScript -->
+  <script src="dist/jquery.min.js"></script>
+  <script src="dist/jquery.gridster.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="dist/bootstrap.bundle.min.js"></script>
 
 
-        $('.js-add-new').on('click', function () {
-            const width = Number($("#width").val());
-            const height = Number($("#height").val());
-            const nw = ["<li>"+width+" "+height+" "
-                +"<button class='remove'>x</button>"
-                +"<img src='https://picsum.photos/"+width+"/"+height+"' width=90% height=90%>"
-                +"</li>",
-                width/100, height/100];
-            gridster.add_widget.apply(gridster, nw);
-        });
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+      <a class="navbar-brand" href="https://canbikeco.org">CanBikeCO</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            Width:
+            <select id='width'>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="300">300</option>
+                <option value="400">400</option>
+            </select>
+          </li>
+          <li class="nav-item">
+            Height:
+            <select id='height'>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="300">300</option>
+                <option value="400">400</option>
+            </select>
+          </li>
+          <li class="nav-item">
+            <button class="js-add-new">Add</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-        $('body').on( "click", ".gridster ul > li .remove", function() {
-          gridster.remove_widget($(this).closest('li'));
-        });
-    });
-</script>
+  <div class="gridster">
+      <ul>
+          <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">0</li>
+          <li data-row="1" data-col="3" data-sizex="1" data-sizey="2">1</li>
+      </ul>
+  </div>
+  
+  <script type="text/javascript">
+      function getRandomInt (min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+  </script>
+  
+  <script type="text/javascript">
+      var gridster;
+  
+      $(function () {
+  
+          gridster = $(".gridster ul").gridster({
+              widget_base_dimensions: [100, 100],
+              widget_margins: [5, 5],
+              helper: 'clone',
+              resize: {
+                  enabled: true
+              }
+          }).data('gridster');
+  
+  
+          $('.js-add-new').on('click', function () {
+              const width = Number($("#width").val());
+              const height = Number($("#height").val());
+              const nw = ["<li>"+width+" "+height+" "
+                  +"<button class='remove'>x</button>"
+                  +"<img src='https://picsum.photos/"+width+"/"+height+"' width=90% height=90%>"
+                  +"</li>",
+                  width/100, height/100];
+              gridster.add_widget.apply(gridster, nw);
+          });
+  
+          $('body').on( "click", ".gridster ul > li .remove", function() {
+            gridster.remove_widget($(this).closest('li'));
+          });
+      });
+  </script>
+
 </body>
+
 </html>
