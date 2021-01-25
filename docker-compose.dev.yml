@@ -9,9 +9,24 @@ services:
       - "3274:8080"
     volumes:
       - ./frontend:/public
-      - plot-data:/plots
+      - ./plots:/public/plots
     networks:
        - emission
+  notebook-server:
+    build: viz_scripts/docker
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - WEB_SERVER_HOST=0.0.0.0
+    ports:
+      # ipynb in numbers
+      - "47962:8888"
+    networks:
+      - emission
+    volumes:
+      - ./viz_scripts:/usr/src/app/saved-notebooks
+      - ./plots:/plots
   db:
     image: mongo:4.4.0
     volumes:
@@ -24,6 +39,4 @@ networks:
 
 volumes:
   mongo-data:
-  plot-data:
-    
 

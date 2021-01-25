@@ -23,6 +23,13 @@ dashboard_1  |   http://127.0.0.1:8080
 dashboard_1  |   http://172.25.0.3:8080
 dashboard_1  | Hit CTRL-C to stop the server
 ...
+notebook-server_1  |
+notebook-server_1  |     To access the notebook, open this file in a browser:
+notebook-server_1  |         file:///root/.local/share/jupyter/runtime/nbserver-22-open.html
+notebook-server_1  |     Or copy and paste one of these URLs:
+notebook-server_1  |         http://f8317197efaf:8888/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
+notebook-server_1  |      or http://127.0.0.1:8888/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
+...
 ```
 
 #### Test the frontend install
@@ -30,12 +37,32 @@ dashboard_1  | Hit CTRL-C to stop the server
 Go to http://localhost:3274/ to see the front-end. Note that the port is *3274*
 instead of the *8080* in the logs, since we remap it as part of the docker-compose.
 
+#### Test the notebook install
+
+Copy the URL that looks like this in the logs
+```
+http://<container_id>:8888/?token=<token>
+```
+replace `<container_id>` with localhost and `8888` with `47962` (`.ipynb` in numbers)
+
+Load the resulting URL in your browser
+
+```
+http://localhost:47962/?token=<token>
+```
+
 #### Load some data
 
 https://github.com/e-mission/e-mission-server/#quick-start
 
 There are multiple sources listed there, or you can use the mongodump from:
 https://github.com/asiripanich/emdash#loading-test-data
+
+#### Happy visualizations!
+
+Look at the existing notebooks for examples on how to start.
+In particular, before you check in, please make sure that you are reading
+inputs correctly, because otherwise, no metrics will be generated.
 
 ### Design decisions
 
