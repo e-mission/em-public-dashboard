@@ -34,5 +34,12 @@ cd saved-notebooks
 
 # launch the notebook server
 # tail -f /dev/null
-echo "Running in docker, change host:port to localhost:47962 in the URL below"
-PYTHONPATH=/usr/src/app/e-mission-server jupyter notebook --no-browser --ip=${WEB_SERVER_HOST} --allow-root
+if [ -z ${CRON_MODE} ] ; then
+    echo "Running notebook in docker, change host:port to localhost:47962 in the URL below"
+    PYTHONPATH=/usr/src/app/e-mission-server jupyter notebook --no-browser --ip=${WEB_SERVER_HOST} --allow-root
+else
+    echo "Running crontab without user interaction, setting python path"
+    export PYTHONPATH=/usr/src/app/e-mission-server
+    # tail -f /dev/null
+    devcron ../crontab >> /var/log/cron.console.stdinout 2>&1
+fi

@@ -1,0 +1,3 @@
+0 8 * * * python bin/generate_plots.py mode_purpose_share.ipynb prepilot >> /var/log/intake.stdinout 2>&1
+# For testing only
+# */5 * * * * python bin/generate_plots.py mode_purpose_share.ipynb prepilot >> /var/log/intake.stdinout 2>&1
