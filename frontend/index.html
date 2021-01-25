@@ -38,6 +38,16 @@
             <select id='metric'>
             </select>
           </li>
+          <li class="nav-item active">
+            Month:
+            <select id='date'>
+            </select>
+          </li>
+          <li class="nav-item active">
+            Program:
+            <select id='program'>
+            </select>
+          </li>
           <li class="nav-item">
             <button class="js-add-new">Add</button>
           </li>
@@ -65,6 +75,8 @@
       $(function() {
           $(document).ready(function() {
               $('#metric').load('metrics.html');
+              $('#date').load('dates.html');
+              $('#program').load('programs.html');
           });
       });
   </script>
@@ -86,11 +98,18 @@
   
           $('.js-add-new').on('click', function () {
               const metric = $("#metric").val();
+              const dateVal = $("#date").val();
+              const program = $("#program").val();
               const metricLabel = $("#metric option:selected").text();
+              const dateLabel = $("#date option:selected").text();
+              const programLabel = $("#program option:selected").text();
+
+              const labelText = metricLabel+" "+dateLabel+" "+programLabel;
+              const imgFile = "plots/"+metric+"_"+dateVal+"_"+program+".png";
               const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
-                  +metricLabel+" "
+                  + labelText
                   +"<button class='remove'>x</button>"
-                  +"<img src='plots/"+metric+".png' width=90% height=90%>"
+                  +"<img src='"+imgFile+"' width=90% height=90%>"
                   +"</li>",
                   3, 3];
               gridster.add_widget.apply(gridster, nw);
