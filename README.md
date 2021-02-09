@@ -58,6 +58,20 @@ https://github.com/e-mission/e-mission-server/#quick-start
 There are multiple sources listed there, or you can use the mongodump from:
 https://github.com/asiripanich/emdash#loading-test-data
 
+#### Loading data from a mongodump
+
+We have a helper script to load data directly from a mongodump.
+
+```
+$ bash viz_scripts/docker/load_mongodump.sh <mongodump_file>
+```
+
+Note that this expects a standard setup with:
+- this repository checked out under the `em-public-dashboard` directory, which makes the database name `em-public-dashboard_db_1`
+- the incoming mongodump is in tar gz format. This should be true of all canbikeco dumps, you may need to change the `tar xvf` to `unzip` otherwise.  The mongo container typically doesn't have zip installed, so using tar is more portable.
+
+**If you have a non-standard setup, please use your expertise to change the script appropriately.**
+
 #### Happy visualizations!
 
 Look at the existing notebooks for examples on how to start.
