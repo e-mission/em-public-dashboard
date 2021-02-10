@@ -39,16 +39,16 @@ instead of the *8080* in the logs, since we remap it as part of the docker-compo
 
 #### Test the notebook install
 
-Copy the URL that looks like this in the logs
-```
-http://<container_id>:8888/?token=<token>
-```
-replace `<container_id>` with localhost and `8888` with `47962` (`.ipynb` in numbers)
-
-Load the resulting URL in your browser
+Use the notebook URL from the console but change `8888` to `47962`
 
 ```
-http://localhost:47962/?token=<token>
+http://127.0.0.1:8888/?token=<token>
+```
+
+becomes
+
+```
+http://127.0.0.1:47962/?token=<token>
 ```
 
 #### Load some data
