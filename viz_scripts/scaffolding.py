@@ -12,7 +12,15 @@ import IPython.display as disp
 import emission.core.get_database as edb
 
 def get_time_query(year, month):
-    query_ld = ecwl.LocalDate({"year": year, "month": month})
+    if year is None and month is None:
+        return None
+
+    if month is None:
+        assert year is not None
+        query_ld = ecwl.LocalDate({"year": year})
+    else:
+        assert year is not None and month is not None
+        query_ld = ecwl.LocalDate({"year": year, "month": month})
     tq = esttc.TimeComponentQuery("data.start_local_dt", query_ld, query_ld)
     return tq
 
@@ -62,3 +70,16 @@ def expand_userinputs(labeled_ct):
             (len(expanded_ct.columns), len(labeled_ct.columns)))
     disp.display(expanded_ct.head())
     return expanded_ct
+
+def get_quality_text(participant_ct_df, expanded_ct):
+    cq = (len(expanded_ct), len(expanded_ct.user_id.unique()), len(participant_ct_df), len(participant_ct_df.user_id.unique()), (len(expanded_ct) * 100) / len(participant_ct_df), )
+    quality_text = "Based on %s confirmed trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
+    print(quality_text)
+    return quality_text
+
+def get_file_suffix(year, month, program):
+    suffix = "%04d" % year if year is not None else ""
+    suffix = suffix + "%02d" % month if month is not None else ""
+    suffix = suffix + "%s" % program if program is not None else ""
+    print(suffix)
+    return suffix
