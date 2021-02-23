@@ -1,0 +1,28 @@
+﻿replaced_mode,mode_confirm,mode_clean
+drove_alone,drove_alone,"Car, drove alone"
+work_vehicle,work_vehicle,"Car, drove alone"
+bus,bus,Bus
+train,train,Train
+free_shuttle,free_shuttle,Free Shuttle
+"train,_bus and walk","train,_bus and walk",Train
+taxi,taxi,Taxi/Uber/Lyft
+friend_picked me up,friend_picked me up,"Car, with others"
+carpool_w/ friend to work,carpool_w/ friend to work,"Car, with others"
+friend_carpool to work,friend_carpool to work,"Car, with others"
+carpool_to work,carpool_to work,"Car, with others"
+friend/co_worker carpool,friend/co_worker carpool,"Car, with others"
+carpool_to lunch,carpool_to lunch,"Car, with others"
+carpool,carpool,"Car, with others"
+carpool_for lunch,carpool_for lunch,"Car, with others"
+carpool_lunch,carpool_lunch,"Car, with others"
+shared_ride,shared_ride,"Car, with others"
+bikeshare,bikeshare,Bikeshare
+scootershare,scootershare,Scooter share
+pilot_ebike,pilot_ebike,Pilot ebike
+walk,walk,Walk
+skateboard,skateboard,Skate board
+bike,bike,Regular Bike
+the_friend who drives us to work was running errands after the shift before dropping me off. not a trip of mine.,the_friend who drives us to work was running errands after the shift before dropping me off. not a trip of mine.,Not a Trip
+not_a_trip,not_a_trip,Not a Trip
+no_travel,,No Travel
+same_mode,,Same Mode
