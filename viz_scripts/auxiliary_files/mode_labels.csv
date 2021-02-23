@@ -5,6 +5,7 @@ bus,bus,Bus
 train,train,Train
 free_shuttle,free_shuttle,Free Shuttle
 "train,_bus and walk","train,_bus and walk",Train
+train_and pilot e-bike,train_and pilot e-bike,Pilot ebike
 taxi,taxi,Taxi/Uber/Lyft
 friend_picked me up,friend_picked me up,"Car, with others"
 carpool_w/ friend to work,carpool_w/ friend to work,"Car, with others"
