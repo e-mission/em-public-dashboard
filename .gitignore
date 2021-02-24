@@ -2,6 +2,8 @@
 viz_scripts/conf
 plots
 
+.Trash-0
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

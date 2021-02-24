@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -7,6 +8,7 @@ import emission.core.wrapper.localdate as ecwl
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
 # However, this means that this module can only be used in an ipython notebook
+
 import IPython.display as disp
 
 import emission.core.get_database as edb
@@ -83,3 +85,38 @@ def get_file_suffix(year, month, program):
     suffix = suffix + "%s" % program if program is not None else ""
     print(suffix)
     return suffix
+
+def get_quality_text_ebike(all_confirmed_df, ebike_ct_df):
+    cq = (len(ebike_ct_df), len(ebike_ct_df.user_id.unique()), len(all_confirmed_df), len(all_confirmed_df.user_id.unique()), (len(ebike_ct_df) * 100) / len(all_confirmed_df), )
+    quality_text = "Based on %s eBike trips from %d users\nof %s confirmed trips (all modes) from %d users (%.2f%%)" % cq
+    print(quality_text)
+    return quality_text
+
+def data_quality_check(expanded_ct):
+    '''1. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was pilot_ebike.
+       2. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was same_mode.
+       3. Replace same_mode for the mode_confirm for Energy Impact Calcualtion.'''
+    
+    expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'pilot_ebike')].index, inplace=True)
+    expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'same_mode')].index, inplace=True)
+    expanded_ct['replaced_mode'] = np.where(expanded_ct['replaced_mode'] == 'same_mode',expanded_ct['mode_confirm'], expanded_ct['replaced_mode'])
+    
+    return expanded_ct
+
+def energy_cal(expanded_ct,dic_ei):
+    expanded_ct['ei_mode_confirm'] = expanded_ct['Mode_confirm'].map(dic_ei)
+    expanded_ct['ei_replaced_mode'] = expanded_ct['Replaced_mode'].map(dic_ei)
+    expanded_ct['distance_miles']= expanded_ct['distance']*0.00062
+    expanded_ct['Energy_Impact(kWH)']= round((expanded_ct['ei_replaced_mode']-expanded_ct['ei_mode_confirm'])*expanded_ct['distance_miles'],3) 
+    
+    return expanded_ct
+
+class Missing_dict(dict):
+    '''Map the data from purpose_confirm column:
+       if the key is in the dictionary,
+       it will be replaced by its value, otherwise 'Other')'''
+    def __init__(self,*arg,**kw):
+        super(Missing_dict, self).__init__(*arg, **kw)
+    def __missing__(self, key) :
+        return 'Other'
+    
