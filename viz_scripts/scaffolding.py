@@ -80,9 +80,9 @@ def get_quality_text(participant_ct_df, expanded_ct):
     return quality_text
 
 def get_file_suffix(year, month, program):
-    suffix = "%04d" % year if year is not None else ""
-    suffix = suffix + "%02d" % month if month is not None else ""
-    suffix = suffix + "%s" % program if program is not None else ""
+    suffix = "_%04d" % year if year is not None else ""
+    suffix = suffix + "_%02d" % month if month is not None else ""
+    suffix = suffix + "_%s" % program if program is not None else ""
     print(suffix)
     return suffix
 
