@@ -58,10 +58,21 @@
 
   <div class="gridster">
       <ul>
-        <!--
-          <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">0</li>
-          <li data-row="1" data-col="3" data-sizex="1" data-sizey="2">1</li>
-        -->
+        <li data-row="1" data-col="1" data-sizex="4" data-sizey="4">
+	Number of trips (Nov 2020)
+        <button class='remove'>x</button>
+        <img src='plots/ntrips_mode_confirm_2020_11_prepilot.png' width=90% height=90%>
+	</li>
+        <li data-row="1" data-col="1" data-sizex="4" data-sizey="4">
+	Trip miles (Nov 2020)
+        <button class='remove'>x</button>
+        <img src='plots/miles_mode_confirm_2020_11_prepilot.png' width=90% height=90%>
+	</li>
+        <li data-row="1" data-col="1" data-sizex="5" data-sizey="4">
+	Energy impact (Nov 2020)
+        <button class='remove'>x</button>
+        <img src='plots/sketch_energy_impact_ebike_2020_11_prepilot.png' width=90% height=90%>
+	</li>
       </ul>
   </div>
   
@@ -111,7 +122,7 @@
                   +"<button class='remove'>x</button>"
                   +"<img src='"+imgFile+"' width=90% height=90%>"
                   +"</li>",
-                  3, 3];
+                  4, 4];
               gridster.add_widget.apply(gridster, nw);
           });
   
