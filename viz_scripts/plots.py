@@ -10,7 +10,43 @@ sns.set_style("whitegrid")
 sns.set()
 get_ipython().run_line_magic('matplotlib', 'inline')
 
+# Module for pretty-printing outputs (e.g. head) to help users
+# understand what is going on
+# However, this means that this module can only be used in an ipython notebook
+
+import IPython.display as disp
+
 SAVE_DIR="/plots/"
+
+def merge_small_entries(labels, values):
+    v2l_df = pd.DataFrame({"vals": values}, index=labels)
+
+    # Calculate % for all the values
+    vs = v2l_df.vals.sum()
+    v2l_df["pct"] = v2l_df.vals.apply(lambda x: (x/vs) * 100)
+    disp.display(v2l_df)
+
+    # Find small chunks to combine
+    small_chunk = v2l_df.where(lambda x: x.pct <= 2).dropna()
+    misc_count = small_chunk.sum()
+
+    v2l_df = v2l_df.drop(small_chunk.index)
+    disp.display(v2l_df)
+
+    # This part if a bit tricky
+    # We could have already had a non-zero other, and it could be small or large
+    if "Other" not in v2l_df.index:
+        # zero other will end up with misc_count
+        v2l_df.loc["Other"] = misc_count
+    elif "Other" in small_chunk.index:
+        # non-zero small other will already be in misc_count
+        v2l_df.loc["Other"] = misc_count
+    else:
+        # non-zero large other, will not already be in misc_count
+        v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
+    disp.display(v2l_df)
+
+    return (v2l_df.index.to_list(),v2l_df.vals.to_list())
 
 def pie_chart_mode(plot_title,labels,values,file_name):
     all_labels= ['Car, drove alone',
@@ -29,19 +65,21 @@ def pie_chart_mode(plot_title,labels,values,file_name):
                  'No Travel', 
                  'Same Mode', 
                  'Other']
+
+    val2labeldf = pd.DataFrame({"labels": labels, "values": values})
     
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
-    
-     
+
+    m_labels, m_values = merge_small_entries(labels, values)
     
     def func(pct, values):
         total = sum(values)
         absolute = int(round(pct*total/100.0))
         return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 3 else''
  
-    wedges, texts, autotexts = ax.pie(values,
-                                      labels = labels,
+    wedges, texts, autotexts = ax.pie(m_values,
+                                      labels = m_labels,
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: func(pct, values),
@@ -71,14 +109,16 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     
     colours = dict(zip(labels_trip, plt.cm.tab20.colors[:len(labels_trip)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
+
+    m_labels, m_values = merge_small_entries(labels, values)
     
     def func(pct, values):
         total = sum(values)
         absolute = int(round(pct*total/100.0))
         return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 3 else''
     
-    wedges, texts, autotexts = ax.pie(values,
-                                      labels = labels,
+    wedges, texts, autotexts = ax.pie(m_values,
+                                      labels = m_labels,
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
