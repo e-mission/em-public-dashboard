@@ -4,6 +4,8 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.patches import Patch
+
 sns.set_style("whitegrid")
 sns.set()
 get_ipython().run_line_magic('matplotlib', 'inline')
@@ -43,11 +45,11 @@ def pie_chart_mode(plot_title,labels,values,file_name):
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: func(pct, values),
-                                      textprops={'size': 12})
+                                      textprops={'size': 16})
 
 
     ax.set_title(plot_title, size=18)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':12})
+    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':16})
     plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
     plt.show()
 
@@ -80,11 +82,11 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
-                                      textprops={'size': 12})
+                                      textprops={'size': 16})
 
 
     ax.set_title(plot_title, size=18)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':12})
+    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':16})
     plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
     plt.show()
     
@@ -140,11 +142,13 @@ def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     
     
 def energy_impact(x,y,color,plot_title,file_name):
-  
+    color = color.map({True: 'green', False: 'red'})
+    objects = ('Energy Savings', 'Energy Loss')
+    
     y_labels = y
     plt.figure(figsize=(15, 8))
     width = 0.8
-    ax = x.plot(kind='barh',width=width, color=color.map({True: 'green', False: 'red'}))
+    ax = x.plot(kind='barh',width=width, color=color)
     ax.set_title(plot_title, fontsize=18)
     ax.set_xlabel('Energy_Impact(kWH)', fontsize=18)
     ax.set_ylabel('Replaced Mode',fontsize=18)
@@ -178,7 +182,55 @@ def energy_impact(x,y,color,plot_title,file_name):
             xytext=(space, 0),          
             textcoords="offset points", 
             va='center',                
-            ha=ha, fontsize=10, color='black', fontweight='bold')                      
-                                        
+            ha=ha, fontsize=12, color='black', fontweight='bold')
+        
+        # map names to colors
+    cmap = {True: 'green', False: 'red'}
+        
+    patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+    
+    plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
 
+    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+    
+    
+def barplot_mode(data,x,y,plot_title,file_name):
+    all_labels= ['Car, drove alone',
+                 'Bus', 
+                 'Train', 
+                 'Free Shuttle',
+                 'Taxi/Uber/Lyft', 
+                 'Car, with others', 
+                 'Bikeshare',
+                 'Scooter share',
+                 'Pilot ebike', 
+                 'Walk', 
+                 'Skate board', 
+                 'Regular Bike', 
+                 'Not a Trip',
+                 'No Travel', 
+                 'Same Mode', 
+                 'Other']
+    
+    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+    sns.set(font_scale=1.5)
+    f = plt.subplots(figsize=(15, 6))
+    sns.set(style='whitegrid')
+    ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
+    plt.xlabel(x, fontsize=16)
+    plt.ylabel(y, fontsize=16)
+    plt.title(plot_title, fontsize=16)
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+    
+    
+def barplot_day(data,x,y,plot_title,file_name):
+
+    sns.set(font_scale=1.5)
+    f = plt.subplots(figsize=(15, 6))
+    sns.set(style='whitegrid')
+    ax = sns.barplot(x=x, y=y,data=data, ci=None)
+    plt.xlabel(x, fontsize=16)
+    plt.ylabel(y, fontsize=16)
+    plt.title(plot_title, fontsize=16)
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
