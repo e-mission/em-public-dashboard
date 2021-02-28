@@ -35,7 +35,7 @@
         <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
             Metric:
-            <select id='metric'>
+            <select id='metric' style='width: 300px'>
             </select>
           </li>
           <li class="nav-item active">
@@ -72,6 +72,19 @@
          eBike Trip frequency (Nov 2020)
          <button class='remove'>x</button>
          <img src='plots/ntrips_ebike_per_day_2020_11_prepilot.png' width=90% height=90%>
+      </li>
+      <li data-row="1" data-col="15" data-sizex="3" data-sizey="5">
+        Equivalency widget (EPA)
+        <button class='remove'>x</button>
+        <iframe src="//www.epa.gov/sites/production/files/widgets/ghg_widget/widget.html"
+            id="ghg_equivalencies"
+            width="260"
+            height="535"
+            scrolling="no"
+            frameborder="0"
+            marginwidth="0"
+            marginheight="0">
+        </iframe>
       </li>
       <li data-row="5" data-col="1" data-sizex="6" data-sizey="4">
          Average trip length (Nov 2020)
@@ -125,6 +138,8 @@
               const dateLabel = $("#date option:selected").text();
               const programLabel = $("#program option:selected").text();
 
+              const sizex = $("#metric option:selected").data("sizex");
+              const sizey = $("#metric option:selected").data("sizey");
               const labelText = metricLabel+" "+dateLabel+" "+programLabel;
               const imgFile = "plots/"+metric+"_"+dateVal+"_"+program+".png";
               const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
@@ -132,7 +147,7 @@
                   +"<button class='remove'>x</button>"
                   +"<img src='"+imgFile+"' width=90% height=90%>"
                   +"</li>",
-                  4, 4];
+                  sizex, sizey];
               gridster.add_widget.apply(gridster, nw);
           });
   
