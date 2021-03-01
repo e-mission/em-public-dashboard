@@ -76,18 +76,18 @@ def pie_chart_mode(plot_title,labels,values,file_name):
     def func(pct, values):
         total = sum(values)
         absolute = int(round(pct*total/100.0))
-        return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 3 else''
+        return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
  
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: func(pct, values),
-                                      textprops={'size': 16})
+                                      textprops={'size': 23})
 
 
-    ax.set_title(plot_title, size=18)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':16})
+    ax.set_title(plot_title, size=25)
+    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
     plt.show()
 
@@ -122,11 +122,11 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
-                                      textprops={'size': 16})
+                                      textprops={'size': 23})
 
 
-    ax.set_title(plot_title, size=18)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':16})
+    ax.set_title(plot_title, size=25)
+    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
     plt.show()
     
@@ -257,9 +257,9 @@ def barplot_mode(data,x,y,plot_title,file_name):
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
     ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
-    plt.xlabel(x, fontsize=16)
-    plt.ylabel(y, fontsize=16)
-    plt.title(plot_title, fontsize=16)
+    plt.xlabel(x, fontsize=23)
+    plt.ylabel(y, fontsize=23)
+    plt.title(plot_title, fontsize=25)
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
     
