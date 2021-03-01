@@ -112,13 +112,4 @@ def energy_cal(expanded_ct,dic_ei):
     
     return expanded_ct
 
-class Missing_dict(dict):
-    '''Map the data from purpose_confirm column:
-       if the key is in the dictionary,
-       it will be replaced by its value, otherwise 'Other')'''
-    def __init__(self,*arg,**kw):
-        super(Missing_dict, self).__init__(*arg, **kw)
-    def __missing__(self, key) :
-        return 'Other'
-    
     
