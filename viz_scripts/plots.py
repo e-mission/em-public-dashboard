@@ -263,13 +263,55 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
     
+
+def barplot_mode2(data,x,y,y2,plot_title,file_name):
+    all_labels= ['Car, drove alone',
+                 'Bus', 
+                 'Train', 
+                 'Free Shuttle',
+                 'Taxi/Uber/Lyft', 
+                 'Car, with others', 
+                 'Bikeshare',
+                 'Scooter share',
+                 'Pilot ebike', 
+                 'Walk', 
+                 'Skate board', 
+                 'Regular Bike', 
+                 'Not a Trip',
+                 'No Travel', 
+                 'Same Mode', 
+                 'Other']
+    
+    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+    sns.set(font_scale=1.5)
+
+    fig, ax1 = plt.subplots(figsize=(15,6))
+   
+    #bar plot creation
+    ax1.set_title(plot_title, fontsize=16)
+    ax1.set_xlabel(x, fontsize=16)
+    ax1.set_ylabel(y, fontsize=16)
+    ax1 = sns.barplot(x=x, y=y, data = data, palette=colours, ci=None)
+    ax1.grid(False)
+    
+    #specify we want to share the same x-axis
+    ax2 = ax1.twinx()
+    color = 'tab:red'
+    #line plot creation
+    ax2.set_ylabel('Count', fontsize=16)
+    ax2 = sns.pointplot(x=x, y=y2, data = data, sort=False, color=color)
+    ax2.grid(False)
+    plt.setp(ax2.get_xticklabels(), rotation=45, ha='right')
+    plt.setp(ax1.get_xticklabels(), rotation=45, ha='right')
+    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+    
     
 def barplot_day(data,x,y,plot_title,file_name):
 
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
-    ax = sns.barplot(x=x, y=y,data=data, ci=None)
+    ax = sns.barplot(x=x, y=y,data=data, ci=None, color='blue')
     plt.xlabel(x, fontsize=16)
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
