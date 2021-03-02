@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
@@ -80,9 +81,9 @@ def get_quality_text(participant_ct_df, expanded_ct):
     return quality_text
 
 def get_file_suffix(year, month, program):
-    suffix = "_%04d" % year if year is not None else ""
-    suffix = suffix + "_%02d" % month if month is not None else ""
-    suffix = suffix + "_%s" % program if program is not None else ""
+    suffix = "%04d" % year if year is not None else ""
+    suffix = suffix + "%02d" % month if month is not None else ""
+    suffix = suffix + "%s" % program if program is not None else ""
     print(suffix)
     return suffix
 
@@ -111,3 +112,45 @@ def energy_cal(expanded_ct,dic_ei):
     
     return expanded_ct
 
+def CO2_emssions(df):
+    
+    def CO2_emsions_mode(df):
+        if (df["Mode_confirm"] == 'Car, drove alone'):
+            return  ((df["distance_miles"]*4374)*0.000001)*157.2 
+        elif (df["Mode_confirm"] ==  'Car, with others'):
+            return  ((df["distance_miles"]*2840)*0.000001)*157.2 
+        elif (df["Mode_confirm"] == 'Taxi/Uber/Lyft'):
+            return  ((df["distance_miles"]*7214)*0.000001)*157.2 
+        elif df["Mode_confirm"] ==  'Bus':
+            return ((df["distance_miles"]*4560)*0.000001)*163.1
+        elif df["Mode_confirm"] ==  'Train':
+            return (df["distance_miles"]*0.37*0.001*1166)
+        elif df["Mode_confirm"] ==  'Pilot ebike'or (df["Mode_confirm"] == 'Bikeshare'):
+            return (df["distance_miles"]*0.022*0.001*1166)
+        elif df["Mode_confirm"] == 'Scooter share' :
+            return (df["distance_miles"]*0.027*0.001*1166)
+        else:
+            return 0
+
+    def CO2_emsions_replaced(df):
+        if (df["Replaced_mode"] == 'Car, drove alone'):
+            return  ((df["distance_miles"]*4374)*0.000001)*157.2 
+        elif (df["Replaced_mode"] ==  'Car, with others'):
+            return  ((df["distance_miles"]*2840)*0.000001)*157.2 
+        elif (df["Replaced_mode"] == 'Taxi/Uber/Lyft'):
+            return  ((df["distance_miles"]*7214)*0.000001)*157.2 
+        elif df["Replaced_mode"] ==  'Bus':
+            return ((df["distance_miles"]*4560)*0.000001)*163.1
+        elif df["Replaced_mode"] ==  'Train':
+            return (df["distance_miles"]*0.37*0.001*1166)
+        elif df["Replaced_mode"] ==  'Pilot ebike'or (df["Mode_confirm"] == 'Bikeshare'):
+            return (df["distance_miles"]*0.022*0.001*1166)
+        elif df["Replaced_mode"] == 'Scooter share' :
+            return (df["distance_miles"]*0.027*0.001*1166)
+        else:
+            return 0
+        
+    df['lbCO2_Mode_confirm'] = df.apply(CO2_emsions_mode, axis=1)
+    df['lbCO2_Replaced_mode'] = df.apply(CO2_emsions_replaced, axis=1)
+    df['CO2_impact'] = df['lbCO2_Replaced_mode'] - df['lbCO2_Mode_confirm'] 
+    return df
