@@ -112,45 +112,31 @@ def energy_cal(expanded_ct,dic_ei):
     
     return expanded_ct
 
-def CO2_emssions(df):
-    
-    def CO2_emsions_mode(df):
-        if (df["Mode_confirm"] == 'Car, drove alone'):
-            return  ((df["distance_miles"]*4374)*0.000001)*157.2 
-        elif (df["Mode_confirm"] ==  'Car, with others'):
-            return  ((df["distance_miles"]*2840)*0.000001)*157.2 
-        elif (df["Mode_confirm"] == 'Taxi/Uber/Lyft'):
-            return  ((df["distance_miles"]*7214)*0.000001)*157.2 
-        elif df["Mode_confirm"] ==  'Bus':
-            return ((df["distance_miles"]*4560)*0.000001)*163.1
-        elif df["Mode_confirm"] ==  'Train':
-            return (df["distance_miles"]*0.37*0.001*1166)
-        elif df["Mode_confirm"] ==  'Pilot ebike'or (df["Mode_confirm"] == 'Bikeshare'):
-            return (df["distance_miles"]*0.022*0.001*1166)
-        elif df["Mode_confirm"] == 'Scooter share' :
-            return (df["distance_miles"]*0.027*0.001*1166)
-        else:
-            return 0
 
-    def CO2_emsions_replaced(df):
-        if (df["Replaced_mode"] == 'Car, drove alone'):
-            return  ((df["distance_miles"]*4374)*0.000001)*157.2 
-        elif (df["Replaced_mode"] ==  'Car, with others'):
-            return  ((df["distance_miles"]*2840)*0.000001)*157.2 
-        elif (df["Replaced_mode"] == 'Taxi/Uber/Lyft'):
-            return  ((df["distance_miles"]*7214)*0.000001)*157.2 
-        elif df["Replaced_mode"] ==  'Bus':
-            return ((df["distance_miles"]*4560)*0.000001)*163.1
-        elif df["Replaced_mode"] ==  'Train':
-            return (df["distance_miles"]*0.37*0.001*1166)
-        elif df["Replaced_mode"] ==  'Pilot ebike'or (df["Mode_confirm"] == 'Bikeshare'):
-            return (df["distance_miles"]*0.022*0.001*1166)
-        elif df["Replaced_mode"] == 'Scooter share' :
-            return (df["distance_miles"]*0.027*0.001*1166)
-        else:
-            return 0
-        
-    df['lbCO2_Mode_confirm'] = df.apply(CO2_emsions_mode, axis=1)
-    df['lbCO2_Replaced_mode'] = df.apply(CO2_emsions_replaced, axis=1)
-    df['CO2_impact'] = df['lbCO2_Replaced_mode'] - df['lbCO2_Mode_confirm'] 
+def CO2_emissions(df,col1,distance):
+    
+    conditions = [
+        (df[col1] == 'Car, drove alone'),
+        (df[col1] == 'Car, with others'),
+        (df[col1] == 'Taxi/Uber/Lyft'),
+        (df[col1] == 'Bus'),
+        (df[col1] == 'Train'),
+        (df[col1] == 'Pilot ebike')|(df[col1] == 'Bikeshare'),
+        (df[col1] == 'Scooter share')]
+    
+    CO2_car_alone = ((df[distance]*4374)*0.000001)*157.2 
+    CO2_car_others = ((df[distance]*2840)*0.000001)*157.2 
+    CO2_taxi = ((df[distance]*7214)*0.000001)*157.2 
+    CO2_bus= ((df[distance]*4560)*0.000001)*163.1   
+    CO2_train =(df[distance]*0.37*0.001*1166)
+    CO2_ebike = (df[distance]*0.022*0.001*1166)
+    CO2_scooter =(df[distance]*0.027*0.001*1166)
+    
+    values = [CO2_car_alone,
+              CO2_car_others,
+              CO2_taxi,
+              CO2_bus,CO2_train,
+              CO2_ebike,
+              CO2_scooter]
+    df[col1+'_CO2'] = np.select(conditions, values)
     return df
