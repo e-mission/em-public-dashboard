@@ -316,3 +316,56 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+
+
+def CO2_impact(x,y,color,plot_title,file_name):
+    color = color.map({True: 'green', False: 'red'})
+    objects = ('CO2 Reduction', 'CO2 Increase')
+
+    y_labels = y
+    plt.figure(figsize=(15, 8))
+    width = 0.8
+    ax = x.plot(kind='barh',width=width, color=color)
+    ax.set_title(plot_title, fontsize=18)
+    ax.set_xlabel('CO2 Emissions (lb)', fontsize=18)
+    ax.set_ylabel('Replaced Mode',fontsize=18)
+    ax.set_yticklabels(y_labels)
+    ax.xaxis.set_tick_params(labelsize=15)
+    ax.yaxis.set_tick_params(labelsize=15)
+    ax.relim()
+    ax.autoscale_view()
+
+    rects = ax.patches
+
+
+    for rect in rects:
+        x_value = rect.get_width()
+        y_value = rect.get_y() + rect.get_height() / 2
+        space = 5
+        ha = 'left'
+
+
+        if x_value < 0:
+            space *= -1
+            ha = 'right'
+
+
+        label = "{:.1f}".format(x_value)
+
+        # Create annotation
+        plt.annotate(
+            label,
+            (x_value, y_value),
+            xytext=(space, 0),
+            textcoords="offset points",
+            va='center',
+            ha=ha, fontsize=12, color='black', fontweight='bold')
+
+        # map names to colors
+    cmap = {True: 'green', False: 'red'}
+
+    patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+
+    plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
+
+    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
