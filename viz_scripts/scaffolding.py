@@ -103,39 +103,96 @@ def data_quality_check(expanded_ct):
     
     return expanded_ct
 
-def energy_cal(expanded_ct,dic_ei):
-    expanded_ct['ei_mode_confirm'] = expanded_ct['Mode_confirm'].map(dic_ei)
-    expanded_ct['ei_replaced_mode'] = expanded_ct['Replaced_mode'].map(dic_ei)
-    expanded_ct['distance_miles']= expanded_ct['distance']*0.00062
-    expanded_ct['Energy_Impact(kWH)']= round((expanded_ct['ei_replaced_mode']-expanded_ct['ei_mode_confirm'])*expanded_ct['distance_miles'],3) 
+def energy_intensity(df,df1,distance,col1,col2):
+    """ Inputs:
+    df = dataframe with data
+    df = dataframe with energy factors
+    distance = distance in meters
+    col1 = Replaced_mode
+    col2= Mode_confirm
+    """
+    df['distance_miles']= df[distance]*0.00062 #meters to miles
+    df1 = df1.copy()
+    df1[col1] = df1['mode']
+    dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
+    dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
+    df['ei_'+col1] = df[col1].map(dic_ei_factor)
+    df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
     
-    return expanded_ct
+    df1[col2] = df1[col1]
+    dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
+    dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
+    df['ei_'+col2] = df[col2].map(dic_ei_factor)
+    df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
+    return df
 
 
-def CO2_emissions(df,col1,distance):
+def energy_impact_kWH(df,distance,col1,col2):
+    """ Inputs:
+    df = dataframe with data
+    distance = distance in miles
+    col1 = Replaced_mode
+    col2= Mode_confirm
+    """
+        
+    conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
+                       (df['Replaced_mode_fuel'] == 'diesel'),
+                       (df['Replaced_mode_fuel'] == 'electric')]
+   
+    conditions_col2 = [(df['Mode_confirm_fuel'] =='gasoline'),
+                       (df['Mode_confirm_fuel'] == 'diesel'),
+                       (df['Mode_confirm_fuel'] == 'electric')]
 
-    conditions = [
-        (df[col1] == 'Car, drove alone'),
-        (df[col1] == 'Car, with others'),
-        (df[col1] == 'Taxi/Uber/Lyft'),
-        (df[col1] == 'Bus'),
-        (df[col1] == 'Train'),
-        (df[col1] == 'Pilot ebike')|(df[col1] == 'Bikeshare'),
-        (df[col1] == 'Scooter share')]
+    gasoline_col1 = (df[distance]*df['ei_'+col1]*0.000293071) # 1 BTU = 0.000293071 kWH
+    diesel_col1   = (df[distance]*df['ei_'+col1]*0.000293071)
+    electric_col1 = (df[distance]*df['ei_'+col1])
+    
+    gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000293071)
+    diesel_col2   = (df[distance]*df['ei_'+col2]*0.000293071)
+    electric_col2 = (df[distance]*df['ei_'+col2])
+  
+    
+    values_col1 = [gasoline_col1,diesel_col1,electric_col1]
+    values_col2 = [gasoline_col2,diesel_col2,electric_col2]  
+    
+    df[col1+'_EI(kWH)'] = np.select(conditions_col1, values_col1)
+    df[col2+'_EI(kWH)'] = np.select(conditions_col2, values_col2)
+    df['Energy_Impact(kWH)']  = round((df[col1+'_EI(kWH)'] - df[col2+'_EI(kWH)']),3)
+  
+    return df
 
-    CO2_car_alone = ((df[distance]*4374)*0.000001)*157.2
-    CO2_car_others = ((df[distance]*2840)*0.000001)*157.2
-    CO2_taxi = ((df[distance]*7214)*0.000001)*157.2
-    CO2_bus= ((df[distance]*4560)*0.000001)*163.1
-    CO2_train =(df[distance]*0.37*0.001*1166)
-    CO2_ebike = (df[distance]*0.022*0.001*1166)
-    CO2_scooter =(df[distance]*0.027*0.001*1166)
 
-    values = [CO2_car_alone,
-              CO2_car_others,
-              CO2_taxi,
-              CO2_bus,CO2_train,
-              CO2_ebike,
-              CO2_scooter]
-    df[col1+'_CO2'] = np.select(conditions, values)
+def CO2_impact_lb(df,distance,col1,col2):
+    """ Inputs:
+    df = dataframe with data
+    distance = distance in miles
+    col1 = Replaced_mode
+    col2= Mode_confirm
+    """
+ 
+    conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
+                       (df['Replaced_mode_fuel'] == 'diesel'),
+                       (df['Replaced_mode_fuel'] == 'electric')]
+   
+    conditions_col2 = [(df['Mode_confirm_fuel'] =='gasoline'),
+                       (df['Mode_confirm_fuel'] == 'diesel'),
+                       (df['Mode_confirm_fuel'] == 'electric')]
+
+  
+    gasoline_col1 = (df[distance]*df['ei_'+col1]*0.000001)* df['CO2_Replaced_mode']
+    diesel_col1   = (df[distance]*df['ei_'+col1]*0.000001)* df['CO2_Replaced_mode']
+    electric_col1 = (df[distance]*df['ei_'+col1]*0.001)*df['CO2_Replaced_mode']
+    
+    gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
+    diesel_col2   = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
+    electric_col2 = (df[distance]*df['ei_'+col2]*0.001)*df['CO2_Mode_confirm']
+  
+    
+    values_col1 = [gasoline_col1,diesel_col1,electric_col1]
+    values_col2 = [gasoline_col2,diesel_col2,electric_col2]  
+    
+    df[col1+'_lb_CO2'] = np.select(conditions_col1, values_col1)
+    df[col2+'_lb_CO2'] = np.select(conditions_col2, values_col2)
+    df['CO2_Impact(lb)']  = round((df[col1+'_lb_CO2'] - df[col2+'_lb_CO2']),3)
+  
     return df

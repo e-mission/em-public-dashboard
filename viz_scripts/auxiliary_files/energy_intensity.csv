@@ -1,17 +1,15 @@
-﻿replaced_mode,EI
-"Car, drove alone",1.54100
-Taxi/Uber/Lyft,2.441
-Bus,1.3300
-Train,0.2300
-Free Shuttle,1.3300
-"Car, with others",0.7700
-Bikeshare,0.0220
-Scooter share,0.0270
-Pilot ebike,0.0220
-Walk,0.0000
-Skate board,0.0000
-Regular Bike,0.0000
-Not a Trip,0.0000
-No Travel,0.0000
-Same Mode,0.0000
-Other,nan
+﻿mode,fuel,(kWH)/PMT,(kWH)/trip,EI(kWH/PMT-trip),energy_intensity_factor,energy_intensity_units,CO2_factor,CO2_factor_units
+"Car, drove alone",gasoline,1.541,0,1.541,5170,BTU/PMT,157.2,lb_CO2/MMBTU
+"Car, with others",gasoline,0.77,0,0.77,2585,BTU/PMT,157.2,lb_CO2/MMBTU
+Taxi/Uber/Lyft,gasoline,2.441,0,2.441,7214,BTU/PMT,157.2,lb_CO2/MMBTU
+Bus,diesel,1.33,0,1.33,4560,BTU/PMT,163.1,lb_CO2/MMBTU
+Free Shuttle,diesel,1.33,0,1.33,4560,BTU/PMT,163.1,lb_CO2/MMBTU
+Train,electric,0.37,0,0.37,0.37,kWH/PMT,1166,lb_CO2/MWH
+Scooter share,electric,0.027,0.0041,0.0311,0.0311,kWH/PMT,1166,lb_CO2/MWH
+Pilot ebike,electric,0.022,0,0.022,0.022,kWH/PMT,1166,lb_CO2/MWH
+Bikeshare,electric,0.022,0.09,0.112,0.112,kWH/PMT,1166,lb_CO2/MWH
+Walk,human_powered,0,0,0,0,,0,0
+Skate board,human_powered,0,0,0,0,,0,0
+Regular Bike,human_powered,0,0,0,0,,0,0
+Not a Trip,none,0,0,0,0,,0,0
+No Travel,none,0,0,0,0,,0,0
