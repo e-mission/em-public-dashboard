@@ -7,7 +7,7 @@ Free Shuttle,diesel,0,,4560,BTU/PMT,163.1,lb_CO2/MMBTU
 Train,electric,0,0.37,0.37,kWH/PMT,1166,lb_CO2/MWH
 Scooter share,electric,0.0041,0.027,0.027,kWH/PMT,1166,lb_CO2/MWH
 Pilot ebike,electric,0,0.022,0.022,kWH/PMT,1166,lb_CO2/MWH
-Bikeshare,human_powered,0.09,0,0.022,kWH/PMT,1166,lb_CO2/MWH
+Bikeshare,human_powered,0.09,0,0,kWH/PMT,1166,lb_CO2/MWH
 Walk,human_powered,0,,0,,0,0
 Skate board,human_powered,0,,0,,0,0
 Regular Bike,human_powered,0,,0,,0,0
