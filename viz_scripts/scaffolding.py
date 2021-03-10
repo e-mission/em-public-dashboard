@@ -103,6 +103,9 @@ def data_quality_check(expanded_ct):
     
     return expanded_ct
 
+def unit_conversions(df):
+    df['distance_miles']= df["distance"]*0.00062 #meters to miles
+
 def energy_intensity(df,df1,distance,col1,col2):
     """ Inputs:
     df = dataframe with data
@@ -112,7 +115,6 @@ def energy_intensity(df,df1,distance,col1,col2):
     col2= Mode_confirm
 
     """
-    df['distance_miles']= df[distance]*0.00062 #meters to miles
     df1 = df1.copy()
     df1[col1] = df1['mode']
     dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
