@@ -194,7 +194,7 @@ def CO2_impact_lb(df,distance,col1,col2):
     
     gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
     diesel_col2   = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
-    electric_col2 = (((df[distance]*df['ei_'+col2])+df['ei_trip_Mode_confirm'])*0.001)*df['CO2_Mode_confirm']
+    electric_col2 = (((df[distance]*df['ei_'+col2])+df['ei_trip_'+col2])*0.001)*df['CO2_'+col2]
   
     
     values_col1 = [gasoline_col1,diesel_col1,electric_col1]
