@@ -153,7 +153,7 @@ def energy_impact_kWH(df,distance,col1,col2):
 
     gasoline_col1 = (df[distance]*df['ei_'+col1]*0.000293071) # 1 BTU = 0.000293071 kWH
     diesel_col1   = (df[distance]*df['ei_'+col1]*0.000293071)
-    electric_col1 = (df[distance]*df['ei_'+col1])+ df['ei_trip_Replaced_mode']
+    electric_col1 = (df[distance]*df['ei_'+col1])+ df['ei_trip_'+col1]
     
     gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000293071)
     diesel_col2   = (df[distance]*df['ei_'+col2]*0.000293071)
