@@ -18,6 +18,8 @@ if args.date is None:
     yesterday = arrow.get()
     args.date = [yesterday.year, yesterday.month]
 
+print(f"Running at {arrow.get()} with args {args}")
+
 with open(args.plot_notebook) as f:
     nb = nbformat.read(f, as_version=4)
 
