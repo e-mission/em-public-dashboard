@@ -1,7 +1,7 @@
 MONGODUMP_FILE=$1
 
-# echo "Copying file to docker container"
-# docker cp $MONGODUMP_FILE em-public-dashboard_db_1:/tmp
+echo "Copying file to docker container"
+docker cp $MONGODUMP_FILE em-public-dashboard_db_1:/tmp
 
 FILE_NAME=`basename $MONGODUMP_FILE`
 
