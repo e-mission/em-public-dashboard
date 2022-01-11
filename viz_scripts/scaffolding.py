@@ -137,6 +137,39 @@ def energy_intensity(df,df1,distance,col1,col2):
     return df
 
 
+def cost(df, df_cost, dist_m, rep_m, mode):
+    """
+    Calculates the cost of the CanBikeCO E-bike pilot program
+    
+    Parameters:
+        df - CanBikeCO data input
+        df_cost - dataframe defining cost ($/PMT) for each mode
+        dist_m - feature name in df of feature with distance in miles
+        rep_m - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        df with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
+    """
+    
+
+def time(df, df_dur, dist_m, rep_m, mode)
+     """
+    Calculates the duration of the CanBikeCO E-bike pilot program
+    
+    Parameters:
+        df - CanBikeCO data input
+        df_cost - dataframe defining duration/PMT for each mode
+        dist_m - feature name in df of feature with distance in miles
+        rep_m - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        df with appended duration feature for each trip in time for both mode and replaced mode (timeDelta?)
+    """
+    
+    
+    
 def energy_impact_kWH(df,distance,col1,col2):
     """ Inputs:
     df = dataframe with data
@@ -207,3 +240,32 @@ def CO2_impact_lb(df,distance,col1,col2):
     df['CO2_Impact(lb)']  = round((df[col1+'_lb_CO2'] - df[col2+'_lb_CO2']),3)
   
     return df
+
+
+def cost_impact(df, dist_m, rep_m, mode):
+    """
+    Calculates the cost impact of the CanBikeCO E-bike program
+    
+     Parameters:
+        df - CanBikeCO data input
+        dist_m - feature name in df of feature with distance in miles
+        rep_m - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        df with appended cost impact feature for each trip in $$$ (float)
+    """
+    
+def time_impact(df, dist_m, rep_m, mode):
+    """
+    Calculates the time impact of the CanBikeCO E-bike program
+    
+     Parameters:
+        df - CanBikeCO data input
+        dist_m - feature name in df of feature with distance in miles
+        rep_m - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        df with appended time impact feature for each trip in $$$ (float)
+    """
