@@ -182,7 +182,7 @@ def cost(data, cost, dist, repm, mode):
     return data
 
 
-def cost(data, dura, dist, repm, mode):
+def time(data, dura, dist, repm, mode):
     """
     Calculates the cost of the CanBikeCO E-bike pilot program
     
