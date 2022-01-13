@@ -178,7 +178,7 @@ def cost(data, cost, dist, repm, mode):
     cost[mode] = cost[repm]
     dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
     data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
-    assert False
+    
     return data
 
 
