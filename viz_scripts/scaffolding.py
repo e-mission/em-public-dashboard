@@ -178,7 +178,7 @@ def cost(data, cost, dist, repm, mode):
     cost[mode] = cost[repm]
     dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
     data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
-           
+    assert False
     return data
 
 
@@ -211,7 +211,7 @@ def time(data, dura, dist, repm, mode):
     
     # Create new features in data for confirmed mode
     dura[mode] = dura[repm]
-    dic_dura__trip = dict(zip(dura[mode],dura['C($/PMT)']))
+    dic_dura__trip = dict(zip(dura[mode],dura['D(hours/PMT)']))
     data['dura__trip_'+mode] = data[mode].map(dic_dura__trip)
            
     return data  
