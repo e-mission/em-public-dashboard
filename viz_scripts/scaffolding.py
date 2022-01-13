@@ -312,8 +312,8 @@ def cost_impact(data, dist, repm, mode):
         data with appended cost impact feature for each trip in $$$ (float)
     """
   
-    data[mode+'_cost'] = data[dist] * data['cost__trip_mode']
-    data[repm+'_cost'] = data[dist] * data['cost__trip_repm']
+    data[mode+'_cost'] = data[dist] * data['cost__trip_'+mode]
+    data[repm+'_cost'] = data[dist] * data['cost__trip_'+repm]
     data['Cost_Impact($)'] = round((data[mode+'_cost'] - data[repm+'_cost']),2)
 
     return data
