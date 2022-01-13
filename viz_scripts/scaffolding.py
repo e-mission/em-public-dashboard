@@ -219,13 +219,21 @@ def cost(data, dura, dist, repm, mode):
     
     
 def energy_impact_kWH(df,distance,col1,col2):
-    """ Inputs:
+    """ 
+    Purpose:
+        Calculates energy intensity for each mode
+        by fuel type, then calculates the diference
+        between the energy intensity of replaced and
+        confirmed modes.
+    
+    Inputs:
     df = dataframe with data
     distance = distance in miles
     col1 = Replaced_mode
     col2= Mode_confirm
     """
-        
+    
+
     conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
                        (df['Replaced_mode_fuel'] == 'diesel'),
                        (df['Replaced_mode_fuel'] == 'electric')]
@@ -290,30 +298,43 @@ def CO2_impact_lb(df,distance,col1,col2):
     return df
 
 
-def cost_impact(df, dist_m, rep_m, mode):
+def cost_impact(data, dist, repm, mode):
     """
     Calculates the cost impact of the CanBikeCO E-bike program
     
      Parameters:
-        df - CanBikeCO data input
-        dist_m - feature name in df of feature with distance in miles
-        rep_m - feature name in df of feature with replaced mode
+        data - CanBikeCO data input
+        dist - feature name in df of feature with distance in miles
+        repm - feature name in df of feature with replaced mode
         mode - feature name in df of feature with confirmed mode
         
     Returns:
-        df with appended cost impact feature for each trip in $$$ (float)
+        data with appended cost impact feature for each trip in $$$ (float)
     """
-    
-def time_impact(df, dist_m, rep_m, mode):
+  
+    data[mode+'_cost'] = data[dist] * data['cost__trip_mode']
+    data[repm+'_cost'] = data[dist] * data['cost__trip_repm']
+    data['Cost_Impact($)'] = round((data[mode+'_cost'] - data[repm+'_cost']),2)
+
+    return data
+
+
+def time_impact(data, dist, repm, mode):
     """
-    Calculates the time impact of the CanBikeCO E-bike program
+    Calculates the cost impact of the CanBikeCO E-bike program
     
      Parameters:
-        df - CanBikeCO data input
-        dist_m - feature name in df of feature with distance in miles
-        rep_m - feature name in df of feature with replaced mode
+        data - CanBikeCO data input
+        dist - feature name in df of feature with distance in miles
+        repm - feature name in df of feature with replaced mode
         mode - feature name in df of feature with confirmed mode
         
     Returns:
-        df with appended time impact feature for each trip in $$$ (float)
+        data with appended time impact feature for each trip in $$$ (float)
     """
+
+    data[mode+'_dura'] = data[dist] * data['dura__trip_mode']
+    data[repm+'_dura'] = data[dist] * data['dura__trip_repm']
+    data['Cost_Impact($)'] = round((data[mode+'_dura'] - data[repm+'_dura']),3)
+
+    return data
