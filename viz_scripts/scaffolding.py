@@ -107,25 +107,35 @@ def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
 
 def energy_intensity(df,df1,distance,col1,col2):
-    """ Inputs:
-    df = dataframe with data
-    df = dataframe with energy factors
+    """Inputs:
+    df = dataframe with data from CanBikeCO
+    df1 = dataframe with energy factors
     distance = distance in meters
     col1 = Replaced_mode
     col2= Mode_confirm
-
     """
+
+    # Create a copy of the energy_factors dataframe
     df1 = df1.copy()
+
+    # Create a replaced mode column in df1 same as mode
     df1[col1] = df1['mode']
+
+    # Pair energy intensity with mode
     dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
+    
+    # Pair CO2_factor with mode
     dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
+
+    # Pair (KWH)/trip with mode
     dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
     
+    # Create new features in data for replaced mode
     df['ei_'+col1] = df[col1].map(dic_ei_factor)
     df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
     df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
     
-      
+    # Create new features in data for confirmed mode
     df1[col2] = df1[col1]
     dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
     dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
@@ -137,37 +147,75 @@ def energy_intensity(df,df1,distance,col1,col2):
     return df
 
 
-def cost(df, df_cost, dist_m, rep_m, mode):
+def cost(data, cost, dist, repm, mode):
     """
     Calculates the cost of the CanBikeCO E-bike pilot program
     
     Parameters:
-        df - CanBikeCO data input
-        df_cost - dataframe defining cost ($/PMT) for each mode
-        dist_m - feature name in df of feature with distance in miles
-        rep_m - feature name in df of feature with replaced mode
-        mode - feature name in df of feature with confirmed mode
+        data - CanBikeCO data input
+        cost - dataframe defining cost ($/PMT) for each mode
+        dist - feature name in data of feature with distance in miles
+        repm - feature name in data of feature with replaced mode
+        mode - feature name in data of feature with confirmed mode
         
     Returns:
-        df with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
+        data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
     """
-    
 
-def time(df, df_dur, dist_m, rep_m, mode)
-     """
-    Calculates the duration of the CanBikeCO E-bike pilot program
+    # Create a copy of the cost dataframe
+    cost = cost.copy()
+
+    # Create a replaced mode column in cost same as mode
+    cost[repm] = cost['mode']
+
+    # Pair cost with mode
+    dic_cost__trip = dict(zip(cost[repm],cost['C($/PMT)']))
+    
+    # Create new features in data for replaced mode
+    data['cost__trip_'+repm] = data[repm].map(dic_cost__trip)
+    
+    # Create new features in data for confirmed mode
+    cost[mode] = cost[repm]
+    dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
+    data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
+           
+    return data
+
+
+def cost(data, dura, dist, repm, mode):
+    """
+    Calculates the cost of the CanBikeCO E-bike pilot program
     
     Parameters:
-        df - CanBikeCO data input
-        df_cost - dataframe defining duration/PMT for each mode
-        dist_m - feature name in df of feature with distance in miles
-        rep_m - feature name in df of feature with replaced mode
-        mode - feature name in df of feature with confirmed mode
+        data - CanBikeCO data input
+        dura - dataframe defining duration ((1/speed)/PMT) for each mode
+        dist - feature name in data of feature with distance in miles
+        repm - feature name in data of feature with replaced mode
+        mode - feature name in data of feature with confirmed mode
         
     Returns:
-        df with appended duration feature for each trip in time for both mode and replaced mode (timeDelta?)
+        data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
     """
+
+    # Create a copy of the dura dataframe
+    dura = dura.copy()
+
+    # Create a replaced mode column in dura same as mode
+    dura[repm] = dura['mode']
+
+    # Pair dura with mode
+    dic_dura__trip = dict(zip(dura[repm],dura['C($/PMT)']))
     
+    # Create new features in data for replaced mode
+    data['dura__trip_'+repm] = data[repm].map(dic_dura__trip)
+    
+    # Create new features in data for confirmed mode
+    dura[mode] = dura[repm]
+    dic_dura__trip = dict(zip(dura[mode],dura['C($/PMT)']))
+    data['dura__trip_'+mode] = data[mode].map(dic_dura__trip)
+           
+    return data  
+   
     
     
 def energy_impact_kWH(df,distance,col1,col2):
