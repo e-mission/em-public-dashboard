@@ -133,6 +133,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+<<<<<<< Updated upstream
 .DS_Store
 .DS_Store
 viz_scripts/.DS_Store
+=======
+viz_scripts/auxiliary_files/.DS_Store
+>>>>>>> Stashed changes
