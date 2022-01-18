@@ -1,0 +1,15 @@
+﻿mode,C($/PMT),($)/trip,D(hours/PMT),(hours)/trip
+"Car, drove alone",0.136,0,0,0
+"Car, with others",0.068,0,0,0
+Taxi/Uber/Lyft,0.129,0,0,0
+Bus,0.855,0,0,0
+Free Shuttle,0,0,0,0
+Train,0.855,0,0,0
+Scooter share,0.15,1,0,0
+Pilot ebike,0,0,0,0
+Bikeshare,0.09,0,0,0
+Walk,0,0,0,0
+Skate board,0,0,0,0
+Regular Bike,0,0,0,0
+Not a Trip,0,0,0,0
+No Travel,0,0,0,0

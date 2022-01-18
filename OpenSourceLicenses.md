@@ -9,5 +9,7 @@ The binary distributions are directly from the `gh-pages` branch.
 
 The bootstrap template is from:
 https://github.com/StartBootstrap/startbootstrap-bare.git
-with a modified contents, modified navbar
-and theming based on the original web page
+which is also available under an MIT license.
+
+This repo includes modified content, modified navbar
+and theming based on the original web page.
