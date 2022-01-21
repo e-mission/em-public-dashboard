@@ -341,7 +341,7 @@ def time_impact(data, dist, repm, mode):
     return data
 
 
-def calc_avg_speed(data, dist, time, mode):
+def calc_avg_speed(data, dist, time, mode, meth='average'):
     """
     Purpose:
         To determine average speed of modes in CanBikeCO data
@@ -351,13 +351,34 @@ def calc_avg_speed(data, dist, time, mode):
         dist - feature name in df of feature with distance in miles
         time - feature name in df of feature with time information
         mode - feature name in df of feature with confirmed mode
-
+        meth - string representing method for aggregation by group
+                ['average', 'median']
     Process:
         Calculate and append speeds of each trip
-        Aggregate speeds by mode
-        Find average each mode
+        Aggregate average speed for each mode
         Save averages in auxiallary files
+    
+    Returns:
+        data - data with speed feature for each trip
+        df_T - a dataframe representing average speed by mode
     """
+    
+    data = data.copy()
 
+    data['speed'] = data[dist] / data[time]
 
-    None
+    grup = data.groupby(mode)
+
+    mspd = None
+    if(meth == 'average'):
+        mspd = grup['speed'].mean()
+    elif(meth == 'median'):
+        mspd = grup['speed'].median()
+    else:
+        print(f'Method invalid: {meth}.')
+        return data, None
+    
+    mspd.to_csv('auxiliary_files/time.csv')
+    df_T = pd.read_csv('auxiliary_files/time.csv')
+
+    return data, df_T

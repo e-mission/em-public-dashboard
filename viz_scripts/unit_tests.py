@@ -160,19 +160,71 @@ class TestCalcAvgSpeed(unittest.TestCase):
     """
 
     def setUp(self):
-        pd.DataFrame({
+        self.data = pd.DataFrame({
             'mode': ['car', 'bus', 'train', 'car'],
             'dist': [1,2,3,4],
-            'time': []
+            'time': [1,2,3,4]
         })
 
 
     def test_process(self):
+        # Average speed of each trip
+        expect = pd.Series([1.0,1.0,1.0,1.0])
+        speeds = self.data['dist'] / self.data['time']
+        self.assertTrue(expect.equals(speeds),
+                        f'Calc speed failed.\n{expect}\n{speeds}')
+        
+        # Aggregate by mode
+        self.data['sped'] = self.data['dist'] / self.data['time']
+        expect = pd.Series({
+            'bus': 1.0,
+            'car': 1.0,
+            'train': 1.0
+        })
+        groupd = self.data.groupby('mode')
+        speedm = groupd['sped'].mean()
+        self.assertTrue(expect.equals(speedm),
+                        f'Agg by mean failed.\n{expect}\n{speedm}')
+        
+
+        speedm = groupd['sped'].median()
+        self.assertTrue(expect.equals(speedm),
+                        f'Agg by median failed.\n{expect}\n{speedm}')
+        
+        # Save to file (TODO:?)
+
         None
 
 
     def test_function(self):
-        None
+        expect1 = pd.DataFrame({
+            'mode': ['car', 'bus', 'train', 'car'],
+            'dist': [1,2,3,4],
+            'time': [1,2,3,4],
+            'speed': [1.0, 1.0, 1.0, 1.0]
+        })
+        expect2 = pd.DataFrame({
+            'mode': ['bus', 'car', 'train'],
+            'speed': [1.0, 1.0, 1.0]
+        })
+        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','average')
+        self.assertTrue(expect1.equals(result1),
+                        f'calc_avg_speed with average failed.[1]')
+        self.assertTrue(expect2.equals(result2),
+                        f'calc_avg_speed with average failed.[2]\n{expect2}\n{result2}')
+
+        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','median')
+        self.assertTrue(expect1.equals(result1),
+                        f'calc_avg_speed with median failed.[1]')
+        self.assertTrue(expect2.equals(result2),
+                        f'calc_avg_speed with median failed.[2]')
+
+        expect2 = None
+        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','break')
+        self.assertTrue(expect1.equals(result1),
+                        f'calc_avg_speed with incorrect method failed.[1]')
+        self.assertEqual(expect2, result2,
+                          f'calc_avg_speed with incorrect method failed.[2]')
 
 
 
