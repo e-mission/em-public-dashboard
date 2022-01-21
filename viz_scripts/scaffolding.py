@@ -105,6 +105,7 @@ def data_quality_check(expanded_ct):
 
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
+    df['duration'] = df['end_ts'] - df['start_ts']
 
 def energy_intensity(df,df1,distance,col1,col2):
     """Inputs:
