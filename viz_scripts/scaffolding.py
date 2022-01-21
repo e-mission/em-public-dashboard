@@ -338,3 +338,25 @@ def time_impact(data, dist, repm, mode):
     data['Cost_Impact($)'] = round((data[mode+'_dura'] - data[repm+'_dura']),3)
 
     return data
+
+
+def calc_avg_speed(data, dist, time, mode):
+    """
+    Purpose:
+        To determine average speed of modes in CanBikeCO data
+
+    Parameters:
+        data - CanBikeCO data input
+        dist - feature name in df of feature with distance in miles
+        time - feature name in df of feature with time information
+        mode - feature name in df of feature with confirmed mode
+
+    Process:
+        Calculate and append speeds of each trip
+        Aggregate speeds by mode
+        Find average each mode
+        Save averages in auxiallary files
+    """
+
+
+    None

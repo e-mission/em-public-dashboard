@@ -151,5 +151,30 @@ class TestEnergyImpact(unittest.TestCase):
                                    output['Energy_Impact(kWH)']).all(),
                             f'Error in function')
 
+
+
+class TestCalcAvgSpeed(unittest.TestCase):
+    """
+    A unit test for calc_avg_speed function in 
+    the scaffolding.py file
+    """
+
+    def setUp(self):
+        pd.DataFrame({
+            'mode': ['car', 'bus', 'train', 'car'],
+            'dist': [1,2,3,4],
+            'time': []
+        })
+
+
+    def test_process(self):
+        None
+
+
+    def test_function(self):
+        None
+
+
+
 if __name__ == '__main__':
     unittest.main()
