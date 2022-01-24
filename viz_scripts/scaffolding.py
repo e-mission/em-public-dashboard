@@ -301,10 +301,10 @@ def CO2_impact_lb(df,distance,col1,col2):
 
 def cost_impact(data, dist, repm, mode):
     """
-    Calculates the cost impact of the CanBikeCO E-bike program
+    Calculates the cost impact for participants in OpenPATH
     
      Parameters:
-        data - CanBikeCO data input
+        data - participant trip data from OpenPATH
         dist - feature name in df of feature with distance in miles
         repm - feature name in df of feature with replaced mode
         mode - feature name in df of feature with confirmed mode
@@ -322,10 +322,10 @@ def cost_impact(data, dist, repm, mode):
 
 def time_impact(data, dist, repm, mode):
     """
-    Calculates the cost impact of the CanBikeCO E-bike program
+    Calculates the time impact of participant trips in OpenPATH
     
      Parameters:
-        data - CanBikeCO data input
+        data - participant trips OpenPATH data
         dist - feature name in df of feature with distance in miles
         repm - feature name in df of feature with replaced mode
         mode - feature name in df of feature with confirmed mode
@@ -336,7 +336,7 @@ def time_impact(data, dist, repm, mode):
 
     data[mode+'_dura'] = data[dist] * data['dura__trip_mode']
     data[repm+'_dura'] = data[dist] * data['dura__trip_repm']
-    data['Cost_Impact($)'] = round((data[mode+'_dura'] - data[repm+'_dura']),3)
+    data['Time_Impact(hours)'] = round((data[mode+'_dura'] - data[repm+'_dura']),3)
 
     return data
 
@@ -344,10 +344,10 @@ def time_impact(data, dist, repm, mode):
 def calc_avg_speed(data, dist, time, mode, meth='average'):
     """
     Purpose:
-        To determine average speed of modes in CanBikeCO data
+        To determine average speed of modes for participant trips in OpenPath
 
     Parameters:
-        data - CanBikeCO data input
+        data - participant trip data from OpenPAth
         dist - feature name in df of feature with distance in miles
         time - feature name in df of feature with time information
         mode - feature name in df of feature with confirmed mode
