@@ -7,11 +7,11 @@ Credit to:
 https://docs.python.org/3.10/library/unittest.html
 """
 
-
 import unittest
 import pandas as pd
 import numpy as np
 import scaffolding
+
 
 class TestEnergyIntensity(unittest.TestCase):
     """
@@ -152,7 +152,6 @@ class TestEnergyImpact(unittest.TestCase):
                             f'Error in function')
 
 
-
 class TestCalcAvgSpeed(unittest.TestCase):
     """
     A unit test for calc_avg_speed function in 
@@ -225,7 +224,6 @@ class TestCalcAvgSpeed(unittest.TestCase):
                         f'calc_avg_speed with incorrect method failed.[1]')
         self.assertEqual(expect2, result2,
                           f'calc_avg_speed with incorrect method failed.[2]')
-
 
 
 if __name__ == '__main__':

@@ -109,7 +109,7 @@ def unit_conversions(df):
 
 def energy_intensity(df,df1,distance,col1,col2):
     """Inputs:
-    df = dataframe with data from CanBikeCO
+    df = dataframe with trip data from OpenPATH
     df1 = dataframe with energy factors
     distance = distance in meters
     col1 = Replaced_mode
@@ -150,10 +150,10 @@ def energy_intensity(df,df1,distance,col1,col2):
 
 def cost(data, cost, dist, repm, mode):
     """
-    Calculates the cost of the CanBikeCO E-bike pilot program
+    Calculates the cost of each trip by mode
     
     Parameters:
-        data - CanBikeCO data input
+        data - trip data from OpenPATH
         cost - dataframe defining cost ($/PMT) for each mode
         dist - feature name in data of feature with distance in miles
         repm - feature name in data of feature with replaced mode
@@ -185,10 +185,10 @@ def cost(data, cost, dist, repm, mode):
 
 def time(data, dura, dist, repm, mode):
     """
-    Calculates the cost of the CanBikeCO E-bike pilot program
+    Calculates the time of each participant trip in OpenPATH
     
     Parameters:
-        data - CanBikeCO data input
+        data - participant trip data from OpenPATH
         dura - dataframe defining duration ((1/speed)/PMT) for each mode
         dist - feature name in data of feature with distance in miles
         repm - feature name in data of feature with replaced mode
@@ -205,7 +205,7 @@ def time(data, dura, dist, repm, mode):
     dura[repm] = dura['mode']
 
     # Pair dura with mode
-    dic_dura__trip = dict(zip(dura[repm],dura['C($/PMT)']))
+    dic_dura__trip = dict(zip(dura[repm],dura['D(hours/PMT)']))
     
     # Create new features in data for replaced mode
     data['dura__trip_'+repm] = data[repm].map(dic_dura__trip)
