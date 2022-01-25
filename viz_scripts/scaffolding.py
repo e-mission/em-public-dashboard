@@ -341,7 +341,7 @@ def time_impact(data, dist, repm, mode):
     return data
 
 
-def calc_avg_speed(data, dist, time, mode, meth='average'):
+def calc_avg_dura(data, dist, time, mode, meth='average'):
     """
     Purpose:
         To determine average speed of modes for participant trips in OpenPath
@@ -354,31 +354,32 @@ def calc_avg_speed(data, dist, time, mode, meth='average'):
         meth - string representing method for aggregation by group
                 ['average', 'median']
     Process:
-        Calculate and append speeds of each trip
-        Aggregate average speed for each mode
+        Calculate and append durations of each trip
+        Aggregate average duration for each mode
         Save averages in auxiallary files
     
     Returns:
-        data - data with speed feature for each trip
-        df_T - a dataframe representing average speed by mode
+        data - data with duration feature for each trip
+        mdur - average duration by mode (dataframe?)
     """
     
     data = data.copy()
 
-    data['speed'] = data[dist] / data[time]
+    data['D(time/PMT)'] = data[time] / data[dist] 
 
     grup = data.groupby(mode)
 
-    mspd = None
+    mdur = None
     if(meth == 'average'):
-        mspd = grup['speed'].mean()
+        mdur = grup['D(time/PMT)'].mean()
     elif(meth == 'median'):
-        mspd = grup['speed'].median()
+        mdur = grup['D(time/PMT)'].median()
     else:
         print(f'Method invalid: {meth}.')
         return data, None
     
-    mspd.to_csv('auxiliary_files/time.csv')
-    df_T = pd.read_csv('auxiliary_files/time.csv')
+    # Shankari says not necessary
+    # mspd.to_csv('auxiliary_files/time.csv')
+    # df_T = pd.read_csv('auxiliary_files/time.csv')
 
-    return data, df_T
+    return data, mdur
