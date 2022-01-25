@@ -377,9 +377,5 @@ def calc_avg_dura(data, dist, time, mode, meth='average'):
     else:
         print(f'Method invalid: {meth}.')
         return data, None
-    
-    # Shankari says not necessary
-    # mspd.to_csv('auxiliary_files/time.csv')
-    # df_T = pd.read_csv('auxiliary_files/time.csv')
 
     return data, mdur

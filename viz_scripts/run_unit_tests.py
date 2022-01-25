@@ -10,8 +10,7 @@ https://docs.python.org/3.10/library/unittest.html
 import unittest
 import pandas as pd
 import numpy as np
-import scaffolding
-
+from viz_scripts import scaffolding
 
 class TestEnergyIntensity(unittest.TestCase):
     """
@@ -152,9 +151,9 @@ class TestEnergyImpact(unittest.TestCase):
                             f'Error in function')
 
 
-class TestCalcAvgSpeed(unittest.TestCase):
+class TestCalcAvgDura(unittest.TestCase):
     """
-    A unit test for calc_avg_speed function in 
+    A unit test for calc_avg_dura function in 
     the scaffolding.py file
     """
 
@@ -189,8 +188,7 @@ class TestCalcAvgSpeed(unittest.TestCase):
         speedm = groupd['sped'].median()
         self.assertTrue(expect.equals(speedm),
                         f'Agg by median failed.\n{expect}\n{speedm}')
-        
-        # Save to file (TODO:?)
+
 
         None
 
@@ -200,30 +198,32 @@ class TestCalcAvgSpeed(unittest.TestCase):
             'mode': ['car', 'bus', 'train', 'car'],
             'dist': [1,2,3,4],
             'time': [1,2,3,4],
-            'speed': [1.0, 1.0, 1.0, 1.0]
+            'D(time/PMT)': [1.0, 1.0, 1.0, 1.0]
         })
-        expect2 = pd.DataFrame({
-            'mode': ['bus', 'car', 'train'],
-            'speed': [1.0, 1.0, 1.0]
-        })
-        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','average')
+        expect2 = pd.Series(
+            data = [1.0, 1.0, 1.0],
+            index = ['bus', 'car', 'train'],
+            name = 'D(time/PMT)',
+            dtype=np.float64
+        )
+        result1, result2 = scaffolding.calc_avg_dura(self.data,'dist','time','mode','average')
         self.assertTrue(expect1.equals(result1),
-                        f'calc_avg_speed with average failed.[1]')
+                        f'calc_avg_dura with average failed.[1]\n{result1}')
         self.assertTrue(expect2.equals(result2),
-                        f'calc_avg_speed with average failed.[2]\n{expect2}\n{result2}')
+                        f'calc_avg_dura with average failed.[2]\n{expect2}\n{result2}')
 
-        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','median')
+        result1, result2 = scaffolding.calc_avg_dura(self.data,'dist','time','mode','median')
         self.assertTrue(expect1.equals(result1),
-                        f'calc_avg_speed with median failed.[1]')
+                        f'calc_avg_dura with median failed.[1]')
         self.assertTrue(expect2.equals(result2),
-                        f'calc_avg_speed with median failed.[2]')
+                        f'calc_avg_dura with median failed.[2]')
 
         expect2 = None
-        result1, result2 = scaffolding.calc_avg_speed(self.data,'dist','time','mode','break')
+        result1, result2 = scaffolding.calc_avg_dura(self.data,'dist','time','mode','break')
         self.assertTrue(expect1.equals(result1),
-                        f'calc_avg_speed with incorrect method failed.[1]')
+                        f'calc_avg_dura with incorrect method failed.[1]')
         self.assertEqual(expect2, result2,
-                          f'calc_avg_speed with incorrect method failed.[2]')
+                          f'calc_avg_dura with incorrect method failed.[2]')
 
 
 if __name__ == '__main__':
