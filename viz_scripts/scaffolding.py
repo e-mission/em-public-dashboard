@@ -107,6 +107,35 @@ def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
     df['duration_h'] = df['duration'] / 60 / 60 #seconds to hours
 
+
+def synthesize(data, const, mode, repm, feats):
+    """
+    Calculate trip aggregate results from constants and append to data
+
+    Parameters:
+        data - trip data from OpenPATH (presumably)
+        const - Pandas DataFrame with constant values for each mode
+        mode - feature name in data of feature with confirmed mode (probably Mode_confirm)
+        repm - feature name in data of feature with replaced mode (probably Replaced_mode)
+        feats - python list of feature names in const DataFrame that are of interest
+
+    Returns:
+        data with appended features for each trip for both mode and replaced mode
+    """
+
+    const = const.copy()
+    const[repm] = const['mode']
+    dic_cost__trip = dict(zip(const[repm],const['C($/PMT)']))
+    
+    # Create new features in data for replaced mode
+    data['cost__trip_'+repm] = data[repm].map(dic_cost__trip)
+    
+    # Create new features in data for confirmed mode
+    cost[mode] = cost[repm]
+    dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
+    data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
+
+
 def energy_intensity(df,df1,distance,col1,col2):
     """Inputs:
     df = dataframe with trip data from OpenPATH
@@ -359,8 +388,8 @@ def calc_avg_dura(data, dist, time, mode, meth='average'):
         Save averages in auxiallary files
     
     Returns:
-        data - data with duration feature for each trip
-        mdur - average duration by mode (dataframe?)
+        data - data with duration feature for each trip (pandas DataFrame)
+        mdur - Pandas series with average duration by mode
     """
     
     data = data.copy()
