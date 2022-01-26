@@ -108,7 +108,7 @@ def unit_conversions(df):
     df['duration_h'] = df['duration'] / 60 / 60 #seconds to hours
 
 
-def synthesize(data, const, mode, repm, feats):
+def eng_feat(data, const, mode, repm, feats, prefs):
     """
     Calculate trip aggregate results from constants and append to data
 
@@ -118,22 +118,46 @@ def synthesize(data, const, mode, repm, feats):
         mode - feature name in data of feature with confirmed mode (probably Mode_confirm)
         repm - feature name in data of feature with replaced mode (probably Replaced_mode)
         feats - python list of feature names in const DataFrame that are of interest
+        prefs - prefixes to append to current feature names for new feature names
 
     Returns:
         data with appended features for each trip for both mode and replaced mode
+
+    Note:
+        Assumes 'mode' is a feature in const
     """
 
+    # Check features list and prefix list same length
+    if(len(feats) != len(prefs)):
+        print("Prefix list and feature list not the same length.")
+        return None
+
+    # Check all feature names in constants dataframe
+    for feat in feats:
+        if(feat not in const.columns):
+            print(feat + ' not in constants dataframe.')
+            return None
+
+    # Use copies, don't change original
+    data = data.copy()
     const = const.copy()
-    const[repm] = const['mode']
-    dic_cost__trip = dict(zip(const[repm],const['C($/PMT)']))
+
+    # Duplicate mode feature in constant dataframe
+    for m in [mode, repm]:
+        const[m] = const['mode']
+
+    # Feature engineering!
+    for i in range(len(feats)):
+        for m in [mode, repm]:
+            dic = dict(zip(const[m],const[feat[i]]))
+
+            # Create new feature in data
+            fn = prefs[i]+m
+            data[fn] = data[m].map(dic)
+            print('Created ' + fn + ' feature in data.')
     
-    # Create new features in data for replaced mode
-    data['cost__trip_'+repm] = data[repm].map(dic_cost__trip)
+    return data
     
-    # Create new features in data for confirmed mode
-    cost[mode] = cost[repm]
-    dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
-    data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
 
 
 def energy_intensity(df,df1,distance,col1,col2):
