@@ -108,37 +108,39 @@ def unit_conversions(df):
     df['duration_h'] = df['duration'] / 60 / 60 #seconds to hours
 
 
-def eng_feat(data, const, mode, repm, feats, prefs):
+def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode'):
     """
-    Calculate trip aggregate results from constants and append to data
+    Calculate trip aggregate results from constants and append to data (Feature Engine)
 
     Parameters:
-        data - trip data from OpenPATH (presumably)
-        const - Pandas DataFrame with constant values for each mode
-        mode - feature name in data of feature with confirmed mode (probably Mode_confirm)
-        repm - feature name in data of feature with replaced mode (probably Replaced_mode)
+        data - trip data from OpenPATH
+        const - Pandas DataFrame with constant values for each mode (requires 'mode' feature)
         feats - python list of feature names in const DataFrame that are of interest
         prefs - prefixes to append to current feature names for new feature names
+        mode - feature name in data of feature with confirmed mode
+        repm - feature name in data of feature with replaced mode 
 
     Returns:
         data with appended features for each trip for both mode and replaced mode
-
-    Note:
-        Assumes 'mode' is a feature in const
     """
+
+    # Check that const has a mode feature
+    if('mode' not in const.columns):
+        print('Error: mode not in constants dataframe.')
+        return data
 
     # Check features list and prefix list same length
     if(len(feats) != len(prefs)):
-        print("Prefix list and feature list not the same length.")
-        return None
+        print("Error: prefix list and feature list not the same length.")
+        return data
 
     # Check all feature names in constants dataframe
     for feat in feats:
         if(feat not in const.columns):
-            print(feat + ' not in constants dataframe.')
-            return None
+            print('Error: ' + feat + ' not in constants dataframe.')
+            return data
 
-    # Use copies, don't change original
+    # Use copies, don't change originals
     data = data.copy()
     const = const.copy()
 
@@ -146,7 +148,7 @@ def eng_feat(data, const, mode, repm, feats, prefs):
     for m in [mode, repm]:
         const[m] = const['mode']
 
-    # Feature engineering!
+    # Feature engine!
     for i in range(len(feats)):
         for m in [mode, repm]:
             dic = dict(zip(const[m],const[feat[i]]))
