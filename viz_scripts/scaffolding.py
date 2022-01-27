@@ -151,7 +151,7 @@ def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode
     # Feature engine!
     for i in range(len(feats)):
         for m in [mode, repm]:
-            dic = dict(zip(const[m],const[feat[i]]))
+            dic = dict(zip(const[m],const[feats[i]]))
 
             # Create new feature in data
             fn = prefs[i]+m
@@ -170,35 +170,43 @@ def energy_intensity(df,df1,distance,col1,col2):
     col1 = Replaced_mode
     col2= Mode_confirm
     """
+    return feat_eng(
+        df, 
+        df1, 
+        ['energy_intensity_factor', 'CO2_factor', '(kWH)/trip'],
+        ['ei_', 'CO2_', 'ei_trip_'],
+        col2,
+        col1
+    )
 
-    # Create a copy of the energy_factors dataframe
-    df1 = df1.copy()
+    # # Create a copy of the energy_factors dataframe
+    # df1 = df1.copy()
 
-    # Create a replaced mode column in df1 same as mode
-    df1[col1] = df1['mode']
+    # # Create a replaced mode column in df1 same as mode
+    # df1[col1] = df1['mode']
 
-    # Pair energy intensity with mode
-    dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
+    # # Pair energy intensity with mode
+    # dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
     
-    # Pair CO2_factor with mode
-    dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
+    # # Pair CO2_factor with mode
+    # dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
 
-    # Pair (KWH)/trip with mode
-    dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
+    # # Pair (KWH)/trip with mode
+    # dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
     
-    # Create new features in data for replaced mode
-    df['ei_'+col1] = df[col1].map(dic_ei_factor)
-    df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
-    df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
+    # # Create new features in data for replaced mode
+    # df['ei_'+col1] = df[col1].map(dic_ei_factor)
+    # df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
+    # df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
     
-    # Create new features in data for confirmed mode
-    df1[col2] = df1[col1]
-    dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
-    dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
-    dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
-    df['ei_'+col2] = df[col2].map(dic_ei_factor)
-    df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
-    df['ei_trip_'+col2] = df[col2].map(dic_ei_trip)
+    # # Create new features in data for confirmed mode
+    # df1[col2] = df1[col1]
+    # dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
+    # dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
+    # dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
+    # df['ei_'+col2] = df[col2].map(dic_ei_factor)
+    # df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
+    # df['ei_trip_'+col2] = df[col2].map(dic_ei_trip)
            
     return df
 

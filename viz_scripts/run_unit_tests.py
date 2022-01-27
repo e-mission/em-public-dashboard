@@ -10,7 +10,7 @@ https://docs.python.org/3.10/library/unittest.html
 import unittest
 import pandas as pd
 import numpy as np
-from viz_scripts import scaffolding
+import scaffolding
 
 class TestEnergyIntensity(unittest.TestCase):
     """
@@ -69,15 +69,15 @@ class TestEnergyIntensity(unittest.TestCase):
             'vals': [1,2,3, 4],
             'test': [0.5,3,0,8],
             'ei_mode': [0, 1, 2, 0],
-            'CO2_mode': [1, 2, 3, 1],
-            'ei_trip_mode': [0.5, 0.2, 0.3, 0.5],
             'ei_repm': [0, 0, 1, 2],
+            'CO2_mode': [1, 2, 3, 1],
             'CO2_repm': [1, 1, 2, 3],
+            'ei_trip_mode': [0.5, 0.2, 0.3, 0.5],
             'ei_trip_repm': [0.5, 0.5, 0.2, 0.3], 
         })
-        output = scaffolding.energy_intensity(self.data, self.constants, '', 'mode', 'repm')
+        output = scaffolding.energy_intensity(self.data, self.constants, '', 'repm', 'mode')
         self.assertTrue(expect.equals(output),
-                            f'{output}')
+                            f"{output[['ei_mode','ei_repm','CO2_mode','CO2_repm','ei_trip_mode','ei_trip_repm']]}")
 
 
 class TestEnergyImpact(unittest.TestCase):
