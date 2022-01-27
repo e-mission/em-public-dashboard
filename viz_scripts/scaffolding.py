@@ -179,107 +179,51 @@ def energy_intensity(df,df1,distance,col1,col2):
         col1
     )
 
-    # # Create a copy of the energy_factors dataframe
-    # df1 = df1.copy()
 
-    # # Create a replaced mode column in df1 same as mode
-    # df1[col1] = df1['mode']
-
-    # # Pair energy intensity with mode
-    # dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
-    
-    # # Pair CO2_factor with mode
-    # dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
-
-    # # Pair (KWH)/trip with mode
-    # dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
-    
-    # # Create new features in data for replaced mode
-    # df['ei_'+col1] = df[col1].map(dic_ei_factor)
-    # df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
-    # df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
-    
-    # # Create new features in data for confirmed mode
-    # df1[col2] = df1[col1]
-    # dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
-    # dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
-    # dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
-    # df['ei_'+col2] = df[col2].map(dic_ei_factor)
-    # df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
-    # df['ei_trip_'+col2] = df[col2].map(dic_ei_trip)
-           
-    return df
-
-
-def cost(data, cost, dist, repm, mode):
+def cost(data, cost, repm, mode):
     """
     Calculates the cost of each trip by mode
     
     Parameters:
         data - trip data from OpenPATH
         cost - dataframe defining cost ($/PMT) for each mode
-        dist - feature name in data of feature with distance in miles
         repm - feature name in data of feature with replaced mode
         mode - feature name in data of feature with confirmed mode
         
     Returns:
         data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
     """
-
-    # Create a copy of the cost dataframe
-    cost = cost.copy()
-
-    # Create a replaced mode column in cost same as mode
-    cost[repm] = cost['mode']
-
-    # Pair cost with mode
-    dic_cost__trip = dict(zip(cost[repm],cost['C($/PMT)']))
-    
-    # Create new features in data for replaced mode
-    data['cost__trip_'+repm] = data[repm].map(dic_cost__trip)
-    
-    # Create new features in data for confirmed mode
-    cost[mode] = cost[repm]
-    dic_cost__trip = dict(zip(cost[mode],cost['C($/PMT)']))
-    data['cost__trip_'+mode] = data[mode].map(dic_cost__trip)
-    
-    return data
+    return feat_eng(
+        data, 
+        cost, 
+        ['C($/PMT)'],
+        ['cost__trip_'],
+        mode,
+        repm
+    )
 
 
-def time(data, dura, dist, repm, mode):
+def time(data, dura, repm, mode):
     """
     Calculates the time of each participant trip in OpenPATH
     
     Parameters:
         data - participant trip data from OpenPATH
         dura - dataframe defining duration ((1/speed)/PMT) for each mode
-        dist - feature name in data of feature with distance in miles
         repm - feature name in data of feature with replaced mode
         mode - feature name in data of feature with confirmed mode
         
     Returns:
         data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
     """
-
-    # Create a copy of the dura dataframe
-    dura = dura.copy()
-
-    # Create a replaced mode column in dura same as mode
-    dura[repm] = dura['mode']
-
-    # Pair dura with mode
-    dic_dura__trip = dict(zip(dura[repm],dura['D(hours/PMT)']))
-    
-    # Create new features in data for replaced mode
-    data['dura__trip_'+repm] = data[repm].map(dic_dura__trip)
-    
-    # Create new features in data for confirmed mode
-    dura[mode] = dura[repm]
-    dic_dura__trip = dict(zip(dura[mode],dura['D(hours/PMT)']))
-    data['dura__trip_'+mode] = data[mode].map(dic_dura__trip)
-           
-    return data  
-   
+    return feat_eng(
+        data, 
+        dura, 
+        ['D(hours/PMT)'],
+        ['dura__trip_'],
+        mode,
+        repm
+    )
     
     
 def energy_impact_kWH(df,distance,col1,col2):
