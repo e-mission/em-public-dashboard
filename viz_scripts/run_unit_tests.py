@@ -25,7 +25,9 @@ class TestEnergyIntensity(unittest.TestCase):
             'test': [0,0,0],
             'energy_intensity_factor': [0, 1, 2],
             'CO2_factor': [1, 2, 3],
-            '(kWH)/trip': [0.5, 0.2, 0.3]
+            '(kWH)/trip': [0.5, 0.2, 0.3],
+            'C($/PMT)': [1,2,3],
+            'D(hours/PMT)': [3,2,1]
         })
 
         self.data = pd.DataFrame({
@@ -68,6 +70,8 @@ class TestEnergyIntensity(unittest.TestCase):
             'repm': ['car', 'car', 'bus', 'train'],
             'vals': [1,2,3, 4],
             'test': [0.5,3,0,8],
+            'C($/PMT)': [1,2,3],
+            'D(hours/PMT)': [3,2,1],
             'ei_mode': [0, 1, 2, 0],
             'ei_repm': [0, 0, 1, 2],
             'CO2_mode': [1, 2, 3, 1],
@@ -77,7 +81,26 @@ class TestEnergyIntensity(unittest.TestCase):
         })
         output = scaffolding.energy_intensity(self.data, self.constants, '', 'repm', 'mode')
         self.assertTrue(expect.equals(output),
-                            f"{output[['ei_mode','ei_repm','CO2_mode','CO2_repm','ei_trip_mode','ei_trip_repm']]}")
+                            f"energy_intensity failed:\n{output[['ei_mode','ei_repm','CO2_mode','CO2_repm','ei_trip_mode','ei_trip_repm']]}")
+        
+        # expect = pd.DataFrame({
+        #     'mode': ['car', 'bus', 'train', 'car'],
+        #     'repm': ['car', 'car', 'bus', 'train'],
+        #     'vals': [1,2,3, 4],
+        #     'test': [0.5,3,0,8],
+        #     'C($/PMT)': [1,2,3],
+        #     'D(hours/PMT)': [3,2,1],
+        #     'ei_mode': [0, 1, 2, 0],
+        #     'ei_repm': [0, 0, 1, 2],
+        #     'CO2_mode': [1, 2, 3, 1],
+        #     'CO2_repm': [1, 1, 2, 3],
+        #     'ei_trip_mode': [0.5, 0.2, 0.3, 0.5],
+        #     'ei_trip_repm': [0.5, 0.5, 0.2, 0.3],
+        #     'cost__trip_mode': [],
+        # })
+        # output = scaffolding.cost(self.data, self.constants, 'repm', 'mode')
+        # self.assertTrue(expect.equals(output),
+        #                     f"energy_intensity failed:\n{output[['ei_mode','ei_repm','CO2_mode','CO2_repm','ei_trip_mode','ei_trip_repm']]}")
 
 
 class TestEnergyImpact(unittest.TestCase):
