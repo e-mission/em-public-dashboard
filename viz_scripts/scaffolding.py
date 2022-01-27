@@ -224,7 +224,8 @@ def time(data, dura, repm, mode):
         mode,
         repm
     )
-    
+
+
     
 def energy_impact_kWH(df,distance,col1,col2):
     """ 
@@ -322,7 +323,7 @@ def cost_impact(data, dist, repm, mode):
   
     data[mode+'_cost'] = data[dist] * data['cost__trip_'+mode]
     data[repm+'_cost'] = data[dist] * data['cost__trip_'+repm]
-    data['Cost_Impact($)'] = round((data[mode+'_cost'] - data[repm+'_cost']),2)
+    data['Cost_Impact($)'] = round((data[repm+'_cost'] - data[mode+'_cost']),2)
 
     return data
 
@@ -343,7 +344,7 @@ def time_impact(data, dist, repm, mode):
 
     data[mode+'_dura'] = data[dist] * data['dura__trip_mode']
     data[repm+'_dura'] = data[dist] * data['dura__trip_repm']
-    data['Time_Impact(hours)'] = round((data[mode+'_dura'] - data[repm+'_dura']),3)
+    data['Time_Impact(hours)'] = round((data[repm+'_dura'] - data[mode+'_dura']),3)
 
     return data
 
@@ -386,3 +387,5 @@ def calc_avg_dura(data, dist, time, mode, meth='average'):
         return data, None
 
     return data, mdur
+
+    

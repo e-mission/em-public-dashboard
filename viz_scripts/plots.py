@@ -181,16 +181,16 @@ def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     
     
     
-def energy_impact(x,y,color,plot_title,file_name):
+def energy_impact(x,y,color,plot_title,file_name,xl='Energy_Impact(kWH)'):
     color = color.map({True: 'green', False: 'red'})
-    objects = ('Energy Savings', 'Energy Loss')
+    objects = ('Savings', 'Loss')
     
     y_labels = y
     plt.figure(figsize=(15, 8))
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
     ax.set_title(plot_title, fontsize=18)
-    ax.set_xlabel('Energy_Impact(kWH)', fontsize=18)
+    ax.set_xlabel(xl, fontsize=18)
     ax.set_ylabel('Replaced Mode',fontsize=18)
     ax.set_yticklabels(y_labels)
     ax.xaxis.set_tick_params(labelsize=15)
