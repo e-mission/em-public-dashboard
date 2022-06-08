@@ -13,7 +13,7 @@ services:
     networks:
        - emission
   notebook-server:
-    build: viz_scripts/docker
+    image: emission/em-public-dashboard-notebook:1.0.0
     depends_on:
       - db
     environment:
