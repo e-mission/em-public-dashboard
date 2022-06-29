@@ -165,8 +165,6 @@ def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode
             print('Created ' + fn + ' feature in data.')
     
     return data
-    
-
 
 def energy_intensity(df,df1,col1,col2):
     """Inputs:
@@ -183,7 +181,6 @@ def energy_intensity(df,df1,col1,col2):
         col2,
         col1
     )
-
 
 def cost(data, cost, repm, mode):
     """
@@ -207,7 +204,6 @@ def cost(data, cost, repm, mode):
         repm
     )
 
-
 def time(data, dura, repm, mode):
     """
     Calculates the time of each participant trip in OpenPATH
@@ -230,8 +226,6 @@ def time(data, dura, repm, mode):
         repm
     )
 
-
-    
 def energy_impact_kWH(df,distance,col1,col2):
     """ 
     Purpose:
@@ -246,8 +240,6 @@ def energy_impact_kWH(df,distance,col1,col2):
     col1 = Replaced_mode
     col2 = Mode_confirm
     """
-    
-
     conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
                        (df['Replaced_mode_fuel'] == 'diesel'),
                        (df['Replaced_mode_fuel'] == 'electric')]
@@ -283,7 +275,6 @@ def CO2_impact_lb(df,distance,col1,col2):
     col1 = Replaced_mode
     col2 = Mode_confirm
     """
- 
     conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
                        (df['Replaced_mode_fuel'] == 'diesel'),
                        (df['Replaced_mode_fuel'] == 'electric')]
@@ -311,7 +302,6 @@ def CO2_impact_lb(df,distance,col1,col2):
   
     return df
 
-
 def cost_impact(data, dist, repm, mode):
     """
     Calculates the cost impact for participants in OpenPATH
@@ -332,7 +322,6 @@ def cost_impact(data, dist, repm, mode):
 
     return data
 
-
 def time_impact(data, dist, repm, mode):
     """
     Calculates the time impact of participant trips in OpenPATH
@@ -352,7 +341,6 @@ def time_impact(data, dist, repm, mode):
     data['Time_Impact(hours)'] = round((data[repm+'_dura'] - data[mode+'_dura']),3)
 
     return data
-
 
 def calc_avg_dura(data, dist, time, mode, meth='average'):
     """
@@ -375,7 +363,6 @@ def calc_avg_dura(data, dist, time, mode, meth='average'):
         data - data with duration feature for each trip (pandas DataFrame)
         mdur - Pandas series with average duration by mode
     """
-    
     data = data.copy()
 
     data['D(time/PMT)'] = data[time] / data[dist] 
