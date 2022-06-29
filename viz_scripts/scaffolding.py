@@ -149,12 +149,18 @@ def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode
         const[m] = const['mode']
 
     # Feature engine!
+    # iterating by index (i) instead of `for feat in feats:` to index into prefs and create the new feature names
     for i in range(len(feats)):
         for m in [mode, repm]:
             dic = dict(zip(const[m],const[feats[i]]))
 
             # Create new feature in data
+            # prefs are [`cost__trip_`] or similar, and the mode and replaced_mode strings are passed in from the call 
+            # location, so fn is `cost__trip_Mode_confirm`
             fn = prefs[i]+m
+
+            # maps data["Mode_confirm"] against the dictionary
+            # and then sets `cost__trip_Mode_confirm` to it.
             data[fn] = data[m].map(dic)
             print('Created ' + fn + ' feature in data.')
     
@@ -162,13 +168,12 @@ def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode
     
 
 
-def energy_intensity(df,df1,distance,col1,col2):
+def energy_intensity(df,df1,col1,col2):
     """Inputs:
     df = dataframe with trip data from OpenPATH
     df1 = dataframe with energy factors
-    distance = distance in meters
     col1 = Replaced_mode
-    col2= Mode_confirm
+    col2 = Mode_confirm
     """
     return feat_eng(
         df, 
@@ -239,7 +244,7 @@ def energy_impact_kWH(df,distance,col1,col2):
     df = dataframe with data
     distance = distance in miles
     col1 = Replaced_mode
-    col2= Mode_confirm
+    col2 = Mode_confirm
     """
     
 
@@ -276,7 +281,7 @@ def CO2_impact_lb(df,distance,col1,col2):
     df = dataframe with data
     distance = distance in miles
     col1 = Replaced_mode
-    col2= Mode_confirm
+    col2 = Mode_confirm
     """
  
     conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
@@ -387,5 +392,3 @@ def calc_avg_dura(data, dist, time, mode, meth='average'):
         return data, None
 
     return data, mdur
-
-    

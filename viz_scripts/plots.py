@@ -129,8 +129,7 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
     plt.show()
-    
-    
+
 def distancevsenergy(data,x,y,legend,plot_title,file_name):
     all_labels= ['Car, drove alone',
                  'Bus', 
@@ -151,8 +150,7 @@ def distancevsenergy(data,x,y,legend,plot_title,file_name):
     
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
     f = plt.subplots(figsize=(15, 6))
-    
- 
+
     sns.set(style='whitegrid')
     sns.scatterplot(x=x, y=y, data=data, hue=legend, palette=colours)
     plt.legend(loc='upper right')
@@ -160,9 +158,6 @@ def distancevsenergy(data,x,y,legend,plot_title,file_name):
     plt.ylabel(y, fontsize=15)
     plt.title(plot_title, fontsize=15)
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
-    
-
 
 def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     plt.figure(figsize=(15, 8))
@@ -178,9 +173,7 @@ def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=18)
     
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
-    
-    
+
 def energy_impact(x,y,color,plot_title,file_name,xl='Energy_Impact(kWH)'):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Savings', 'Loss')
@@ -200,19 +193,16 @@ def energy_impact(x,y,color,plot_title,file_name,xl='Energy_Impact(kWH)'):
 
     rects = ax.patches
 
-   
     for rect in rects:
         x_value = rect.get_width()
         y_value = rect.get_y() + rect.get_height() / 2
         space = 5
         ha = 'left'
 
-       
         if x_value < 0:
             space *= -1
             ha = 'right'
 
-        
         label = "{:.1f}".format(x_value)
 
         # Create annotation
@@ -223,16 +213,15 @@ def energy_impact(x,y,color,plot_title,file_name,xl='Energy_Impact(kWH)'):
             textcoords="offset points", 
             va='center',                
             ha=ha, fontsize=12, color='black', fontweight='bold')
-        
+
         # map names to colors
     cmap = {True: 'green', False: 'red'}
-        
+
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
-    
+
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
 
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
     
 def barplot_mode(data,x,y,plot_title,file_name):
     all_labels= ['Car, drove alone',
@@ -262,7 +251,6 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.title(plot_title, fontsize=25)
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
     all_labels= ['Car, drove alone',
@@ -305,7 +293,6 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
     plt.setp(ax1.get_xticklabels(), rotation=45, ha='right')
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
     
-    
 def barplot_day(data,x,y,plot_title,file_name):
 
     sns.set(font_scale=1.5)
@@ -316,7 +303,6 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-
 
 def CO2_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
@@ -337,18 +323,15 @@ def CO2_impact(x,y,color,plot_title,file_name):
 
     rects = ax.patches
 
-
     for rect in rects:
         x_value = rect.get_width()
         y_value = rect.get_y() + rect.get_height() / 2
         space = 5
         ha = 'left'
 
-
         if x_value < 0:
             space *= -1
             ha = 'right'
-
 
         label = "{:.1f}".format(x_value)
 
