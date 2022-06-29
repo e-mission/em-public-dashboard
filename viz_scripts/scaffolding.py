@@ -32,7 +32,7 @@ def get_participant_uuids(program):
         Note that the "program" parameter is currently a NOP but will be enabled
         once we have other programs start
     """
-    participant_uuid_obj = list(edb.get_profile_db().find({"install_group": "participant"}, {"user_id": 1, "_id": 0}))
+    participant_uuid_obj = list(edb.get_profile_db().find({}))
     participant_uuid_str = [u["user_id"] for u in participant_uuid_obj]
     disp.display(participant_uuid_str)
     return participant_uuid_str
