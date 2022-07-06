@@ -83,7 +83,7 @@ class TestFeatEng(unittest.TestCase):
             self.constants,
             ['energy_intensity_factor', 'CO2_factor', '(kWH)/trip'],
             ['ei_', 'CO2_', 'ei_trip_'],
-            'mode'
+            'mode',
             'repm')
         self.assertTrue(expect.equals(output),
                             f"feat_eng failed:\n{output[['ei_mode','ei_repm','CO2_mode','CO2_repm','ei_trip_mode','ei_trip_repm']]}")
