@@ -1,3 +1,7 @@
+
+# MacOS file system
+*.DS_Store
+
 # Custom excludes
 viz_scripts/conf
 plots
