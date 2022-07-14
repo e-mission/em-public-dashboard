@@ -63,12 +63,12 @@ def expand_userinputs(labeled_ct):
     disp.display(label_only.head())
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
     assert len(expanded_ct) == len(labeled_ct), \
-        ("Mismatch after expanding labels, expanded_ct.rows = %s != labeled_ct.rows" %
+        ("Mismatch after expanding labels, expanded_ct.rows = %s != labeled_ct.rows %s" %
             (len(expanded_ct), len(labeled_ct)))
     print("After expanding, columns went from %s -> %s" %
         (len(labeled_ct.columns), len(expanded_ct.columns)))
     assert len(expanded_ct.columns) == len(labeled_ct.columns) + 3, \
-        ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.rows" %
+        ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.rows %s" %
             (len(expanded_ct.columns), len(labeled_ct.columns)))
     disp.display(expanded_ct.head())
     return expanded_ct
