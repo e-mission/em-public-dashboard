@@ -2,6 +2,7 @@
 drove_alone,drove_alone,"Car, drove alone"
 work_vehicle,work_vehicle,"Car, drove alone"
 bus,bus,Bus
+air,air,Air
 train,train,Train
 free_shuttle,free_shuttle,Free Shuttle
 "train,_bus and walk","train,_bus and walk",Train
