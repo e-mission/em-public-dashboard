@@ -105,46 +105,144 @@ def data_quality_check(expanded_ct):
 
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
+    df['duration_h'] = df['duration'] / 60 / 60 #seconds to hours
+
+
+def feat_eng(data, const, feats, prefs, mode='Mode_confirm', repm='Replaced_mode'):
+    """
+    Calculate trip aggregate results from constants and append to data (Feature Engine)
+
+    Parameters:
+        data - trip data from OpenPATH
+        const - Pandas DataFrame with constant values for each mode (requires 'mode' feature)
+        feats - python list of feature names in const DataFrame that are of interest
+        prefs - prefixes to append to current feature names for new feature names
+        mode - feature name in data of feature with confirmed mode
+        repm - feature name in data of feature with replaced mode 
+
+    Returns:
+        data with appended features for each trip for both mode and replaced mode
+    """
+
+    # Check that const has a mode feature
+    if('mode' not in const.columns):
+        print('Error: mode not in constants dataframe.')
+        return data
+
+    # Check features list and prefix list same length
+    if(len(feats) != len(prefs)):
+        print("Error: prefix list and feature list not the same length.")
+        return data
+
+    # Check all feature names in constants dataframe
+    for feat in feats:
+        if(feat not in const.columns):
+            print('Error: ' + feat + ' not in constants dataframe.')
+            return data
+
+    # Use copies, don't change originals
+    data = data.copy()
+    const = const.copy()
+
+    # Duplicate mode feature in constant dataframe
+    for m in [mode, repm]:
+        const[m] = const['mode']
+
+    # Feature engine!
+    for i in range(len(feats)):
+        for m in [mode, repm]:
+            dic = dict(zip(const[m],const[feats[i]]))
+
+            # Create new feature in data
+            fn = prefs[i]+m
+            data[fn] = data[m].map(dic)
+            print('Created ' + fn + ' feature in data.')
+    
+    return data
+    
+
 
 def energy_intensity(df,df1,distance,col1,col2):
-    """ Inputs:
-    df = dataframe with data
-    df = dataframe with energy factors
+    """Inputs:
+    df = dataframe with trip data from OpenPATH
+    df1 = dataframe with energy factors
     distance = distance in meters
     col1 = Replaced_mode
     col2= Mode_confirm
-
     """
-    df1 = df1.copy()
-    df1[col1] = df1['mode']
-    dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
-    dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
-    dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
-    
-    df['ei_'+col1] = df[col1].map(dic_ei_factor)
-    df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
-    df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
-    
-      
-    df1[col2] = df1[col1]
-    dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
-    dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
-    dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
-    df['ei_'+col2] = df[col2].map(dic_ei_factor)
-    df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
-    df['ei_trip_'+col2] = df[col2].map(dic_ei_trip)
-           
-    return df
+    return feat_eng(
+        df, 
+        df1, 
+        ['energy_intensity_factor', 'CO2_factor', '(kWH)/trip'],
+        ['ei_', 'CO2_', 'ei_trip_'],
+        col2,
+        col1
+    )
 
 
+def cost(data, cost, repm, mode):
+    """
+    Calculates the cost of each trip by mode
+    
+    Parameters:
+        data - trip data from OpenPATH
+        cost - dataframe defining cost ($/PMT) for each mode
+        repm - feature name in data of feature with replaced mode
+        mode - feature name in data of feature with confirmed mode
+        
+    Returns:
+        data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
+    """
+    return feat_eng(
+        data, 
+        cost, 
+        ['C($/PMT)'],
+        ['cost__trip_'],
+        mode,
+        repm
+    )
+
+
+def time(data, dura, repm, mode):
+    """
+    Calculates the time of each participant trip in OpenPATH
+    
+    Parameters:
+        data - participant trip data from OpenPATH
+        dura - dataframe defining duration ((1/speed)/PMT) for each mode
+        repm - feature name in data of feature with replaced mode
+        mode - feature name in data of feature with confirmed mode
+        
+    Returns:
+        data with appended cost feature for each trip in $$$ for both mode and replaced mode (float)
+    """
+    return feat_eng(
+        data, 
+        dura, 
+        ['D(hours/PMT)'],
+        ['dura__trip_'],
+        mode,
+        repm
+    )
+
+
+    
 def energy_impact_kWH(df,distance,col1,col2):
-    """ Inputs:
+    """ 
+    Purpose:
+        Calculates energy intensity for each mode
+        by fuel type, then calculates the diference
+        between the energy intensity of replaced and
+        confirmed modes.
+    
+    Inputs:
     df = dataframe with data
     distance = distance in miles
     col1 = Replaced_mode
     col2= Mode_confirm
     """
-        
+    
+
     conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
                        (df['Replaced_mode_fuel'] == 'diesel'),
                        (df['Replaced_mode_fuel'] == 'electric')]
@@ -207,3 +305,87 @@ def CO2_impact_lb(df,distance,col1,col2):
     df['CO2_Impact(lb)']  = round((df[col1+'_lb_CO2'] - df[col2+'_lb_CO2']),3)
   
     return df
+
+
+def cost_impact(data, dist, repm, mode):
+    """
+    Calculates the cost impact for participants in OpenPATH
+    
+     Parameters:
+        data - participant trip data from OpenPATH
+        dist - feature name in df of feature with distance in miles
+        repm - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        data with appended cost impact feature for each trip in $$$ (float)
+    """
+  
+    data[mode+'_cost'] = data[dist] * data['cost__trip_'+mode]
+    data[repm+'_cost'] = data[dist] * data['cost__trip_'+repm]
+    data['Cost_Impact($)'] = round((data[repm+'_cost'] - data[mode+'_cost']),2)
+
+    return data
+
+
+def time_impact(data, dist, repm, mode):
+    """
+    Calculates the time impact of participant trips in OpenPATH
+    
+     Parameters:
+        data - participant trips OpenPATH data
+        dist - feature name in df of feature with distance in miles
+        repm - feature name in df of feature with replaced mode
+        mode - feature name in df of feature with confirmed mode
+        
+    Returns:
+        data with appended time impact feature for each trip in $$$ (float)
+    """
+
+    data[mode+'_dura'] = data[dist] * data['dura__trip_mode']
+    data[repm+'_dura'] = data[dist] * data['dura__trip_repm']
+    data['Time_Impact(hours)'] = round((data[repm+'_dura'] - data[mode+'_dura']),3)
+
+    return data
+
+
+def calc_avg_dura(data, dist, time, mode, meth='average'):
+    """
+    Purpose:
+        To determine average speed of modes for participant trips in OpenPath
+
+    Parameters:
+        data - participant trip data from OpenPAth
+        dist - feature name in df of feature with distance in miles
+        time - feature name in df of feature with time information
+        mode - feature name in df of feature with confirmed mode
+        meth - string representing method for aggregation by group
+                ['average', 'median']
+    Process:
+        Calculate and append durations of each trip
+        Aggregate average duration for each mode
+        Save averages in auxiallary files
+    
+    Returns:
+        data - data with duration feature for each trip (pandas DataFrame)
+        mdur - Pandas series with average duration by mode
+    """
+    
+    data = data.copy()
+
+    data['D(time/PMT)'] = data[time] / data[dist] 
+
+    grup = data.groupby(mode)
+
+    mdur = None
+    if(meth == 'average'):
+        mdur = grup['D(time/PMT)'].mean()
+    elif(meth == 'median'):
+        mdur = grup['D(time/PMT)'].median()
+    else:
+        print(f'Method invalid: {meth}.')
+        return data, None
+
+    return data, mdur
+
+    
