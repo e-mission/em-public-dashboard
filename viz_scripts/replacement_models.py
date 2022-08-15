@@ -51,7 +51,7 @@ def random_forest(train_data, train_col, test_data, test_col, feature_list, kf=N
     # Collect all model scores for comparison at the end
     return rf, accuracy, f1, confusion
 
-def mxl(train_data, train_col, test_data, test_col, feature_list, kf=None, estimate_new=True):
+def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
@@ -200,7 +200,7 @@ def mxl(train_data, train_col, test_data, test_col, feature_list, kf=None, estim
         # Collect all model scores for comparison at the end
         return results, accuracy, f1, confusion
 
-def mnl(train_data, train_col, test_data, test_col, feature_list, kf=None, estimate_new=True):
+def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
