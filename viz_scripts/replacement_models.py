@@ -11,32 +11,15 @@ import sklearn.metrics
 from sklearn.ensemble import RandomForestClassifier
 
 
-
-def get_kf_indices(kf, train_data, test_data):
-    # Train/test datasets can be different sizes making true k-fold impossible. Separate k-folds give virtually identical result.
-    if kf is not None:
-        train_indices = []
-        test_indices = []
-        for x in kf.split(train_data.values):
-            train_indices.append(x[0])
-        for x in kf.split(test_data.values):
-            test_indices.append(x[1])
-    else:
-        # Use all data (single run) if kf not passed
-        train_indices = [[x for x in range(0,len(train_data))]]
-        test_indices = [[x for x in range(0,len(test_data))]]
-    return train_indices, test_indices
-
-def random_forest(train_data, train_col, test_data, test_col, feature_list, kf=None):
+def random_forest(data, choice_col, feature_list, kf):
     # Save metrics from each run
     accuracy = []
     f1 = []
     confusion = []
-    train_indices, test_indices = get_kf_indices(kf, train_data, test_data)
 
-    for i in range(0,len(train_indices)):
-        X_train, X_test = train_data[feature_list].values[train_indices[i]], test_data[feature_list].values[test_indices[i]]
-        y_train, y_test = train_data[train_col].values[train_indices[i]], test_data[test_col].values[test_indices[i]]
+    for train_indices, test_indices in kf.split(data.values):
+        X_train, X_test = data[feature_list].values[train_indices], data[feature_list].values[test_indices]
+        y_train, y_test = data[choice_col].values[train_indices], data[choice_col].values[test_indices]
 
         # Train random forest on training set
         rf = RandomForestClassifier(n_estimators=50)
@@ -46,25 +29,24 @@ def random_forest(train_data, train_col, test_data, test_col, feature_list, kf=N
         y_pred = rf.predict(X_test)
         accuracy.append(sklearn.metrics.accuracy_score(y_test, y_pred))
         f1.append(sklearn.metrics.f1_score(y_test, y_pred, average='weighted'))
-        confusion.append(sklearn.metrics.confusion_matrix(y_test, y_pred, labels=[0,1,2,3,4,5,6], normalize='pred'))
+        confusion.append(sklearn.metrics.confusion_matrix(y_test, y_pred, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
 
     # Collect all model scores for comparison at the end
     return rf, accuracy, f1, confusion
 
-def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
+def mxl(data, choice_col, kf, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
-    confusion = []
-    train_indices, test_indices = get_kf_indices(kf, train_data, test_data)
+    confusion = []    
 
-    for i in range(0, len(train_indices)):
+    for train_indices, test_indices in kf.split(data.values):
         # y_train and y_test are also in the X dataframes as needed by Biogeme
-        X_train, X_test = train_data.iloc[train_indices[i]], test_data.iloc[test_indices[i]]
-        y_train, y_test = train_data[train_col].iloc[train_indices[i]], test_data[test_col].iloc[test_indices[i]]
+        X_train, X_test = data.iloc[train_indices], data.iloc[test_indices]
+        y_train, y_test = data[choice_col].iloc[train_indices], data[choice_col].iloc[test_indices]
 
         # Put the variables in global namespace to make Biogeme happy
-        X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id'])
+        X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
         database_train = db.Database('openpath_mxl_train', X_train)
         globals().update(database_train.variables)
 
@@ -76,22 +58,23 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
         ASC_P_MICRO = Beta('ASC_P_MICRO',0,None,None,0)
         ASC_S_MICRO = Beta('ASC_S_MICRO',0,None,None,0)
         ASC_WALK = Beta('ASC_WALK',0,None,None,0)
+        ASC_EBIKE = Beta('ASC_EBIKE',0,None,None,0)
 
         # Define a random parameter, normally distributed, designed to be used
         # for Monte-Carlo simulation
         B_TIME_MOTOR = Beta('B_TIME_MOTOR', 0, None, None, 0)
         B_TIME_PHYS = Beta('B_TIME_PHYS', 0, None, None, 0)
+
+        # Other ASVs
         B_COST = Beta('B_COST', 0, None, None, 0)
 
         # It is advised not to use 0 as starting value for the following parameter.
         B_TIME_MOTOR_S = Beta('B_TIME_MOTOR_S', 1, None, None, 0)
         B_TIME_PHYS_S = Beta('B_TIME_PHYS_S', 1, None, None, 0)
-        B_COST_S = Beta('B_COST_S', 1, None, None, 0)
 
         # Define random parameter, log normally distributed
         B_TIME_MOTOR_RND = -exp(B_TIME_MOTOR + B_TIME_MOTOR_S * bioDraws('B_TIME_MOTOR_RND', 'NORMAL'))
         B_TIME_PHYS_RND = -exp(B_TIME_PHYS + B_TIME_PHYS_S * bioDraws('B_TIME_PHYS_RND', 'NORMAL'))
-        B_COST_RND = -exp(B_COST + B_COST_S * bioDraws('B_COST_RND', 'NORMAL'))
 
         # Utility functions
         V0 = ASC_CAR + \
@@ -120,6 +103,9 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
         V6 = ASC_WALK + \
         B_TIME_PHYS_RND * tt_walk
 
+        V7 = ASC_EBIKE + \
+        B_TIME_PHYS_RND * tt_ebike
+
         # Map modes to utility functions
         V = {0: V0,
             1: V1,
@@ -127,7 +113,8 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             3: V3,
             4: V4,
             5: V5,
-            6: V6}
+            6: V6,
+            7: V7}
 
         # Mode availability
         av = {0: av_car,
@@ -136,10 +123,11 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             3: av_transit,
             4: av_p_micro,
             5: av_s_micro,
-            6: av_walk}
+            6: av_walk,
+            7: av_ebike}
 
         # Train the model parameters
-        prob = models.logit(V, av, Variable(train_col))
+        prob = models.logit(V, av, Variable(choice_col))
         logprob = log(MonteCarlo(prob))
         biogeme = bio.BIOGEME(database_train, logprob, numberOfDraws=100)
         biogeme.modelName = 'openpath_mxl_train'
@@ -152,7 +140,7 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             results = res.bioResults(pickleFile='openpath_mxl_train.pickle')
 
         # Put the variables in global namespace to make Biogeme happy
-        X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id'])
+        X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
         database_test = db.Database('openpath_mxl_test', X_test)
         globals().update(database_test.variables)
 
@@ -164,6 +152,7 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
         prob_p_micro = MonteCarlo(models.logit(V, av, 4))
         prob_s_micro = MonteCarlo(models.logit(V, av, 5))
         prob_walk = MonteCarlo(models.logit(V, av, 6))
+        prob_ebike = MonteCarlo(models.logit(V, av, 7))
 
         simulate = {'Prob. car': prob_car,
                     'Prob. s_car': prob_s_car,
@@ -171,13 +160,14 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
                     'Prob. transit': prob_transit,
                     'Prob. p_micro': prob_p_micro,
                     'Prob. s_micro': prob_s_micro,
-                    'Prob. walk': prob_walk}
+                    'Prob. walk': prob_walk,
+                    'Prob. ebike': prob_ebike}
 
         # Get results of last run (or loaded run)
         betas = results.getBetaValues()
 
         # Calculate utility values for each row in the test database
-        biogeme = bio.BIOGEME(database_test, simulate, numberOfDraws=100)
+        biogeme = bio.BIOGEME(database_test, simulate, numberOfDraws=500)
         biogeme.modelName = 'openpath_mxl_test'
         simulatedValues = biogeme.simulate(betas)
 
@@ -190,30 +180,30 @@ def mxl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
                                     'Prob. transit': 3,
                                     'Prob. p_micro': 4,
                                     'Prob. s_micro': 5,
-                                    'Prob. walk': 6})
+                                    'Prob. walk': 6,
+                                    'Prob. ebike': 7})
 
         # Predict for test set
         accuracy.append(sklearn.metrics.accuracy_score(y_test, prob_max))
         f1.append(sklearn.metrics.f1_score(y_test, prob_max, average='weighted'))
-        confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6], normalize='pred'))
+        confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
 
         # Collect all model scores for comparison at the end
         return results, accuracy, f1, confusion
 
-def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
+def mnl(data, choice_col, kf, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
     confusion = []
-    train_indices, test_indices = get_kf_indices(kf, train_data, test_data)
 
-    for i in range(0, len(train_indices)):
+    for train_indices, test_indices in kf.split(data.values):
         # y_train and y_test are also in the X dataframes as needed by Biogeme
-        X_train, X_test = train_data.iloc[train_indices[i]], test_data.iloc[test_indices[i]]
-        y_train, y_test = train_data[train_col].iloc[train_indices[i]], test_data[test_col].iloc[test_indices[i]]
+        X_train, X_test = data.iloc[train_indices], data.iloc[test_indices]
+        y_train, y_test = data[choice_col].iloc[train_indices], data[choice_col].iloc[test_indices]
 
         # Put the variables in global namespace to make Biogeme happy
-        X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id'])
+        X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
         database_train = db.Database('openpath_mnl_train', X_train)
         globals().update(database_train.variables)
 
@@ -229,7 +219,6 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
 
         # Trip parameters
         B_COST = Beta('B_COST',0,None,None,0)
-        B_TT = Beta('B_TT',0,None,None,0)
 
         # Mode parameters
         B_ASV_TT_MOTOR = Beta('B_ASV_TT_MOTOR',0,None,None,0)
@@ -262,6 +251,9 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
         V6 = ASC_WALK + \
         B_ASV_TT_PHYS * tt_walk
 
+        V7 = ASC_EBIKE + \
+        B_ASV_TT_PHYS * tt_ebike
+
         # Map modes to utility functions
         V = {0: V0,
             1: V1,
@@ -269,7 +261,8 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             3: V3,
             4: V4,
             5: V5,
-            6: V6}
+            6: V6,
+            7: V7}
 
         # Mode availability
         av = {0: av_car,
@@ -278,10 +271,11 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             3: av_transit,
             4: av_p_micro,
             5: av_s_micro,
-            6: av_walk}
+            6: av_walk,
+            7: av_ebike}
         
         # Train the model parameters
-        logprob = models.loglogit(V, av, Variable(train_col))
+        logprob = models.loglogit(V, av, Variable(choice_col))
         biogeme = bio.BIOGEME(database_train, logprob)
         biogeme.modelName = 'openpath_mnl_train'
         biogeme.generateHtml = True
@@ -293,7 +287,7 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
             results = res.bioResults(pickleFile='openpath_mnl_train.pickle')
 
         # Put the variables in global namespace to make Biogeme happy
-        X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id'])
+        X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
         database_test = db.Database('openpath_mnl_test', X_test)
         globals().update(database_test.variables)
         
@@ -305,6 +299,7 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
         prob_p_micro = models.logit(V, av, 4)
         prob_s_micro = models.logit(V, av, 5)
         prob_walk = models.logit(V, av, 6)
+        prob_ebike = models.logit(V, av, 7)
 
         simulate ={'Prob. car': prob_car,
                    'Prob. s_car': prob_s_car,
@@ -312,7 +307,8 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
                    'Prob. transit': prob_transit,
                    'Prob. p_micro': prob_p_micro,
                    'Prob. s_micro': prob_s_micro,
-                   'Prob. walk': prob_walk}
+                   'Prob. walk': prob_walk,
+                   'Prob. ebike': prob_ebike}
 
         betas = results.getBetaValues()
 
@@ -330,12 +326,13 @@ def mnl(train_data, train_col, test_data, test_col, kf=None, estimate_new=True):
                                     'Prob. transit': 3,
                                     'Prob. p_micro': 4,
                                     'Prob. s_micro': 5,
-                                    'Prob. walk': 6})
+                                    'Prob. walk': 6,
+                                    'Prob. ebike': 7})
 
         # Predict for test set
         accuracy.append(sklearn.metrics.accuracy_score(y_test, prob_max))
         f1.append(sklearn.metrics.f1_score(y_test, prob_max, average='weighted'))
-        confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6], normalize='pred'))
+        confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
 
         # Collect all model scores for comparison at the end
         return results, accuracy, f1, confusion
