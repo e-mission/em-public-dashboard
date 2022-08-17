@@ -34,147 +34,159 @@ def random_forest(data, choice_col, feature_list, kf):
     # Collect all model scores for comparison at the end
     return rf, accuracy, f1, confusion
 
-def mxl(data, choice_col, kf, estimate_new=True):
+def mxl(data, choice_col, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
-    confusion = []    
+    confusion = []
 
-    for train_indices, test_indices in kf.split(data.values):
-        # y_train and y_test are also in the X dataframes as needed by Biogeme
-        X_train, X_test = data.iloc[train_indices], data.iloc[test_indices]
-        y_train, y_test = data[choice_col].iloc[train_indices], data[choice_col].iloc[test_indices]
+    import biogeme.messaging as msg
+    # Define level of verbosity
+    logger = msg.bioMessage()
+    # logger.setSilent()
+    # logger.setWarning()
+    logger.setGeneral()
+    # logger.setDetailed()
 
-        # Put the variables in global namespace to make Biogeme happy
-        X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
-        database_train = db.Database('openpath_mxl_train', X_train)
-        globals().update(database_train.variables)
+    # y_train and y_test are also in the X dataframes as needed by Biogeme
+    X_train, X_test = data, data
+    y_train, y_test = data[choice_col], data[choice_col]
 
-        # Alternative specific constants
-        ASC_CAR = Beta('ASC_CAR',0,None,None,1)
-        ASC_S_CAR = Beta('ASC_S_CAR',0,None,None,0)
-        ASC_RIDEHAIL = Beta('ASC_RIDEHAIL',0,None,None,0)
-        ASC_TRANSIT = Beta('ASC_TRANSIT',0,None,None,0)
-        ASC_P_MICRO = Beta('ASC_P_MICRO',0,None,None,0)
-        ASC_S_MICRO = Beta('ASC_S_MICRO',0,None,None,0)
-        ASC_WALK = Beta('ASC_WALK',0,None,None,0)
-        ASC_EBIKE = Beta('ASC_EBIKE',0,None,None,0)
+    # Put the variables in global namespace to make Biogeme happy
+    X_train = X_train.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
+    database_train = db.Database('openpath_mxl_train', X_train)
+    globals().update(database_train.variables)
 
-        # Define a random parameter, normally distributed, designed to be used
-        # for Monte-Carlo simulation
-        B_TIME_MOTOR = Beta('B_TIME_MOTOR', 0, None, None, 0)
-        B_TIME_PHYS = Beta('B_TIME_PHYS', 0, None, None, 0)
+    # Alternative specific constants
+    ASC_CAR = Beta('ASC_CAR',0,None,None,1)
+    ASC_S_CAR = Beta('ASC_S_CAR',0,None,None,0)
+    ASC_RIDEHAIL = Beta('ASC_RIDEHAIL',0,None,None,0)
+    ASC_TRANSIT = Beta('ASC_TRANSIT',0,None,None,0)
+    ASC_P_MICRO = Beta('ASC_P_MICRO',0,None,None,0)
+    ASC_S_MICRO = Beta('ASC_S_MICRO',0,None,None,0)
+    ASC_WALK = Beta('ASC_WALK',0,None,None,0)
+    ASC_EBIKE = Beta('ASC_EBIKE',0,None,None,0)
 
-        # Other ASVs
-        B_COST = Beta('B_COST', 0, None, None, 0)
+    # Define a random parameter, normally distributed, designed to be used
+    # for Monte-Carlo simulation
+    B_TIME_MOTOR = Beta('B_TIME_MOTOR', 0, -1, 1, 0)
+    B_TIME_PHYS = Beta('B_TIME_PHYS', 0, -1, 1, 0)
 
-        # It is advised not to use 0 as starting value for the following parameter.
-        B_TIME_MOTOR_S = Beta('B_TIME_MOTOR_S', 1, None, None, 0)
-        B_TIME_PHYS_S = Beta('B_TIME_PHYS_S', 1, None, None, 0)
+    # Other ASVs
+    B_COST = Beta('B_COST', 0, -1, 1, 0)
 
-        # Define random parameter, log normally distributed
-        B_TIME_MOTOR_RND = -exp(B_TIME_MOTOR + B_TIME_MOTOR_S * bioDraws('B_TIME_MOTOR_RND', 'NORMAL'))
-        B_TIME_PHYS_RND = -exp(B_TIME_PHYS + B_TIME_PHYS_S * bioDraws('B_TIME_PHYS_RND', 'NORMAL'))
+    # It is advised not to use 0 as starting value for the following parameter.
+    B_TIME_MOTOR_S = Beta('B_TIME_MOTOR_S', 1, None, None, 0)
+    B_TIME_PHYS_S = Beta('B_TIME_PHYS_S', 1, None, None, 0)
 
-        # Utility functions
-        V0 = ASC_CAR + \
-        B_TIME_MOTOR_RND * tt_car + \
-        B_COST * cost_car
+    # Define random parameter, log normally distributed
+    B_TIME_MOTOR_RND = -exp(B_TIME_MOTOR + B_TIME_MOTOR_S * bioDraws('B_TIME_MOTOR_RND', 'NORMAL'))
+    B_TIME_PHYS_RND = -exp(B_TIME_PHYS + B_TIME_PHYS_S * bioDraws('B_TIME_PHYS_RND', 'NORMAL'))
 
-        V1 = ASC_S_CAR + \
-        B_TIME_MOTOR_RND * tt_s_car + \
-        B_COST * cost_s_car
+    # Utility functions
+    V0 = ASC_CAR + \
+    B_TIME_MOTOR_RND * tt_car + \
+    B_COST * cost_car
 
-        V2 = ASC_RIDEHAIL + \
-        B_TIME_MOTOR_RND * tt_ridehail + \
-        B_COST * cost_ridehail
+    V1 = ASC_S_CAR + \
+    B_TIME_MOTOR_RND * tt_s_car + \
+    B_COST * cost_s_car
 
-        V3 = ASC_TRANSIT + \
-        B_TIME_MOTOR_RND * tt_transit + \
-        B_COST * cost_transit
+    V2 = ASC_RIDEHAIL + \
+    B_TIME_MOTOR_RND * tt_ridehail + \
+    B_COST * cost_ridehail
 
-        V4 = ASC_P_MICRO + \
-        B_TIME_PHYS_RND * tt_p_micro
+    V3 = ASC_TRANSIT + \
+    B_TIME_MOTOR_RND * tt_transit + \
+    B_COST * cost_transit
 
-        V5 = ASC_S_MICRO + \
-        B_TIME_PHYS_RND * tt_s_micro + \
-        B_COST * cost_s_micro
+    V4 = ASC_P_MICRO + \
+    B_TIME_PHYS_RND * tt_p_micro
 
-        V6 = ASC_WALK + \
-        B_TIME_PHYS_RND * tt_walk
+    V5 = ASC_S_MICRO + \
+    B_TIME_PHYS_RND * tt_s_micro + \
+    B_COST * cost_s_micro
 
-        V7 = ASC_EBIKE + \
-        B_TIME_PHYS_RND * tt_ebike
+    V6 = ASC_WALK + \
+    B_TIME_PHYS_RND * tt_walk
 
-        # Map modes to utility functions
-        V = {0: V0,
-            1: V1,
-            2: V2,
-            3: V3,
-            4: V4,
-            5: V5,
-            6: V6,
-            7: V7}
+    V7 = ASC_EBIKE + \
+    B_TIME_PHYS_RND * tt_ebike
 
-        # Mode availability
-        av = {0: av_car,
-            1: av_s_car,
-            2: av_ridehail,
-            3: av_transit,
-            4: av_p_micro,
-            5: av_s_micro,
-            6: av_walk,
-            7: av_ebike}
+    # Map modes to utility functions
+    V = {0: V0,
+        1: V1,
+        2: V2,
+        3: V3,
+        4: V4,
+        5: V5,
+        6: V6,
+        7: V7}
 
-        # Train the model parameters
-        prob = models.logit(V, av, Variable(choice_col))
-        logprob = log(MonteCarlo(prob))
-        biogeme = bio.BIOGEME(database_train, logprob, numberOfDraws=100)
-        biogeme.modelName = 'openpath_mxl_train'
-        biogeme.generateHtml = True
-        biogeme.generatePickle = True
+    # Mode availability
+    av = {0: av_car,
+        1: av_s_car,
+        2: av_ridehail,
+        3: av_transit,
+        4: av_p_micro,
+        5: av_s_micro,
+        6: av_walk,
+        7: av_ebike}
 
-        if estimate_new:
-            results = biogeme.estimate()
-        else:
-            results = res.bioResults(pickleFile='openpath_mxl_train.pickle')
+    # Train the model parameters
+    prob = models.logit(V, av, Variable(choice_col))
+    logprob = log(MonteCarlo(prob))
+    biogeme = bio.BIOGEME(database_train, logprob, numberOfDraws=100)
+    biogeme.modelName = 'openpath_mxl_train'
+    biogeme.generateHtml = True
+    biogeme.generatePickle = True
 
-        # Put the variables in global namespace to make Biogeme happy
-        X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
-        database_test = db.Database('openpath_mxl_test', X_test)
-        globals().update(database_test.variables)
+    diagnostic = database_train.checkAvailabilityOfChosenAlt(av, Variable(choice_col))
+    if not diagnostic.all():
+        row_indices = np.where(diagnostic == False)[0]
+        print(f'Rows where the chosen alternative is not available: {row_indices}')
 
-        # Assemble utility functions for testing modes
-        prob_car = MonteCarlo(models.logit(V, av, 0))
-        prob_s_car = MonteCarlo(models.logit(V, av, 1))
-        prob_ridehail = MonteCarlo(models.logit(V, av, 2))
-        prob_transit = MonteCarlo(models.logit(V, av, 3))
-        prob_p_micro = MonteCarlo(models.logit(V, av, 4))
-        prob_s_micro = MonteCarlo(models.logit(V, av, 5))
-        prob_walk = MonteCarlo(models.logit(V, av, 6))
-        prob_ebike = MonteCarlo(models.logit(V, av, 7))
+    if estimate_new:
+        results = biogeme.estimate()
+    else:
+        results = res.bioResults(pickleFile='openpath_mxl_train.pickle')
 
-        simulate = {'Prob. car': prob_car,
-                    'Prob. s_car': prob_s_car,
-                    'Prob. ridehail': prob_ridehail,
-                    'Prob. transit': prob_transit,
-                    'Prob. p_micro': prob_p_micro,
-                    'Prob. s_micro': prob_s_micro,
-                    'Prob. walk': prob_walk,
-                    'Prob. ebike': prob_ebike}
+    # Put the variables in global namespace to make Biogeme happy
+    X_test = X_test.drop(columns=['date_time','_id','cleaned_trip','user_id','is_sp'])
+    database_test = db.Database('openpath_mxl_test', X_test)
+    globals().update(database_test.variables)
 
-        # Get results of last run (or loaded run)
-        betas = results.getBetaValues()
+    # Assemble utility functions for testing modes
+    prob_car = MonteCarlo(models.logit(V, av, 0))
+    prob_s_car = MonteCarlo(models.logit(V, av, 1))
+    prob_ridehail = MonteCarlo(models.logit(V, av, 2))
+    prob_transit = MonteCarlo(models.logit(V, av, 3))
+    prob_p_micro = MonteCarlo(models.logit(V, av, 4))
+    prob_s_micro = MonteCarlo(models.logit(V, av, 5))
+    prob_walk = MonteCarlo(models.logit(V, av, 6))
+    prob_ebike = MonteCarlo(models.logit(V, av, 7))
 
-        # Calculate utility values for each row in the test database
-        biogeme = bio.BIOGEME(database_test, simulate, numberOfDraws=500)
-        biogeme.modelName = 'openpath_mxl_test'
-        simulatedValues = biogeme.simulate(betas)
+    simulate = {'Prob. car': prob_car,
+                'Prob. s_car': prob_s_car,
+                'Prob. ridehail': prob_ridehail,
+                'Prob. transit': prob_transit,
+                'Prob. p_micro': prob_p_micro,
+                'Prob. s_micro': prob_s_micro,
+                'Prob. walk': prob_walk,
+                'Prob. ebike': prob_ebike}
 
-        # Test predicting maximum mode utility as choice
-        # Identify the column of highest probability, replace with number corresponding to the mode
-        prob_max = simulatedValues.idxmax(axis=1)
-        prob_max = prob_max.replace({'Prob. car': 0,
+    # Get results of last run (or loaded run)
+    betas = results.getBetaValues()
+
+    # Calculate utility values for each row in the test database
+    biogeme = bio.BIOGEME(database_test, simulate, numberOfDraws=100)
+    biogeme.modelName = 'openpath_mxl_test'
+    simulatedValues = biogeme.simulate(betas)
+
+    # Test predicting maximum mode utility as choice
+    # Identify the column of highest probability, replace with number corresponding to the mode
+    prob_max = simulatedValues.idxmax(axis=1)
+    prob_max = prob_max.replace({'Prob. car': 0,
                                     'Prob. s_car': 1,
                                     'Prob. ridehail': 2,
                                     'Prob. transit': 3,
@@ -183,19 +195,27 @@ def mxl(data, choice_col, kf, estimate_new=True):
                                     'Prob. walk': 6,
                                     'Prob. ebike': 7})
 
-        # Predict for test set
-        accuracy.append(sklearn.metrics.accuracy_score(y_test, prob_max))
-        f1.append(sklearn.metrics.f1_score(y_test, prob_max, average='weighted'))
-        confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
+    # Predict for test set
+    accuracy.append(sklearn.metrics.accuracy_score(y_test, prob_max))
+    f1.append(sklearn.metrics.f1_score(y_test, prob_max, average='weighted'))
+    confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
 
-        # Collect all model scores for comparison at the end
-        return results, accuracy, f1, confusion
+    # Collect all model scores for comparison at the end
+    return betas, accuracy, f1, confusion
 
 def mnl(data, choice_col, kf, estimate_new=True):
     # Save metrics from each run
     accuracy = []
     f1 = []
     confusion = []
+
+    import biogeme.messaging as msg
+    # Define level of verbosity
+    logger = msg.bioMessage()
+    # logger.setSilent()
+    # logger.setWarning()
+    logger.setGeneral()
+    # logger.setDetailed()
 
     for train_indices, test_indices in kf.split(data.values):
         # y_train and y_test are also in the X dataframes as needed by Biogeme
@@ -321,13 +341,13 @@ def mnl(data, choice_col, kf, estimate_new=True):
         # Identify the column of highest probability, replace with number corresponding to the mode
         prob_max = simulatedValues.idxmax(axis=1)
         prob_max = prob_max.replace({'Prob. car': 0,
-                                    'Prob. s_car': 1,
-                                    'Prob. ridehail': 2,
-                                    'Prob. transit': 3,
-                                    'Prob. p_micro': 4,
-                                    'Prob. s_micro': 5,
-                                    'Prob. walk': 6,
-                                    'Prob. ebike': 7})
+                                     'Prob. s_car': 1,
+                                     'Prob. ridehail': 2,
+                                     'Prob. transit': 3,
+                                     'Prob. p_micro': 4,
+                                     'Prob. s_micro': 5,
+                                     'Prob. walk': 6,
+                                     'Prob. ebike': 7})
 
         # Predict for test set
         accuracy.append(sklearn.metrics.accuracy_score(y_test, prob_max))
@@ -335,4 +355,4 @@ def mnl(data, choice_col, kf, estimate_new=True):
         confusion.append(sklearn.metrics.confusion_matrix(y_test, prob_max, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
 
         # Collect all model scores for comparison at the end
-        return results, accuracy, f1, confusion
+        return betas, accuracy, f1, confusion
