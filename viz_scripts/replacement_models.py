@@ -9,9 +9,32 @@ import pandas as pd
 import pickle
 import sklearn.metrics
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
+def gbdt(data, choice_col, feature_list, kf):
+    # Save metrics from each run
+    accuracy = []
+    f1 = []
+    confusion = []
 
-def random_forest(data, choice_col, feature_list, kf):
+    for train_indices, test_indices in kf.split(data.values):
+        X_train, X_test = data[feature_list].values[train_indices], data[feature_list].values[test_indices]
+        y_train, y_test = data[choice_col].values[train_indices], data[choice_col].values[test_indices]
+
+        # Train random forest on training set
+        rf = GradientBoostingClassifier(n_estimators=50)
+        rf.fit(X_train, y_train)
+
+        # Predict for test set
+        y_pred = rf.predict(X_test)
+        accuracy.append(sklearn.metrics.accuracy_score(y_test, y_pred))
+        f1.append(sklearn.metrics.f1_score(y_test, y_pred, average='weighted'))
+        confusion.append(sklearn.metrics.confusion_matrix(y_test, y_pred, labels=[0,1,2,3,4,5,6,7], normalize='pred'))
+
+    # Collect all model scores for comparison at the end
+    return rf, accuracy, f1, confusion
+
+def rf(data, choice_col, feature_list, kf):
     # Save metrics from each run
     accuracy = []
     f1 = []
@@ -69,43 +92,43 @@ def mxl(data, choice_col, estimate_new=True):
 
     # Define a random parameter, normally distributed, designed to be used
     # for Monte-Carlo simulation
-    B_TIME_MOTOR = Beta('B_TIME_MOTOR', 0, -1, 1, 0)
-    B_TIME_PHYS = Beta('B_TIME_PHYS', 0, -1, 1, 0)
-
-    # Other ASVs
-    B_COST = Beta('B_COST', 0, -1, 1, 0)
+    B_TIME_MOTOR = Beta('B_TIME_MOTOR',0,-1,1,0)
+    B_TIME_PHYS = Beta('B_TIME_PHYS',0,-1,1,0)
+    B_COST = Beta('B_COST',0,-1,-1,0)
 
     # It is advised not to use 0 as starting value for the following parameter.
-    B_TIME_MOTOR_S = Beta('B_TIME_MOTOR_S', 1, None, None, 0)
-    B_TIME_PHYS_S = Beta('B_TIME_PHYS_S', 1, None, None, 0)
+    B_TIME_MOTOR_S = Beta('B_TIME_MOTOR_S',1,None,None,0)
+    B_TIME_PHYS_S = Beta('B_TIME_PHYS_S',1,None,None,0)
+    B_COST_S = Beta('B_COST_S',1,None,None,0)
 
     # Define random parameter, log normally distributed
-    B_TIME_MOTOR_RND = -exp(B_TIME_MOTOR + B_TIME_MOTOR_S * bioDraws('B_TIME_MOTOR_RND', 'NORMAL'))
-    B_TIME_PHYS_RND = -exp(B_TIME_PHYS + B_TIME_PHYS_S * bioDraws('B_TIME_PHYS_RND', 'NORMAL'))
+    B_TIME_MOTOR_RND = -exp(B_TIME_MOTOR + B_TIME_MOTOR_S * bioDraws('B_TIME_MOTOR_RND','NORMAL'))
+    B_TIME_PHYS_RND = -exp(B_TIME_PHYS + B_TIME_PHYS_S * bioDraws('B_TIME_PHYS_RND','NORMAL'))
+    B_COST_RND = -exp(B_COST + B_COST_S * bioDraws('B_COST_RND','NORMAL'))
 
     # Utility functions
     V0 = ASC_CAR + \
     B_TIME_MOTOR_RND * tt_car + \
-    B_COST * cost_car
+    B_COST_RND * cost_car
 
     V1 = ASC_S_CAR + \
     B_TIME_MOTOR_RND * tt_s_car + \
-    B_COST * cost_s_car
+    B_COST_RND * cost_s_car
 
     V2 = ASC_RIDEHAIL + \
     B_TIME_MOTOR_RND * tt_ridehail + \
-    B_COST * cost_ridehail
+    B_COST_RND * cost_ridehail
 
     V3 = ASC_TRANSIT + \
     B_TIME_MOTOR_RND * tt_transit + \
-    B_COST * cost_transit
+    B_COST_RND * cost_transit
 
     V4 = ASC_P_MICRO + \
     B_TIME_PHYS_RND * tt_p_micro
 
     V5 = ASC_S_MICRO + \
     B_TIME_PHYS_RND * tt_s_micro + \
-    B_COST * cost_s_micro
+    B_COST_RND * cost_s_micro
 
     V6 = ASC_WALK + \
     B_TIME_PHYS_RND * tt_walk
@@ -141,11 +164,13 @@ def mxl(data, choice_col, estimate_new=True):
     biogeme.generateHtml = True
     biogeme.generatePickle = True
 
+    # Check that choices are always available
     diagnostic = database_train.checkAvailabilityOfChosenAlt(av, Variable(choice_col))
     if not diagnostic.all():
         row_indices = np.where(diagnostic == False)[0]
         print(f'Rows where the chosen alternative is not available: {row_indices}')
 
+    # Fit model or load previous run
     if estimate_new:
         results = biogeme.estimate()
     else:
@@ -301,6 +326,7 @@ def mnl(data, choice_col, kf, estimate_new=True):
         biogeme.generateHtml = True
         biogeme.generatePickle = True
 
+        # Fit model or load previous run
         if estimate_new:
             results = biogeme.estimate()
         else:
