@@ -111,7 +111,7 @@
 						</div>
 
 						<div class="col-md-6 col-xl-8 order-md-1">
-							<a href="https://canbikeco.org" class="app-name">CanBikeCO</a>
+							<a href="https://canbikeco.org" class="app-name">CanBikeCO Dashboard</a>
 						</div>
 
 					</div>
@@ -124,7 +124,7 @@
 		<!--stopindex-->
 		<div class="program-header">
 			<div class="container">
-				<nav class="navbar navbar-expand-lg navbar-light static-top">
+				<nav class="navbar navbar-expand-md navbar-light static-top">
 
 					<div id="program-menu" class="mr-auto">
 						<button class="custom-toggler navbar-toggler" type="button" data-toggle="collapse" data-target="#topnav-collapse" aria-controls="topnav-collapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,18 +135,21 @@
 
 					<!-- Navigation -->
 					<div class="navbar-collapse collapse" id="topnav-collapse">
-						<ul class="nav navbar-nav ml-auto">
-							<li data-topnav="metric" class="nav-item active">Metric:
-								<select id='metric' style='width: 100%'></select>
+						<ul class="nav navbar-nav">
+							<li data-topnav="metric" class="navbar-text">
+								Metric:
+								<select id="metric" style="width: 100%"></select>
 							</li>
-							<li data-topnav="month" class="nav-item active">Month:
-								<select id='date' style='width: 100%'></select>
+							<li data-topnav="month" class="navbar-text">
+								Month:
+								<select id="date" style="width: 100%"></select>
 							</li>
-							<li data-topnav="program" class="nav-item active">Program:
-								<select id='program' style='width: 100%'></select>
+							<li data-topnav="program" class="navbar-text">
+								Program:
+								<select id="program" style="width: 100%"></select>
 							</li>
-							<li class="nav-item active">
-								<button class="js-add-new">Add</button>
+							<li class="form-inline">
+								<button class="btn btn-danger btn-block">Add</button>
 							</li>
 						</ul>
 					</div>
