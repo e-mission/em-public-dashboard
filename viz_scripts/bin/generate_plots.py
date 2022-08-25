@@ -34,6 +34,10 @@ else:
     print(f"Successfully downloaded config with version {dynamic_config['version']} "\
         f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} "\
         f"and data collection URL {dynamic_config['server']['connectUrl']}")
+if dynamic_config['intro']['program_or_study'] == 'program':
+    mode_studied = dynamic_config['intro']['mode_studied']
+else:
+    mode_studied = None
 
 print(f"Running at {arrow.get()} with args {args}")
 
@@ -49,7 +53,8 @@ params = nbp.parameter_values(
     year=args.date[0],
     month=args.date[1],
     program=args.program,
-    study_type=dynamic_config['intro']['program_or_study'])
+    study_type=dynamic_config['intro']['program_or_study'],
+    mode_of_interest=mode_studied)
 
 # Make a notebook object with these definitions
 new_nb = nbp.replace_definitions(nb, params, execute=False)
