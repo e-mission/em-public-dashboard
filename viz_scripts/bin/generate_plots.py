@@ -9,7 +9,7 @@ import requests
 
 # Configuration settings to use for all generated plots by this instance
 # This could also be specified as a parser argument, if we want to generate plots for all programs from one instance
-STUDY_CONFIG = "nrel-commute"
+STUDY_CONFIG = "stage-program"
 
 parser = argparse.ArgumentParser(prog="generate_metrics")
 parser.add_argument("plot_notebook", help="the notebook the generates the plot")
@@ -35,7 +35,9 @@ else:
         f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} "\
         f"and data collection URL {dynamic_config['server']['connectUrl']}")
 if dynamic_config['intro']['program_or_study'] == 'program':
-    mode_studied = dynamic_config['intro']['mode_studied']
+    # This is a temporary line, until we modify the configs
+    mode_studied = 'Pilot ebike'
+#     mode_studied = dynamic_config['intro']['mode_studied']
 else:
     mode_studied = None
 
