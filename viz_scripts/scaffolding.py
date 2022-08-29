@@ -1,9 +1,13 @@
+import json
+import os
+
 import pandas as pd
 import numpy as np
 
+import emission.core.get_database as edb
+import emission.core.wrapper.localdate as ecwl
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
-import emission.core.wrapper.localdate as ecwl
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -11,7 +15,6 @@ import emission.core.wrapper.localdate as ecwl
 
 import IPython.display as disp
 
-import emission.core.get_database as edb
 
 def get_time_query(year, month):
     if year is None and month is None:
@@ -91,6 +94,56 @@ def get_quality_text_ebike(all_confirmed_df, ebike_ct_df):
     quality_text = "Based on %s eBike trips from %d users\nof %s confirmed trips (all modes) from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
+
+def store_alt_text_pie(df, chart_name, var_name, alt_text_file):
+    """ Inputs:
+    df = dataframe with index of item names, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    alt_text_file = the alt text json file to save or update
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Pie chart of {var_name}."
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100)}%."
+
+    # Make new dict if does not exist, store the new value
+    if os.path.exists(alt_text_file):
+        with open(alt_text_file, 'r') as f:
+            alt_text_dict = json.load(f)
+    else:
+        alt_text_dict = {}
+    alt_text_dict[chart_name] = alt_text
+
+    # Save or update the file
+    with open(alt_text_file, 'w+') as f:
+        json.dump(alt_text_dict, f)
+    return alt_text
+
+def store_alt_text_bar(df, chart_name, var_name, alt_text_file):
+    """ Inputs:
+    df = dataframe with index of item names, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    alt_text_file = the alt text json file to save or update
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Bar chart of {var_name}."
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100)}%."
+
+    # Make new dict if does not exist, store the new value
+    if os.path.exists(alt_text_file):
+        with open(alt_text_file, 'r') as f:
+            alt_text_dict = json.load(f)
+    else:
+        alt_text_dict = {}
+    alt_text_dict[chart_name] = alt_text
+
+    # Save or update the file
+    with open(alt_text_file, 'w+') as f:
+        json.dump(alt_text_dict, f)
+    return alt_text
 
 def data_quality_check(expanded_ct):
     '''1. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was pilot_ebike.
