@@ -95,16 +95,12 @@ def get_quality_text_ebike(all_confirmed_df, ebike_ct_df):
     print(quality_text)
     return quality_text
 
-def store_alt_text_generic(chart_description, chart_name, var_name, alt_text_file):
+def access_alt_text(alt_text, chart_name, alt_text_file):
     """ Inputs:
-    chart_description = what type of chart is it
+    alt_text = the text describing the chart
     chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
     alt_text_file = the alt text json file to save or update
     """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"{chart_description} chart of {var_name}."
-
     # Make new dict if does not exist, store the new value
     if os.path.exists(alt_text_file):
         with open(alt_text_file, 'r') as f:
@@ -116,6 +112,18 @@ def store_alt_text_generic(chart_description, chart_name, var_name, alt_text_fil
     # Save or update the file
     with open(alt_text_file, 'w+') as f:
         json.dump(alt_text_dict, f)
+    return alt_text_dict
+
+def store_alt_text_generic(chart_description, chart_name, var_name, alt_text_file):
+    """ Inputs:
+    chart_description = what type of chart is it
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across the chart
+    alt_text_file = the alt text json file to save or update
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"{chart_description} chart of {var_name}."
+    access_alt_text(alt_text, chart_name, alt_text_file)
     return alt_text
 
 def store_alt_text_bar(df, chart_name, var_name, alt_text_file):
@@ -129,18 +137,7 @@ def store_alt_text_bar(df, chart_name, var_name, alt_text_file):
     alt_text = f"Bar chart of {var_name}."
     for i in range(0,len(df)):
         alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
-
-    # Make new dict if does not exist, store the new value
-    if os.path.exists(alt_text_file):
-        with open(alt_text_file, 'r') as f:
-            alt_text_dict = json.load(f)
-    else:
-        alt_text_dict = {}
-    alt_text_dict[chart_name] = alt_text
-
-    # Save or update the file
-    with open(alt_text_file, 'w+') as f:
-        json.dump(alt_text_dict, f)
+    access_alt_text(alt_text, chart_name, alt_text_file)
     return alt_text
 
 def store_alt_text_pie(df, chart_name, var_name, alt_text_file):
@@ -154,18 +151,7 @@ def store_alt_text_pie(df, chart_name, var_name, alt_text_file):
     alt_text = f"Pie chart of {var_name}."
     for i in range(0,len(df)):
         alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100, 1)}%."
-
-    # Make new dict if does not exist, store the new value
-    if os.path.exists(alt_text_file):
-        with open(alt_text_file, 'r') as f:
-            alt_text_dict = json.load(f)
-    else:
-        alt_text_dict = {}
-    alt_text_dict[chart_name] = alt_text
-
-    # Save or update the file
-    with open(alt_text_file, 'w+') as f:
-        json.dump(alt_text_dict, f)
+    access_alt_text(alt_text, chart_name, alt_text_file)
     return alt_text
 
 def store_alt_text_timeseries(df, chart_name, var_name, alt_text_file):
@@ -180,18 +166,7 @@ def store_alt_text_timeseries(df, chart_name, var_name, alt_text_file):
     arg_min = np.argmin(df.iloc[:,1])
     arg_max = np.argmax(df.iloc[:,1])
     alt_text += f"First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}"
-
-    # Make new dict if does not exist, store the new value
-    if os.path.exists(alt_text_file):
-        with open(alt_text_file, 'r') as f:
-            alt_text_dict = json.load(f)
-    else:
-        alt_text_dict = {}
-    alt_text_dict[chart_name] = alt_text
-
-    # Save or update the file
-    with open(alt_text_file, 'w+') as f:
-        json.dump(alt_text_dict, f)
+    access_alt_text(alt_text, chart_name, alt_text_file)
     return alt_text
 
 def data_quality_check(expanded_ct):
