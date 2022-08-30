@@ -48,21 +48,24 @@ def merge_small_entries(labels, values):
     return (v2l_df.index.to_list(),v2l_df.vals.to_list())
 
 def pie_chart_mode(plot_title,labels,values,file_name):
-    all_labels= ['Car, drove alone',
+    all_labels= ['Gas Car, drove alone',
                  'Bus', 
                  'Train', 
                  'Free Shuttle',
                  'Taxi/Uber/Lyft', 
-                 'Car, with others', 
+                 'Gas Car, with others', 
                  'Bikeshare',
                  'Scooter share',
-                 'Pilot ebike', 
+                 'E-bike', 
                  'Walk', 
                  'Skate board', 
                  'Regular Bike', 
                  'Not a Trip',
                  'No Travel', 
                  'Same Mode', 
+                 'E-car, drove alone',
+                 'E-car, with others',
+                 'Air',
                  'Other']
 
     val2labeldf = pd.DataFrame({"labels": labels, "values": values})
@@ -139,7 +142,7 @@ def distancevsenergy(data,x,y,legend,plot_title,file_name):
                  'Car, with others', 
                  'Bikeshare',
                  'Scooter share',
-                 'Pilot ebike', 
+                 'E-bike', 
                  'Walk', 
                  'Skate board', 
                  'Regular Bike', 
@@ -234,21 +237,24 @@ def energy_impact(x,y,color,plot_title,file_name):
     
     
 def barplot_mode(data,x,y,plot_title,file_name):
-    all_labels= ['Car, drove alone',
+    all_labels= ['Gas Car, drove alone',
                  'Bus', 
                  'Train', 
                  'Free Shuttle',
                  'Taxi/Uber/Lyft', 
-                 'Car, with others', 
+                 'Gas Car, with others', 
                  'Bikeshare',
                  'Scooter share',
-                 'Pilot ebike', 
+                 'E-bike', 
                  'Walk', 
                  'Skate board', 
                  'Regular Bike', 
                  'Not a Trip',
                  'No Travel', 
                  'Same Mode', 
+                 'E-car, drove alone',
+                 'E-car, with others',
+                 'Air',
                  'Other']
     
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
@@ -264,21 +270,24 @@ def barplot_mode(data,x,y,plot_title,file_name):
     
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
-    all_labels= ['Car, drove alone',
+    all_labels= ['Gas Car, drove alone',
                  'Bus', 
                  'Train', 
                  'Free Shuttle',
                  'Taxi/Uber/Lyft', 
-                 'Car, with others', 
+                 'Gas Car, with others', 
                  'Bikeshare',
                  'Scooter share',
-                 'Pilot ebike', 
+                 'E-bike', 
                  'Walk', 
                  'Skate board', 
                  'Regular Bike', 
                  'Not a Trip',
                  'No Travel', 
                  'Same Mode', 
+                 'E-car, drove alone',
+                 'E-car, with others',
+                 'Air',
                  'Other']
     
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
