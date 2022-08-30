@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import itertools
@@ -369,3 +368,18 @@ def CO2_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
 
     plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+
+def timeseries_plot(x,y,plot_title,ylab,file_name):
+    fig, ax = plt.subplots(figsize=(16,4))
+    sns.lineplot(ax=ax, x=x, y=y).set(title=plot_title, xlabel='Date', ylabel=ylab)
+    plt.xticks(rotation=45)
+    plt.subplots_adjust(bottom=0.25)
+    ax.figure.savefig(SAVE_DIR + file_name, bbox_inches='tight')
+
+def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
+    fig, ax = plt.subplots(figsize=(16,4))
+    sns.lineplot(ax=ax, data=data, x=x, y=y, hue=hue).set(title=plot_title, xlabel='Date', ylabel=ylab)
+    plt.xticks(rotation=45)
+    plt.subplots_adjust(bottom=0.25)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
+    ax.figure.savefig(SAVE_DIR + file_name, bbox_inches='tight')
