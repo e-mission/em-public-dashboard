@@ -31,13 +31,14 @@ def get_time_query(year, month):
 
 def get_participant_uuids(program):
     """
-        Get the list of participant UUIDs for the specified program.
-        Note that the "program" parameter is currently a NOP but will be enabled
-        once we have other programs start
+        Get the list of non-test users in the current program.
+        Note that the "program" parameter is currently a NOP and should be removed in
+        conjunction with modifying the notebooks.
     """
-    participant_uuid_obj = list(edb.get_profile_db().find({}))
-    participant_uuid_str = [u["user_id"] for u in participant_uuid_obj]
-    disp.display(participant_uuid_str)
+    all_users = pd.json_normalize(edb.get_uuid_db().find())
+    participant_list = all_users[np.logical_not(all_users.user_email.str.contains("_test_"))]
+    participant_uuid_str = participant_list.uuid
+    disp.display(participant_list.user_email)
     return participant_uuid_str
 
 def load_all_confirmed_trips(tq):
@@ -61,7 +62,14 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
-def expand_userinputs(labeled_ct):
+def expand_userinputs(labeled_ct, labels_per_trip):
+    '''
+    param: labeled_ct: a dataframe of confirmed trips, some of which have labels
+    params: labels_per_trip: the number of labels for each trip.
+        Currently, this is 2 for studies and 3 for programs, and should be 
+        passed in by the notebook based on the input config.
+        If used with a trip-level survey, it could be even larger.
+    '''
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
     disp.display(label_only.head())
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
@@ -70,7 +78,7 @@ def expand_userinputs(labeled_ct):
             (len(expanded_ct), len(labeled_ct)))
     print("After expanding, columns went from %s -> %s" %
         (len(labeled_ct.columns), len(expanded_ct.columns)))
-    assert len(expanded_ct.columns) == len(labeled_ct.columns) + 3, \
+    assert len(expanded_ct.columns) == len(labeled_ct.columns) + labels_per_trip, \
         ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.rows %s" %
             (len(expanded_ct.columns), len(labeled_ct.columns)))
     disp.display(expanded_ct.head())
@@ -173,10 +181,15 @@ def data_quality_check(expanded_ct):
     '''1. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was pilot_ebike.
        2. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was same_mode.
        3. Replace same_mode for the mode_confirm for Energy Impact Calcualtion.'''
-    
-    expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'pilot_ebike')].index, inplace=True)
-    expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'same_mode')].index, inplace=True)
-    expanded_ct['replaced_mode'] = np.where(expanded_ct['replaced_mode'] == 'same_mode',expanded_ct['mode_confirm'], expanded_ct['replaced_mode'])
+
+    # TODO: This is only really required for the initial data collection around the minipilot
+    # in subsequent deployes, we removed "same mode" and "pilot_ebike" from the options, so the
+    # dataset did not contain of these data quality issues
+
+    if 'replaced_mode' in expanded_ct.columns:
+        expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'pilot_ebike')].index, inplace=True)
+        expanded_ct.drop(expanded_ct[(expanded_ct['mode_confirm'] == 'pilot_ebike') & (expanded_ct['replaced_mode'] == 'same_mode')].index, inplace=True)
+        expanded_ct['replaced_mode'] = np.where(expanded_ct['replaced_mode'] == 'same_mode',expanded_ct['mode_confirm'], expanded_ct['replaced_mode'])
     
     return expanded_ct
 
