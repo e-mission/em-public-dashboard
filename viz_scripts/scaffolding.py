@@ -81,6 +81,42 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+def load_viz_notebook_data(year, month, program, df_ei, dic_re, dic_pur, dic_fuel):
+    """ Inputs:
+    year/month/program/dic_* = parameters from the visualization notebook
+    
+    Pipeline to load and process the data before use in visualization notebooks.
+    """
+    # Access database
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq)
+    labeled_ct = filter_labeled_trips(participant_ct_df)
+    expanded_ct = expand_userinputs(labeled_ct, 3)
+    expanded_ct = data_quality_check(expanded_ct)
+
+    # Mapping new labels with dictionaries
+    expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
+    expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+
+    # Mapping fuel
+    expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
+    expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
+
+    # Change meters to miles
+    unit_conversions(expanded_ct)
+
+    # Calculate energy impact
+    expanded_ct = energy_intensity(expanded_ct, df_ei, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    quality_text = get_quality_text(participant_ct_df, expanded_ct)
+
+    return expanded_ct, file_suffix, quality_text
+
 def get_quality_text(participant_ct_df, expanded_ct):
     cq = (len(expanded_ct), len(expanded_ct.user_id.unique()), len(participant_ct_df), len(participant_ct_df.user_id.unique()), (len(expanded_ct) * 100) / len(participant_ct_df), )
     quality_text = "Based on %s confirmed trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
@@ -93,12 +129,6 @@ def get_file_suffix(year, month, program):
     suffix = suffix + "_%s" % program if program is not None else ""
     print(suffix)
     return suffix
-
-def get_quality_text_ebike(all_confirmed_df, ebike_ct_df):
-    cq = (len(ebike_ct_df), len(ebike_ct_df.user_id.unique()), len(all_confirmed_df), len(all_confirmed_df.user_id.unique()), (len(ebike_ct_df) * 100) / len(all_confirmed_df), )
-    quality_text = "Based on %s eBike trips from %d users\nof %s confirmed trips (all modes) from %d users (%.2f%%)" % cq
-    print(quality_text)
-    return quality_text
 
 def access_alt_text(alt_text, chart_name):
     """ Inputs:
