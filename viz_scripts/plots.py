@@ -15,7 +15,9 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 
 import IPython.display as disp
 
+
 SAVE_DIR="/plots/"
+
 
 def merge_small_entries(labels, values):
     v2l_df = pd.DataFrame({"vals": values}, index=labels)
@@ -87,10 +89,9 @@ def pie_chart_mode(plot_title,labels,values,file_name):
                                       autopct= lambda pct: func(pct, values),
                                       textprops={'size': 23})
 
-
     ax.set_title(plot_title, size=25)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
-    plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
 def pie_chart_purpose(plot_title,labels,values,file_name):
@@ -126,13 +127,11 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
                                       autopct=lambda pct: func(pct, values),
                                       textprops={'size': 23})
 
-
     ax.set_title(plot_title, size=25)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
-    plt.savefig(SAVE_DIR+file_name, bbox_inches='tight')
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
-    
-    
+
 def distancevsenergy(data,x,y,legend,plot_title,file_name):
     all_labels= ['Car, drove alone',
                  'Bus', 
@@ -153,18 +152,13 @@ def distancevsenergy(data,x,y,legend,plot_title,file_name):
     
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
     f = plt.subplots(figsize=(15, 6))
-    
- 
     sns.set(style='whitegrid')
     sns.scatterplot(x=x, y=y, data=data, hue=legend, palette=colours)
     plt.legend(loc='upper right')
     plt.xlabel("", fontsize=15)
     plt.ylabel(y, fontsize=15)
     plt.title(plot_title, fontsize=15)
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
-    
-
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     plt.figure(figsize=(15, 8))
@@ -178,10 +172,7 @@ def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     ax.relim()
     ax.autoscale_view()                  
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=18)
-    
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
-    
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     
 def energy_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
@@ -201,19 +192,15 @@ def energy_impact(x,y,color,plot_title,file_name):
     ax.autoscale_view() 
 
     rects = ax.patches
-
-   
     for rect in rects:
         x_value = rect.get_width()
         y_value = rect.get_y() + rect.get_height() / 2
         space = 5
         ha = 'left'
-
        
         if x_value < 0:
             space *= -1
             ha = 'right'
-
         
         label = "{:.1f}".format(x_value)
 
@@ -226,16 +213,12 @@ def energy_impact(x,y,color,plot_title,file_name):
             va='center',                
             ha=ha, fontsize=12, color='black', fontweight='bold')
         
-        # map names to colors
-    cmap = {True: 'green', False: 'red'}
-        
+    # map names to colors
+    cmap = {True: 'green', False: 'red'}  
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
-    
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
-    
 def barplot_mode(data,x,y,plot_title,file_name):
     all_labels= ['Gas Car, drove alone',
                  'Bus', 
@@ -266,8 +249,7 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
     all_labels= ['Gas Car, drove alone',
@@ -294,7 +276,6 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
     sns.set(font_scale=1.5)
 
     fig, ax1 = plt.subplots(figsize=(15,6))
-   
     #bar plot creation
     ax1.set_title(plot_title, fontsize=16)
     ax1.set_xlabel(x, fontsize=16)
@@ -311,11 +292,9 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
     ax2.grid(False)
     plt.setp(ax2.get_xticklabels(), rotation=45, ha='right')
     plt.setp(ax1.get_xticklabels(), rotation=45, ha='right')
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-    
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     
 def barplot_day(data,x,y,plot_title,file_name):
-
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
@@ -323,8 +302,7 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.xlabel(x, fontsize=16)
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
-
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def CO2_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
@@ -344,19 +322,15 @@ def CO2_impact(x,y,color,plot_title,file_name):
     ax.autoscale_view()
 
     rects = ax.patches
-
-
     for rect in rects:
         x_value = rect.get_width()
         y_value = rect.get_y() + rect.get_height() / 2
         space = 5
         ha = 'left'
 
-
         if x_value < 0:
             space *= -1
             ha = 'right'
-
 
         label = "{:.1f}".format(x_value)
 
@@ -369,21 +343,18 @@ def CO2_impact(x,y,color,plot_title,file_name):
             va='center',
             ha=ha, fontsize=12, color='black', fontweight='bold')
 
-        # map names to colors
+    # map names to colors
     cmap = {True: 'green', False: 'red'}
-
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
-
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
-
-    plt.savefig(SAVE_DIR+ file_name, bbox_inches='tight')
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def timeseries_plot(x,y,plot_title,ylab,file_name):
     fig, ax = plt.subplots(figsize=(16,4))
     sns.lineplot(ax=ax, x=x, y=y).set(title=plot_title, xlabel='Date', ylabel=ylab)
     plt.xticks(rotation=45)
     plt.subplots_adjust(bottom=0.25)
-    ax.figure.savefig(SAVE_DIR + file_name, bbox_inches='tight')
+    ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
     fig, ax = plt.subplots(figsize=(16,4))
@@ -391,4 +362,4 @@ def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
     plt.xticks(rotation=45)
     plt.subplots_adjust(bottom=0.25)
     plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
-    ax.figure.savefig(SAVE_DIR + file_name, bbox_inches='tight')
+    ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')

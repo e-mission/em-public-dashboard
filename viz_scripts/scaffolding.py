@@ -135,18 +135,16 @@ def access_alt_text(alt_text, chart_name):
     alt_text = the text describing the chart
     chart_name = the alt text file to save or update
     """
-    f = open(f'/plots/{chart_name}.html','w')
-    message = f"<html><head></head><body><p>{alt_text}</p></body></html>"
-    f.write(message)
+    f = open(f'/plots/{chart_name}.txt','w')
+    f.write(alt_text)
     f.close()
-    return message
+    return alt_text
 
 def store_alt_text_generic(chart_description, chart_name, var_name):
     """ Inputs:
     chart_description = what type of chart is it
     chart_name = what to label chart by in the dictionary
     var_name = the variable being analyzed across the chart
-    alt_text_file = the alt text json file to save or update
     """
     # Fill out the alt text based on components of the chart and passed data
     alt_text = f"{chart_description} chart of {var_name}."
@@ -158,7 +156,6 @@ def store_alt_text_bar(df, chart_name, var_name):
     df = dataframe with index of item names, first column is counts
     chart_name = what to label chart by in the dictionary
     var_name = the variable being analyzed across pie slices
-    alt_text_file = the alt text json file to save or update
     """
     # Fill out the alt text based on components of the chart and passed data
     alt_text = f"Bar chart of {var_name}."
@@ -172,7 +169,6 @@ def store_alt_text_pie(df, chart_name, var_name):
     df = dataframe with index of item names, first column is counts
     chart_name = what to label chart by in the dictionary
     var_name = the variable being analyzed across pie slices
-    alt_text_file = the alt text json file to save or update
     """
     # Fill out the alt text based on components of the chart and passed data
     alt_text = f"Pie chart of {var_name}."
@@ -186,13 +182,12 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     df = dataframe with first col of dates, second column is values
     chart_name = what to label chart by in the dictionary
     var_name = the variable being analyzed across pie slices
-    alt_text_file = the alt text json file to save or update
     """
     # Fill out the alt text based on components of the chart and passed data
     alt_text = f"Scatter chart of {var_name}."
     arg_min = np.argmin(df.iloc[:,1])
     arg_max = np.argmax(df.iloc[:,1])
-    alt_text += f"First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}"
+    alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
