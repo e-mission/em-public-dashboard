@@ -1,13 +1,9 @@
-import json
-import os
-
-import numpy as np
 import pandas as pd
+import numpy as np
 
-import emission.core.get_database as edb
-import emission.core.wrapper.localdate as ecwl
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
+import emission.core.wrapper.localdate as ecwl
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -15,6 +11,7 @@ import emission.storage.timeseries.tcquery as esttc
 
 import IPython.display as disp
 
+import emission.core.get_database as edb
 
 def get_time_query(year, month):
     if year is None and month is None:

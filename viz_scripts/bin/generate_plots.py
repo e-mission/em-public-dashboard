@@ -3,7 +3,6 @@ import nbformat
 import nbparameterise as nbp
 import argparse
 import arrow
-import json
 import requests
 
 
