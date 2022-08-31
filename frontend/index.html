@@ -339,16 +339,16 @@
 		<script type="text/javascript">
 			var gridster;
 
-      function loadFile(filePath) {
-        var result = null;
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", filePath, false);
-        xmlhttp.send();
-        if (xmlhttp.status==200) {
-          result = xmlhttp.responseText;
-        }
-        return result;
-      };
+			function loadFile(filePath) {
+				var result = null;
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.open("GET", filePath, false);
+				xmlhttp.send();
+				if (xmlhttp.status==200) {
+				result = xmlhttp.responseText;
+				}
+				return result;
+			};
 
 			$(function () {		
 				gridster = $(".gridster ul").gridster({
@@ -372,8 +372,8 @@
 					const sizey = $("#metric option:selected").data("sizey");
 					const labelText = metricLabel+" "+dateLabel+" "+programLabel;
 					const imgFile = "plots/"+metric+"_"+dateVal+"_"+program+".png";
-          const altTextFile = "plots/"+metric+"_"+dateVal+"_"+program+".txt";
-          const altText = loadFile(altTextFile);
+          			const altTextFile = "plots/"+metric+"_"+dateVal+"_"+program+".txt";
+          			const altText = loadFile(altTextFile);
 					const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
 						+ labelText
 						+"<button class='remove'>x</button>"
