@@ -329,7 +329,15 @@
 		<script type="text/javascript">
 			$(function() {
 				$(document).ready(function() {
-					$('#metric').load('metrics.html');
+					// Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
+					const STUDY_CONFIG = 'stage-program';
+					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
+						if (data.intro.program_or_study=='program') {
+							$('#metric').load('metrics_program.html');
+						} else {
+							$('#metric').load('metrics_study.html');
+						};
+					});
 					$('#date').load('dates.html');
 					$('#program').load('programs.html');
 				});
