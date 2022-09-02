@@ -324,6 +324,21 @@
 			function getRandomInt (min, max) {
 				return Math.floor(Math.random() * (max - min + 1)) + min;
 			}
+
+			function getMonthList (start_month, start_year) {
+				const dates = [];
+				const current_month = 9;
+				const current_year = 2022;
+				while (!(current_month==start_month && current_year==start_year)) {
+					dates.push([start_month, start_year]);
+					start_month += 1;
+					if (start_month == 13) {
+						start_month = 1;
+						start_year += 1;
+					};
+				};
+				return dates;
+			};
 		</script>
 	  
 		<script type="text/javascript">
@@ -332,13 +347,20 @@
 					// Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
 					const STUDY_CONFIG = 'stage-program';
 					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
+						// Load list of plots corresponding to study/program
 						if (data.intro.program_or_study=='program') {
 							$('#metric').load('metrics_program.html');
 						} else {
 							$('#metric').load('metrics_study.html');
 						};
 					});
-					$('#date').load('dates.html');
+					// Figure out all months since start date to present
+					const dates = getMonthList(3,2022);
+					var date_options = '';
+					for (var i=0;i<dates.length;i++){
+						date_options += '<option value="'+ dates[i][1] + '"_' + dates[i][0] + '>' + dates[i][0] + ' ' + dates[i][1] + '</option>';
+					}
+					$('#date').append(date_options);
 					$('#program').load('programs.html');
 				});
 			});
@@ -375,7 +397,6 @@
 					const metricLabel = $("#metric option:selected").text();
 					const dateLabel = $("#date option:selected").text();
 					const programLabel = $("#program option:selected").text();
-	  
 					const sizex = $("#metric option:selected").data("sizex");
 					const sizey = $("#metric option:selected").data("sizey");
 					const labelText = metricLabel+" "+dateLabel+" "+programLabel;
