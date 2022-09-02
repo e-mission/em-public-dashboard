@@ -358,7 +358,7 @@
 					const dates = getMonthList(3,2022);
 					var date_options = '';
 					for (var i=0;i<dates.length;i++){
-						date_options += '<option value="'+ dates[i][1] + '"_' + dates[i][0] + '>' + dates[i][0] + ' ' + dates[i][1] + '</option>';
+						date_options += '<option value="'+ dates[i][1] + '"_' + dates[i][0] + '>' + dates[i][0] + '/' + dates[i][1] + '</option>';
 					}
 					$('#date').append(date_options);
 					$('#program').load('programs.html');
