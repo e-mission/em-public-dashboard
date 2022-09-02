@@ -132,34 +132,6 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
-def distancevsenergy(data,x,y,legend,plot_title,file_name):
-    all_labels= ['Car, drove alone',
-                 'Bus', 
-                 'Train', 
-                 'Free Shuttle',
-                 'Taxi/Uber/Lyft', 
-                 'Car, with others', 
-                 'Bikeshare',
-                 'Scooter share',
-                 'E-bike', 
-                 'Walk', 
-                 'Skate board', 
-                 'Regular Bike', 
-                 'Not a Trip',
-                 'No Travel', 
-                 'Same Mode', 
-                 'Other']
-    
-    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
-    f = plt.subplots(figsize=(15, 6))
-    sns.set(style='whitegrid')
-    sns.scatterplot(x=x, y=y, data=data, hue=legend, palette=colours)
-    plt.legend(loc='upper right')
-    plt.xlabel("", fontsize=15)
-    plt.ylabel(y, fontsize=15)
-    plt.title(plot_title, fontsize=15)
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-
 def overeall_energy_impact(x,y,color,data,plot_title,file_name):
     plt.figure(figsize=(15, 8))
     width = 0.8
@@ -363,3 +335,64 @@ def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
     plt.subplots_adjust(bottom=0.25)
     plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
     ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+
+def access_alt_text(alt_text, chart_name):
+    """ Inputs:
+    alt_text = the text describing the chart
+    chart_name = the alt text file to save or update
+    """
+    f = open(SAVE_DIR+chart_name+".txt",'w')
+    f.write(alt_text)
+    f.close()
+    return alt_text
+
+def store_alt_text_generic(chart_description, chart_name, var_name):
+    """ Inputs:
+    chart_description = what type of chart is it
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across the chart
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"{chart_description} chart of {var_name}."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+def store_alt_text_bar(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of item names, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Bar chart of {var_name}."
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+def store_alt_text_pie(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of item names, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Pie chart of {var_name}."
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100, 1)}%."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+def store_alt_text_timeseries(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with first col of dates, second column is values
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Scatter chart of {var_name}."
+    arg_min = np.argmin(df.iloc[:,1])
+    arg_max = np.argmax(df.iloc[:,1])
+    alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text

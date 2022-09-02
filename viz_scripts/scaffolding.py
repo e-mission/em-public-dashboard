@@ -130,67 +130,6 @@ def get_file_suffix(year, month, program):
     print(suffix)
     return suffix
 
-def access_alt_text(alt_text, chart_name):
-    """ Inputs:
-    alt_text = the text describing the chart
-    chart_name = the alt text file to save or update
-    """
-    f = open(f'/plots/{chart_name}.txt','w')
-    f.write(alt_text)
-    f.close()
-    return alt_text
-
-def store_alt_text_generic(chart_description, chart_name, var_name):
-    """ Inputs:
-    chart_description = what type of chart is it
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across the chart
-    """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"{chart_description} chart of {var_name}."
-    alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
-
-def store_alt_text_bar(df, chart_name, var_name):
-    """ Inputs:
-    df = dataframe with index of item names, first column is counts
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
-    """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Bar chart of {var_name}."
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
-    alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
-
-def store_alt_text_pie(df, chart_name, var_name):
-    """ Inputs:
-    df = dataframe with index of item names, first column is counts
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
-    """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Pie chart of {var_name}."
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100, 1)}%."
-    alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
-
-def store_alt_text_timeseries(df, chart_name, var_name):
-    """ Inputs:
-    df = dataframe with first col of dates, second column is values
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
-    """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Scatter chart of {var_name}."
-    arg_min = np.argmin(df.iloc[:,1])
-    arg_max = np.argmax(df.iloc[:,1])
-    alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
-    alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
-
 def data_quality_check(expanded_ct):
     '''1. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was pilot_ebike.
        2. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was same_mode.
