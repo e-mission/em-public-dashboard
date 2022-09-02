@@ -81,9 +81,10 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     disp.display(expanded_ct.head())
     return expanded_ct
 
-def load_viz_notebook_data(year, month, program, df_ei, dic_re, dic_pur, dic_fuel):
+def load_viz_notebook_data(year, month, program, dic_re, df_ei=None, dic_pur=None, dic_fuel=None):
     """ Inputs:
-    year/month/program/dic_* = parameters from the visualization notebook
+    year/month/program = parameters from the visualization notebook
+    dic/df_* = label mappings; if included they will be used to recode user inputs
     
     Pipeline to load and process the data before use in visualization notebooks.
     """
@@ -94,23 +95,22 @@ def load_viz_notebook_data(year, month, program, df_ei, dic_re, dic_pur, dic_fue
     expanded_ct = expand_userinputs(labeled_ct, 3)
     expanded_ct = data_quality_check(expanded_ct)
 
-    # Mapping new labels with dictionaries
-    expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
-    expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
-    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
-
-    # Mapping fuel
-    expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
-    expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
-
     # Change meters to miles
     unit_conversions(expanded_ct)
 
-    # Calculate energy impact
-    expanded_ct = energy_intensity(expanded_ct, df_ei, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
-    expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
-    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
-    
+    # Mapping new labels with dictionaries, calculating energy impact
+    expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+    if dic_pur is not None:
+        expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
+    if dic_fuel is not None:
+        expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
+        expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
+    if df_ei is not None:
+        expanded_ct = energy_intensity(expanded_ct, df_ei, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+        expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+        expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
     quality_text = get_quality_text(participant_ct_df, expanded_ct)
