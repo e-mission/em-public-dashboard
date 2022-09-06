@@ -4,6 +4,7 @@ import nbparameterise as nbp
 import argparse
 import arrow
 import requests
+import json
 
 
 # Configuration settings to use for all generated plots by this instance
@@ -34,9 +35,7 @@ else:
         f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} "\
         f"and data collection URL {dynamic_config['server']['connectUrl']}")
 if dynamic_config['intro']['program_or_study'] == 'program':
-    # This is a temporary line, until we modify the configs
-    mode_studied = 'Pilot ebike'
-#     mode_studied = dynamic_config['intro']['mode_studied']
+    mode_studied = dynamic_config['intro']['mode_studied']
 else:
     mode_studied = None
 
