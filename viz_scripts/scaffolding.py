@@ -124,9 +124,15 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
     return expanded_ct
 
-def get_quality_text(participant_ct_df, expanded_ct):
-    cq = (len(expanded_ct), len(expanded_ct.user_id.unique()), len(participant_ct_df), len(participant_ct_df.user_id.unique()), (len(expanded_ct) * 100) / len(participant_ct_df), )
-    quality_text = "Based on %s confirmed trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
+def get_quality_text(before_df, after_df, mode_of_interest=None):
+    """ Inputs:
+    before_df = dataframe prior to filtering (usually participant_ct_df)
+    after_df = dataframe after filtering (usually expanded_ct)
+    mode_of_interest = optional detail to include in the text string
+    """
+    cq = (len(after_df), len(after_df.user_id.unique()), len(before_df), len(before_df.user_id.unique()), (len(after_df) * 100) / len(before_df), )
+    interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
+    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
 
