@@ -81,9 +81,9 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     disp.display(expanded_ct.head())
     return expanded_ct
 
-def load_viz_notebook_data(year, month, program, dic_re, dic_pur=None):
+def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
     """ Inputs:
-    year/month/program = parameters from the visualization notebook
+    year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
     
     Pipeline to load and process the data before use in visualization notebooks.
@@ -92,7 +92,11 @@ def load_viz_notebook_data(year, month, program, dic_re, dic_pur=None):
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq)
     labeled_ct = filter_labeled_trips(participant_ct_df)
-    expanded_ct = expand_userinputs(labeled_ct, 3)
+    if study_type == 'program':
+        labels_per_trip = 3
+    else:
+        labels_per_trip = 2
+    expanded_ct = expand_userinputs(labeled_ct, labels_per_trip)
     expanded_ct = data_quality_check(expanded_ct)
 
     # Change meters to miles
