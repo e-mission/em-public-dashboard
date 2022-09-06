@@ -323,12 +323,13 @@
 		<script type="text/javascript">
 			function getRandomInt (min, max) {
 				return Math.floor(Math.random() * (max - min + 1)) + min;
-			}
+			};
 
 			function getMonthList (start_month, start_year) {
+				const date = new Date();
 				const dates = [];
-				const current_month = 9;
-				const current_year = 2022;
+				const current_month = date.getMonth() + 1;
+				const current_year = date.getFullYear();
 				while (!(current_month==start_month && current_year==start_year)) {
 					dates.push([start_month, start_year]);
 					start_month += 1;
