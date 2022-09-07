@@ -363,7 +363,12 @@
 					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
 						// Load list of plots corresponding to study/program
 						if (data.intro.program_or_study=='program') {
-							$('#metric').load('metrics_program.html');
+                            $.get("metrics_program.html", function(response) {
+                                console.log(response);
+                                const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
+                                console.log("After replacing "+configuredResponse);
+                                $('#metric').append(configuredResponse);
+                            });
 						} else {
 							$('#metric').load('metrics_study.html');
 						};
