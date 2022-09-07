@@ -337,15 +337,19 @@
 			function getMonthList (start_month, start_year) {
 				const date = new Date();
 				const dates = [];
-				const current_month = date.getMonth() + 1;
-				const current_year = date.getFullYear();
-				while (!(current_month==start_month && current_year==start_year)) {
-					dates.push([start_month, start_year]);
-					start_month += 1;
-					if (start_month == 13) {
-						start_month = 1;
-						start_year += 1;
+				const end_month = date.getMonth() + 1;
+				const end_year = date.getFullYear();
+                var current_month = start_month;
+                var current_year = start_year;
+                dates.push([current_month, current_year]);
+				while (!(current_month==end_month && current_year==end_year)) {
+					current_month += 1;
+					if (current_month == 13) {
+						current_month = 1;
+						current_year += 1;
 					};
+                    console.log("Adding month "+current_month+" year "+current_year);
+					dates.push([current_month, current_year]);
 				};
 				return dates;
 			};
@@ -363,15 +367,15 @@
 						} else {
 							$('#metric').load('metrics_study.html');
 						};
+                        // Figure out all months since start date to present
+                        const dates = getMonthList(Number.parseInt(data.intro.start_month), Number.parseInt(data.intro.start_year));
+                        var date_options = '';
+                        for (var i=0;i<dates.length;i++){
+                            date_options += '<option value="'+ dates[i][1] + '"_' + dates[i][0] + '>' + dates[i][0] + '/' + dates[i][1] + '</option>';
+                        }
+                        $('#date').append(date_options);
+					    $('#program').load('programs.html');
 					});
-					// Figure out all months since start date to present
-					const dates = getMonthList(3,2022);
-					var date_options = '';
-					for (var i=0;i<dates.length;i++){
-						date_options += '<option value="'+ dates[i][1] + '"_' + dates[i][0] + '>' + dates[i][0] + '/' + dates[i][1] + '</option>';
-					}
-					$('#date').append(date_options);
-					$('#program').load('programs.html');
 				});
 			});
 		</script>
