@@ -199,34 +199,7 @@
 		<div id="content" class="container-fluid">
 			<div class="gridster">
 				<ul>
-					<li data-row="1" data-col="1" data-sizex="4" data-sizey="4">
-						Number of trips (Nov 2020)
-						<button class='remove'>x</button>
-						<img src='plots/ntrips_mode_confirm_2020_11_prepilot.png' width=90% height=90%>
-					</li>
-					<li data-row="1" data-col="5" data-sizex="4" data-sizey="4">
-						Trip miles by mode (Nov 2020)
-						<button class='remove'>x</button>
-						<img src='plots/miles_mode_confirm_2020_11_prepilot.png' width=90% height=90%>
-					</li>
-					<li data-row="1" data-col="9" data-sizex="6" data-sizey="4">
-						eBike Trip frequency (Nov 2020)
-						<button class='remove'>x</button>
-						<img src='plots/ntrips_ebike_per_day_2020_11_prepilot.png' width=90% height=90%>
-					</li>
 				</ul>
-                <ul>
-					<li data-row="5" data-col="1" data-sizex="6" data-sizey="4">
-						Average trip length (Nov 2020)
-						<button class='remove'>x</button>
-						<img src='plots/average_miles_mode_confirm_2020_11_prepilot.png' width=90% height=90%>
-					</li>
-					<li data-row="5" data-col="7" data-sizex="6" data-sizey="4">
-						Sketch of Emissions Impact (Nov 2020)
-						<button class='remove'>x</button>
-						<img src='plots/sketch_CO2impact_ebike_2020_11_prepilot.png' width=90% height=90%>
-					</li>
-                </ul>
 			</div>
 			<div class="row">
 				<div class="col-lg-8 text-center">
@@ -356,6 +329,17 @@
 		</script>
 	  
 		<script type="text/javascript">
+            function addPreconfiguredMetrics(metricList) {
+                // add the initial metrics by selecting values and then simulating a click
+                // this avoids us having to refactor out the code to add a new plot
+                // which relies heavily on the mappings stored in the options
+                metricList.forEach((plot_val) => {
+                    console.log("Adding metric for "+plot_val);
+                    $("#metric").val(plot_val);
+                    $('.js-add-new').click();
+                });
+            };
+
 			$(function() {
 				$(document).ready(function() {
 					// Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
@@ -364,16 +348,30 @@
 						// Load list of plots corresponding to study/program
 						if (data.intro.program_or_study=='program') {
                             $.get("metrics_program.html", function(response) {
-                                console.log(response);
                                 const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
-                                console.log("After replacing "+configuredResponse);
                                 $('#metric').append(configuredResponse);
+                                addPreconfiguredMetrics([
+                                    "ntrips_mode_confirm",
+                                    "miles_mode_confirm",
+                                    `ntrips_${data.intro.mode_studied}_purpose`,
+                                    `ntrips_${data.intro.mode_studied}_per_day`,
+                                    `sketch_CO2impact_${data.intro.mode_studied}`
+                                ]);
                             });
 						} else {
 							$('#metric').load('metrics_study.html');
+                            addPreconfiguredMetrics([
+                                "ntrips_mode_confirm",
+                                "miles_mode_confirm",
+                                "ntrips_purpose",
+                                "ntrips_per_day",
+                                "ts_emissions_user"
+                            ]);
 						};
                         // Figure out all months since start date to present
-                        const dates = getMonthList(Number.parseInt(data.intro.start_month), Number.parseInt(data.intro.start_year));
+                        const dates = getMonthList(
+                            Number.parseInt(data.intro.start_month),
+                            Number.parseInt(data.intro.start_year));
                         var date_options = '';
                         for (var i=0;i<dates.length;i++){
                             const paddedMonth = String(dates[i][0]).padStart(2, '0');
@@ -381,7 +379,12 @@
                             date_options += `<option value='${currYear}_${paddedMonth}'>` + dates[i][0] + '/' + dates[i][1] + '</option>';
                         }
                         $('#date').append(date_options);
+                        // Ensure that the default option is the most recent
+                        const lastVal = $("#date option:last-child").val();
+                        // by setting the current val to the last one
+                        $("#date").val(lastVal);
 					    $('#program').load('programs.html');
+
 					});
 				});
 			});
