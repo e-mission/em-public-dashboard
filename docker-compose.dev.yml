@@ -1,7 +1,7 @@
 version: "3"
 services:
   dashboard:
-    image: danjellz/http-server:latest
+    image: danjellz/http-server:1.4
     depends_on:
       - db
     ports:
@@ -13,7 +13,10 @@ services:
     networks:
        - emission
   notebook-server:
-    image: emission/em-public-dashboard-notebook:1.0.0
+    image: em-pub-dash-dev/viz-scripts
+    build:
+        context: viz_scripts
+        dockerfile: docker/Dockerfile.dev
     depends_on:
       - db
     environment:

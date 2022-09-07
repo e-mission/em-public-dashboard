@@ -1,19 +1,24 @@
 version: "3"
 services:
   dashboard:
-    image: danjellz/http-server:latest
+    image: em-pub-dash-prod/frontend
+    build:
+        context: frontend
+        dockerfile: docker/Dockerfile
     depends_on:
       - db
     ports:
       # DASH in numbers
       - "3274:8080"
     volumes:
-      - ./frontend:/public
       - ./plots:/public/plots
     networks:
        - emission
   notebook-server:
-    image: emission/em-public-dashboard-notebook:1.0.0
+    image: em-pub-dash-prod/viz-scripts
+    build:
+        context: viz_scripts
+        dockerfile: docker/Dockerfile
     depends_on:
       - db
     environment:
@@ -26,7 +31,6 @@ services:
     networks:
       - emission
     volumes:
-      - ./viz_scripts:/usr/src/app/saved-notebooks
       - ./plots:/plots
   db:
     image: mongo:4.4.0
