@@ -76,14 +76,67 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     print("After expanding, columns went from %s -> %s" %
         (len(labeled_ct.columns), len(expanded_ct.columns)))
     assert len(expanded_ct.columns) == len(labeled_ct.columns) + labels_per_trip, \
-        ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.rows %s" %
+        ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.columns %s" %
             (len(expanded_ct.columns), len(labeled_ct.columns)))
     disp.display(expanded_ct.head())
     return expanded_ct
 
-def get_quality_text(participant_ct_df, expanded_ct):
-    cq = (len(expanded_ct), len(expanded_ct.user_id.unique()), len(participant_ct_df), len(participant_ct_df.user_id.unique()), (len(expanded_ct) * 100) / len(participant_ct_df), )
-    quality_text = "Based on %s confirmed trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
+def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
+    """ Inputs:
+    year/month/program/study_type = parameters from the visualization notebook
+    dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
+    
+    Pipeline to load and process the data before use in visualization notebooks.
+    """
+    # Access database
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq)
+    labeled_ct = filter_labeled_trips(participant_ct_df)
+    if study_type == 'program':
+        labels_per_trip = 3
+    else:
+        labels_per_trip = 2
+    expanded_ct = expand_userinputs(labeled_ct, labels_per_trip)
+    expanded_ct = data_quality_check(expanded_ct)
+
+    # Change meters to miles
+    unit_conversions(expanded_ct)
+
+    # Mapping new mode labels with dictionaries
+    expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+
+    # Trip purpose mapping
+    if dic_pur is not None:
+        expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
+
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    quality_text = get_quality_text(participant_ct_df, expanded_ct)
+
+    return expanded_ct, file_suffix, quality_text
+
+def add_energy_labels(expanded_ct, df_ei, dic_fuel):
+    """ Inputs:
+    expanded_ct = dataframe of trips that has had Mode_confirm and Replaced_mode added
+    dic/df_* = label mappings for energy impact and fuel
+    """
+    expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
+    expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
+    expanded_ct = energy_intensity(expanded_ct, df_ei, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    return expanded_ct
+
+def get_quality_text(before_df, after_df, mode_of_interest=None):
+    """ Inputs:
+    before_df = dataframe prior to filtering (usually participant_ct_df)
+    after_df = dataframe after filtering (usually expanded_ct)
+    mode_of_interest = optional detail to include in the text string
+    """
+    cq = (len(after_df), len(after_df.user_id.unique()), len(before_df), len(before_df.user_id.unique()), (len(after_df) * 100) / len(before_df), )
+    interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
+    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
 
@@ -93,12 +146,6 @@ def get_file_suffix(year, month, program):
     suffix = suffix + "_%s" % program if program is not None else ""
     print(suffix)
     return suffix
-
-def get_quality_text_ebike(all_confirmed_df, ebike_ct_df):
-    cq = (len(ebike_ct_df), len(ebike_ct_df.user_id.unique()), len(all_confirmed_df), len(all_confirmed_df.user_id.unique()), (len(ebike_ct_df) * 100) / len(all_confirmed_df), )
-    quality_text = "Based on %s eBike trips from %d users\nof %s confirmed trips (all modes) from %d users (%.2f%%)" % cq
-    print(quality_text)
-    return quality_text
 
 def data_quality_check(expanded_ct):
     '''1. Delete rows where the mode_confirm was pilot_ebike and repalced_mode was pilot_ebike.
