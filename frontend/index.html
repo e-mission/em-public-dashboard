@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<title>NREL OpenPATH Dashboard</title>
+		<title>Placeholder</title>
 
 		<!-- == APPLICATION HEAD == -->
 		<!-- Google Tag Manager -->
@@ -111,7 +111,7 @@
 						</div>
 
 						<div class="col-md-6 col-xl-8 order-md-1">
-							<a href="https://nrel.gov/openpath" class="app-name">OpenPATH dashboard</a>
+                            <a id="link_to_join_page" href="https://nrel.gov/openpath" class="app-name">NREL OpenPATH dashboard</a>
 						</div>
 
 					</div>
@@ -384,7 +384,11 @@
                         // by setting the current val to the last one
                         $("#date").val(lastVal);
 					    $('#program').load('programs.html');
-
+                        const dynamicPublicDashboardName = `${data.intro.translated_text.en.deployment_name} Public Dashboard`
+                        const projectJoinPage = data.server.connectUrl.replace("api", "join");
+                        document.title = dynamicPublicDashboardName;
+                        $('#link_to_join_page').text(dynamicPublicDashboardName);
+                        $('#link_to_join_page').attr('href', projectJoinPage);
 					});
 				});
 			});
