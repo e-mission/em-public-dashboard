@@ -5,7 +5,10 @@ ARG SERVER_BRANCH=dashboard-dependencies
 
 ADD docker/environment36.dashboard.additions.yml /
 
-RUN bash -c "/clone_server.sh"
+RUN /bin/bash -c "/clone_server.sh"
+
+WORKDIR /usr/src/app
+
 RUN /bin/bash -c "cd e-mission-server && source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
 RUN /bin/bash -c "cd e-mission-server && source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
 
@@ -17,6 +20,8 @@ COPY bin .
 COPY conf .
 COPY *.ipynb .
 COPY *.py .
+
+WORKDIR /usr/src/app
 
 ADD docker/start_notebook.sh /usr/src/app/start_notebook.sh
 RUN chmod u+x /usr/src/app/start_notebook.sh
