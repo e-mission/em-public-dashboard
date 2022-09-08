@@ -17,9 +17,8 @@ RUN /bin/bash -c "cd e-mission-server && source setup/activate.sh && conda env u
 RUN mkdir -p /usr/src/app/saved-notebooks
 WORKDIR /usr/src/app/saved-notebooks
 
-COPY auxiliary_files .
-COPY bin .
-COPY conf .
+COPY auxiliary_files ./auxiliary_files
+COPY bin ./bin
 COPY *.ipynb .
 COPY *.py .
 
