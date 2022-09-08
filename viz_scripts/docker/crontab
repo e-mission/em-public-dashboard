@@ -1,8 +1,8 @@
 0 7 * * * python bin/update_mappings.py mapping_dictionaries.ipynb >> /var/log/intake.stdinout 2>&1
-0 8 * * * python bin/generate_plots.py generic_metrics.ipynb prepilot >> /var/log/intake.stdinout 2>&1
-0 8 * * * python bin/generate_plots.py generic_timeseries.ipynb prepilot >> /var/log/intake.stdinout 2>&1
-0 8 * * * python bin/generate_plots.py mode_specific_metrics.ipynb prepilot >> /var/log/intake.stdinout 2>&1
-0 8 * * * python bin/generate_plots.py mode_specific_timeseries.ipynb prepilot >> /var/log/intake.stdinout 2>&1
-0 8 * * * python bin/generate_plots.py energy_calculations.ipynb prepilot >> /var/log/intake.stdinout 2>&1
+0 8 * * * python bin/generate_plots.py generic_metrics.ipynb default >> /var/log/intake.stdinout 2>&1
+0 8 * * * python bin/generate_plots.py generic_timeseries.ipynb default >> /var/log/intake.stdinout 2>&1
+0 8 * * * python bin/generate_plots.py mode_specific_metrics.ipynb default >> /var/log/intake.stdinout 2>&1
+0 8 * * * python bin/generate_plots.py mode_specific_timeseries.ipynb default >> /var/log/intake.stdinout 2>&1
+0 8 * * * python bin/generate_plots.py energy_calculations.ipynb default >> /var/log/intake.stdinout 2>&1
 # For testing only
-# */5 * * * * python bin/generate_plots.py mode_purpose_share.ipynb prepilot >> /var/log/intake.stdinout 2>&1
+# */5 * * * * python bin/generate_plots.py mode_purpose_share.ipynb default >> /var/log/intake.stdinout 2>&1
