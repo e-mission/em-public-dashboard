@@ -3,6 +3,8 @@ FROM emission/e-mission-server.dev.server-only:4.0.0
 ARG SERVER_REPO=https://github.com/aGuttman/e-mission-server.git
 ARG SERVER_BRANCH=dashboard-dependencies
 
+VOLUME /plots
+
 ADD docker/environment36.dashboard.additions.yml /
 
 RUN /bin/bash -c "/clone_server.sh"
