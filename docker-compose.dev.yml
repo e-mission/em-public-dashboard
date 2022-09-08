@@ -23,6 +23,7 @@ services:
       - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
       - CRON_MODE=
+      - STUDY_CONFIG=stage-program
     ports:
       # ipynb in numbers
       - "47962:8888"
