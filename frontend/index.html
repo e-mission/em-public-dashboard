@@ -340,10 +340,30 @@
                 });
             };
 
+            /*
+             * Copied and adapted from the phone `dynamic_config.js`
+             * Adapted by supporting program name via parameter to make it
+             * easier to test against localhost
+             */
+            const _getStudyName = function(connectUrl) {
+              const orig_host = new URL(connectUrl).hostname;
+              // If we are running this on dev, use a param instead to enable testing
+              if (orig_host == "localhost") {
+                const param_study_name = new URL(connectUrl).searchParams.get("study_config");
+                return param_study_name == null? "stage-program" : param_study_name;
+              }
+              const first_domain = orig_host.split(".")[0];
+              if (first_domain == "openpath-stage") { return "stage"; }
+              const openpath_index = first_domain.search("-openpath");
+              if (openpath_index == -1) { return undefined; }
+              const study_name = first_domain.substr(0,openpath_index);
+              return study_name;
+            }
+
 			$(function() {
 				$(document).ready(function() {
 					// Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
-					const STUDY_CONFIG = 'stage-program';
+					const STUDY_CONFIG = _getStudyName(window.location);
 					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
 						// Load list of plots corresponding to study/program
 						if (data.intro.program_or_study=='program') {
