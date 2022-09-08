@@ -24,7 +24,7 @@ services:
     environment:
       - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
-      - CRON_MODE=
+      - CRON_MODE=TRUE
     ports:
       # ipynb in numbers
       - "47962:8888"
