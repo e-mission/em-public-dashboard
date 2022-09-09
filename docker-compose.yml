@@ -2,9 +2,7 @@ version: "3"
 services:
   dashboard:
     image: em-pub-dash-prod/frontend
-    build:
-        context: frontend
-        dockerfile: docker/Dockerfile
+    build: frontend
     depends_on:
       - db
     ports:
