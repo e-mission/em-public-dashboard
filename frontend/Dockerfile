@@ -4,4 +4,4 @@ VOLUME /plots
 
 RUN mkdir -p /public
 COPY client /public/client
-COPY *.html /public
+COPY *.html /public/
