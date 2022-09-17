@@ -1,7 +1,7 @@
 # python 3
 FROM emission/e-mission-server.dev.server-only:4.0.0
-ARG SERVER_REPO=https://github.com/aGuttman/e-mission-server.git
-ARG SERVER_BRANCH=dashboard-dependencies
+ENV SERVER_REPO=https://github.com/aGuttman/e-mission-server.git
+ENV SERVER_BRANCH=dashboard-dependencies
 
 VOLUME /plots
 
