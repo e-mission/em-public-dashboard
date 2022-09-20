@@ -59,7 +59,7 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
-def expand_userinputs(labeled_ct, labels_per_trip):
+def expand_userinputs(labeled_ct):
     '''
     param: labeled_ct: a dataframe of confirmed trips, some of which have labels
     params: labels_per_trip: the number of labels for each trip.
@@ -69,6 +69,8 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     '''
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
     disp.display(label_only.head())
+    labels_per_trip = len(label_only.columns)
+    print("Found %s columns of length %d" % (label_only.columns, labels_per_trip))
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
     assert len(expanded_ct) == len(labeled_ct), \
         ("Mismatch after expanding labels, expanded_ct.rows = %s != labeled_ct.rows %s" %
@@ -92,11 +94,7 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq)
     labeled_ct = filter_labeled_trips(participant_ct_df)
-    if study_type == 'program':
-        labels_per_trip = 3
-    else:
-        labels_per_trip = 2
-    expanded_ct = expand_userinputs(labeled_ct, labels_per_trip)
+    expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
 
     # Change meters to miles
@@ -104,7 +102,13 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
 
     # Mapping new mode labels with dictionaries
     expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
-    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+    if study_type == 'program':
+        if 'replaced_mode' in expanded_ct.columns:
+            expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+        else:
+            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+    else:
+            print("This is a study, not expecting any replaced modes.")
 
     # Trip purpose mapping
     if dic_pur is not None:
