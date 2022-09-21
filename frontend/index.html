@@ -46,19 +46,17 @@
 		<script src="https://kit.fontawesome.com/32f532493a.js" crossorigin="anonymous"></script>
 
 		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+		<script src="https://code.jquery.com/jquery-3.6.1.min.js"   integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="   crossorigin="anonymous"></script>
 
 		<!-- == END APPLICATION HEAD == -->
 	</head>
 	<body>
 		<!-- Bootstrap core JavaScript -->
-		<script src="client/js/jquery.min.js"></script>
 		<script src="client/js/jquery.gridster.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="client/js/bootstrap.bundle.min.js"></script>
 
 		<!-- Google Tag Manager (noscript) -->
 		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KG7PVKB"
-						  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+						  height="0" width="0" style="display:none;visibility:hidden"  sandbox="allow-same-origin"></iframe></noscript>
 		<!-- End Google Tag Manager (noscript) -->
 
 		<!-- Site application banner -->
@@ -333,11 +331,15 @@
                 // add the initial metrics by selecting values and then simulating a click
                 // this avoids us having to refactor out the code to add a new plot
                 // which relies heavily on the mappings stored in the options
-                metricList.forEach((plot_val) => {
-                    console.log("Adding metric for "+plot_val);
-                    $("#metric").val(plot_val);
-                    $('.js-add-new').click();
-                });
+                setTimeout(function() {
+                    metricList.forEach((plot_val) => {
+                        console.log("Adding metric for "+plot_val);
+                        $("#metric").val(plot_val);
+                        $('.js-add-new').click();
+                    });
+                }, 500);
+                // we pick 500 ms here because the delay between working and non-working loads
+                // is 0.098 - 0.066 = 0.032 seconds = 32 ms, so 500 ms delay should be pretty safe
             };
 
             /*
@@ -348,7 +350,7 @@
             const _getStudyName = function(connectUrl) {
               const _getFromParamOrDefault = function() {
                 const param_study_name = new URL(connectUrl).searchParams.get("study_config");
-                return param_study_name == null? "stage-program" : param_study_name;
+                return param_study_name == null? "stage-study" : param_study_name;
               }
               const orig_host = new URL(connectUrl).hostname;
               // If we are running this on dev, use a param instead to enable testing
