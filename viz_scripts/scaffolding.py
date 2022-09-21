@@ -150,7 +150,8 @@ def get_quality_text(before_df, after_df, mode_of_interest=None):
     """
     cq = (len(after_df), len(after_df.user_id.unique()), len(before_df), len(before_df.user_id.unique()), (len(after_df) * 100) / len(before_df), )
     interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
-    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
+    total_str = 'confirmed' if mode_of_interest is not None else ''
+    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
 
