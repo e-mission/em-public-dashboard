@@ -331,11 +331,15 @@
                 // add the initial metrics by selecting values and then simulating a click
                 // this avoids us having to refactor out the code to add a new plot
                 // which relies heavily on the mappings stored in the options
-                metricList.forEach((plot_val) => {
-                    console.log("Adding metric for "+plot_val);
-                    $("#metric").val(plot_val);
-                    $('.js-add-new').click();
-                });
+                setTimeout(function() {
+                    metricList.forEach((plot_val) => {
+                        console.log("Adding metric for "+plot_val);
+                        $("#metric").val(plot_val);
+                        $('.js-add-new').click();
+                    });
+                }, 500);
+                // we pick 500 ms here because the delay between working and non-working loads
+                // is 0.098 - 0.066 = 0.032 seconds = 32 ms, so 500 ms delay should be pretty safe
             };
 
             /*
