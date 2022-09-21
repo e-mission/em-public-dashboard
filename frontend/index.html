@@ -350,7 +350,7 @@
             const _getStudyName = function(connectUrl) {
               const _getFromParamOrDefault = function() {
                 const param_study_name = new URL(connectUrl).searchParams.get("study_config");
-                return param_study_name == null? "stage-program" : param_study_name;
+                return param_study_name == null? "stage-study" : param_study_name;
               }
               const orig_host = new URL(connectUrl).hostname;
               // If we are running this on dev, use a param instead to enable testing
