@@ -59,7 +59,7 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
-def expand_userinputs(labeled_ct, labels_per_trip):
+def expand_userinputs(labeled_ct):
     '''
     param: labeled_ct: a dataframe of confirmed trips, some of which have labels
     params: labels_per_trip: the number of labels for each trip.
@@ -69,6 +69,8 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     '''
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
     disp.display(label_only.head())
+    labels_per_trip = len(label_only.columns)
+    print("Found %s columns of length %d" % (label_only.columns, labels_per_trip))
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
     assert len(expanded_ct) == len(labeled_ct), \
         ("Mismatch after expanding labels, expanded_ct.rows = %s != labeled_ct.rows %s" %
@@ -92,11 +94,7 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq)
     labeled_ct = filter_labeled_trips(participant_ct_df)
-    if study_type == 'program':
-        labels_per_trip = 3
-    else:
-        labels_per_trip = 2
-    expanded_ct = expand_userinputs(labeled_ct, labels_per_trip)
+    expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
 
     # Change meters to miles
@@ -104,7 +102,13 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
 
     # Mapping new mode labels with dictionaries
     expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
-    expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+    if study_type == 'program':
+        if 'replaced_mode' in expanded_ct.columns:
+            expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+        else:
+            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+    else:
+            print("This is a study, not expecting any replaced modes.")
 
     # Trip purpose mapping
     if dic_pur is not None:
@@ -122,10 +126,20 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     dic/df_* = label mappings for energy impact and fuel
     """
     expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
+    expanded_ct = energy_intensity(expanded_ct, df_ei, 'Mode_confirm')
+    expanded_ct = energy_footprint_kWH(expanded_ct, 'distance_miles', 'Mode_confirm')
+    expanded_ct = CO2_footprint_lb(expanded_ct, 'distance_miles', 'Mode_confirm')
+    return expanded_ct
+
+def add_energy_impact(expanded_ct, df_ei, dic_fuel):
+    # Let's first calculate everything for the mode confirm
+    # And then calculate everything for the replaced mode
+    expanded_ct = add_energy_labels(expanded_ct, df_ei, dic_fuel)
     expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
-    expanded_ct = energy_intensity(expanded_ct, df_ei, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
-    expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
-    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles', 'Replaced_mode', 'Mode_confirm')
+    expanded_ct = energy_intensity(expanded_ct, df_ei, 'Replaced_mode')
+    # and then compute the impacts
+    expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles')
+    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
     return expanded_ct
 
 def get_quality_text(before_df, after_df, mode_of_interest=None):
@@ -136,7 +150,8 @@ def get_quality_text(before_df, after_df, mode_of_interest=None):
     """
     cq = (len(after_df), len(after_df.user_id.unique()), len(before_df), len(before_df.user_id.unique()), (len(after_df) * 100) / len(before_df), )
     interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
-    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total trips from %d users (%.2f%%)" % cq
+    total_str = 'confirmed' if mode_of_interest is not None else ''
+    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
 
@@ -166,104 +181,71 @@ def data_quality_check(expanded_ct):
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
 
-def energy_intensity(df,df1,distance,col1,col2):
+def energy_intensity(trip_df,mode_intensity_df,col):
     """ Inputs:
-    df = dataframe with data
-    df = dataframe with energy factors
-    distance = distance in meters
-    col1 = Replaced_mode
-    col2= Mode_confirm
-
+    trip_df = dataframe with data
+    mode_intensity_df = dataframe with energy/cost/time factors
+    col = the column for which we want to map the intensity
     """
-    df1 = df1.copy()
-    df1[col1] = df1['mode']
-    dic_ei_factor = dict(zip(df1[col1],df1['energy_intensity_factor']))
-    dic_CO2_factor = dict(zip(df1[col1],df1['CO2_factor']))
-    dic_ei_trip = dict(zip(df1[col1],df1['(kWH)/trip']))
-    
-    df['ei_'+col1] = df[col1].map(dic_ei_factor)
-    df['CO2_'+col1] = df[col1].map(dic_CO2_factor)
-    df['ei_trip_'+col1] = df[col1].map(dic_ei_trip)
-    
-      
-    df1[col2] = df1[col1]
-    dic_ei_factor = dict(zip(df1[col2],df1['energy_intensity_factor']))
-    dic_ei_trip = dict(zip(df1[col2],df1['(kWH)/trip']))
-    dic_CO2_factor = dict(zip(df1[col2],df1['CO2_factor']))
-    df['ei_'+col2] = df[col2].map(dic_ei_factor)
-    df['CO2_'+col2] = df[col2].map(dic_CO2_factor)
-    df['ei_trip_'+col2] = df[col2].map(dic_ei_trip)
-           
-    return df
 
+    mode_intensity_df = mode_intensity_df.copy()
+    mode_intensity_df[col] = mode_intensity_df['mode']
+    dic_ei_factor = dict(zip(mode_intensity_df[col],mode_intensity_df['energy_intensity_factor']))
+    dic_CO2_factor = dict(zip(mode_intensity_df[col],mode_intensity_df['CO2_factor']))
+    dic_ei_trip = dict(zip(mode_intensity_df[col],mode_intensity_df['(kWH)/trip']))
 
-def energy_impact_kWH(df,distance,col1,col2):
+    trip_df['ei_'+col] = trip_df[col].map(dic_ei_factor)
+    trip_df['CO2_'+col] = trip_df[col].map(dic_CO2_factor)
+    trip_df['ei_trip_'+col] = trip_df[col].map(dic_ei_trip)
+    return trip_df
+
+def energy_footprint_kWH(df,distance,col):
     """ Inputs:
     df = dataframe with data
     distance = distance in miles
-    col1 = Replaced_mode
-    col2= Mode_confirm
+    col = Replaced_mode or Mode_confirm
     """
-        
-    conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
-                       (df['Replaced_mode_fuel'] == 'diesel'),
-                       (df['Replaced_mode_fuel'] == 'electric')]
-   
-    conditions_col2 = [(df['Mode_confirm_fuel'] =='gasoline'),
-                       (df['Mode_confirm_fuel'] == 'diesel'),
-                       (df['Mode_confirm_fuel'] == 'electric')]
-
-    gasoline_col1 = (df[distance]*df['ei_'+col1]*0.000293071) # 1 BTU = 0.000293071 kWH
-    diesel_col1   = (df[distance]*df['ei_'+col1]*0.000293071)
-    electric_col1 = (df[distance]*df['ei_'+col1])+ df['ei_trip_'+col1]
-    
-    gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000293071)
-    diesel_col2   = (df[distance]*df['ei_'+col2]*0.000293071)
-    electric_col2 = (df[distance]*df['ei_'+col2])+ df['ei_trip_'+col2]
-  
-    
-    values_col1 = [gasoline_col1,diesel_col1,electric_col1]
-    values_col2 = [gasoline_col2,diesel_col2,electric_col2]  
-    
-    df[col1+'_EI(kWH)'] = np.select(conditions_col1, values_col1)
-    df[col2+'_EI(kWH)'] = np.select(conditions_col2, values_col2)
-    
-    df['Energy_Impact(kWH)']  = round((df[col1+'_EI(kWH)'] - df[col2+'_EI(kWH)']),3)
-  
+    conditions_col = [(df[col+'_fuel'] =='gasoline'),
+                       (df[col+'_fuel'] == 'diesel'),
+                       (df[col+'_fuel'] == 'electric')]
+    gasoline_col = (df[distance]*df['ei_'+col]*0.000293071) # 1 BTU = 0.000293071 kWH
+    diesel_col   = (df[distance]*df['ei_'+col]*0.000293071)
+    electric_col = (df[distance]*df['ei_'+col])+ df['ei_trip_'+col]
+    values_col = [gasoline_col,diesel_col,electric_col]
+    df[col+'_EI(kWH)'] = np.select(conditions_col, values_col)
     return df
 
+def energy_impact_kWH(df,distance):
+    if 'Mode_confirm_EI(kWH)' not in df.columns:
+        print("Mode confirm footprint not found, computing before impact")
+        df = energy_footprint_kWH(df, distance, "Mode_confirm")
+    df = energy_footprint_kWH(df, distance, "Replaced_mode")
+    df['Energy_Impact(kWH)']  = round((df['Replaced_mode_EI(kWH)'] - df['Mode_confirm_EI(kWH)']),3)
+    return df
 
-def CO2_impact_lb(df,distance,col1,col2):
+def CO2_footprint_lb(df, distance, col):
     """ Inputs:
     df = dataframe with data
     distance = distance in miles
-    col1 = Replaced_mode
-    col2= Mode_confirm
+    col = Replaced_mode or Mode_confirm
     """
- 
-    conditions_col1 = [(df['Replaced_mode_fuel'] =='gasoline'),
-                       (df['Replaced_mode_fuel'] == 'diesel'),
-                       (df['Replaced_mode_fuel'] == 'electric')]
+    conditions_col = [(df[col+'_fuel'] =='gasoline'),
+                       (df[col+'_fuel'] == 'diesel'),
+                       (df[col+'_fuel'] == 'electric')]
    
-    conditions_col2 = [(df['Mode_confirm_fuel'] =='gasoline'),
-                       (df['Mode_confirm_fuel'] == 'diesel'),
-                       (df['Mode_confirm_fuel'] == 'electric')]
+    gasoline_col = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
+    diesel_col   = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
+    electric_col = (((df[distance]*df['ei_'+col])+df['ei_trip_'+col])*0.001)*df['CO2_'+col]
 
-  
-    gasoline_col1 = (df[distance]*df['ei_'+col1]*0.000001)* df['CO2_Replaced_mode']
-    diesel_col1   = (df[distance]*df['ei_'+col1]*0.000001)* df['CO2_Replaced_mode']
-    electric_col1 = (((df[distance]*df['ei_'+col1])+df['ei_trip_'+col1])*0.001)*df['CO2_'+col1]
+    values_col = [gasoline_col,diesel_col,electric_col]
+    df[col+'_lb_CO2'] = np.select(conditions_col, values_col)
+    return df
     
-    gasoline_col2 = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
-    diesel_col2   = (df[distance]*df['ei_'+col2]*0.000001)* df['CO2_Mode_confirm']
-    electric_col2 = (((df[distance]*df['ei_'+col2])+df['ei_trip_'+col2])*0.001)*df['CO2_'+col2]
   
-    
-    values_col1 = [gasoline_col1,diesel_col1,electric_col1]
-    values_col2 = [gasoline_col2,diesel_col2,electric_col2]  
-    
-    df[col1+'_lb_CO2'] = np.select(conditions_col1, values_col1)
-    df[col2+'_lb_CO2'] = np.select(conditions_col2, values_col2)
-    df['CO2_Impact(lb)']  = round((df[col1+'_lb_CO2'] - df[col2+'_lb_CO2']),3)
-  
+def CO2_impact_lb(df,distance):
+    if 'Mode_confirm_lb_CO2' not in df.columns:
+        print("Mode confirm footprint not found, computing before impact")
+        df = CO2_footprint_lb(df, distance, "Mode_confirm")
+    df = CO2_footprint_lb(df, distance, "Replaced_mode")
+    df['CO2_Impact(lb)']  = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']),3)
     return df
