@@ -397,21 +397,36 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-def generate_missing_plot(plot_title,debug_df, file_name):
-    f, ax = plt.subplots(figsize=(15, 6))
+def _get_plot_size(kind):
+    if kind == "pie": return (10, 10)
+    if kind == "bar": return (15, 6)
+    if kind == "energy": return (15, 8)
+    if kind == "timeseries": return (16, 4)
 
-#     all_red_colors = np.zeros(debug_df.values.shape, dtype="object")
-#     all_red_colors.fill("red")
+def generate_missing_plot(plot_title,debug_df,file_name,kind):
+    f, ax = plt.subplots(figsize=_get_plot_size(kind))
 
     plt.title("Unable to generate plot\n"+plot_title+"\n Reason:", fontsize=25, color="red")
-    ax = sns.barplot(x=debug_df['count'],y=debug_df.index, palette=sns.color_palette("Reds",n_colors=10))
-    ax.set_xlim(0, None)
-    for i in ax.containers:
-        ax.bar_label(i,)
-#     plt.table(cellText=debug_df.values,
-#               rowLabels=debug_df.index,
-#               colLabels=debug_df.columns,
-#               cellColours=all_red_colors)
+    # Must keep the patch visible; otherwise the entire figure becomes transparent
+    # f.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+    # ax = sns.barplot(x=debug_df['count'],y=debug_df.index, palette=sns.color_palette("Reds",n_colors=10))
+    # ax.set_xlim(0, None)
+    # for i in ax.containers:
+    #     ax.bar_label(i,)
+    the_table = plt.table(cellText=debug_df.values,
+              rowLabels=debug_df.index,
+              colLabels=debug_df.columns,
+              loc="center")
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(20)
+    the_table.scale(1, 4)
+    cellDict = the_table.get_celld()
+    for i in range(1,len(debug_df)+1):
+        currCellTextStr = cellDict[(i,0)].get_text().get_text()
+        if currCellTextStr == None or int(currCellTextStr) == 0:
+            cellDict[(i, 0)].get_text().set_color("red")
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def store_alt_text_missing(df, chart_name, var_name):
