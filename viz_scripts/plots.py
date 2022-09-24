@@ -396,3 +396,33 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
+
+def generate_missing_plot(plot_title,debug_df, file_name):
+    f, ax = plt.subplots(figsize=(15, 6))
+
+#     all_red_colors = np.zeros(debug_df.values.shape, dtype="object")
+#     all_red_colors.fill("red")
+
+    plt.title("Unable to generate plot\n"+plot_title+"\n Reason:", fontsize=25, color="red")
+    ax = sns.barplot(x=debug_df['count'],y=debug_df.index, palette=sns.color_palette("Reds",n_colors=10))
+    ax.set_xlim(0, None)
+    for i in ax.containers:
+        ax.bar_label(i,)
+#     plt.table(cellText=debug_df.values,
+#               rowLabels=debug_df.index,
+#               colLabels=debug_df.columns,
+#               cellColours=all_red_colors)
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+
+def store_alt_text_missing(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of debug information, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text

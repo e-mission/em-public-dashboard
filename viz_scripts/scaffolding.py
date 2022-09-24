@@ -136,7 +136,18 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     file_suffix = get_file_suffix(year, month, program)
     quality_text = get_quality_text(participant_ct_df, expanded_ct)
 
-    return expanded_ct, file_suffix, quality_text
+    debug_df = pd.DataFrame.from_dict({"Participant_trips": len(participant_ct_df),
+            "Trips_with_at_least_one_label": len(labeled_ct)},
+        orient='index', columns=["count"])
+    # debug_df.loc["Start_time", "count"] = dict(tq.startLD) if tq is not None else None
+    # debug_df.loc["End_time", "count"] = dict(tq.endLD) if tq is not None else None
+    if 'Trip_purpose' in expanded_ct.columns:
+        debug_df["Commute_trips"] = len(expanded_ct.query("Trip_purpose == 'Work'"))
+
+    if study_type == 'program' and 'mode_confirm' in expanded_ct.columns:
+        debug_df[f"{mode_of_interest}_trips"] = len(expanded_ct.query(f"mode_confirm == '{mode_of_interest}'"))
+
+    return expanded_ct, file_suffix, quality_text, debug_df
 
 def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     """ Inputs:
