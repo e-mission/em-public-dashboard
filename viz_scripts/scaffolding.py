@@ -152,11 +152,6 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
             },
         orient='index', columns=["value"])
 
-    if study_type == 'program' and 'mode_confirm' in expanded_ct.columns:
-        mode_of_interest_df = expanded_ct.query(f"mode_confirm == '{mode_of_interest}'")
-        debug_df.loc[f"{mode_of_interest}_trips"] = len(mode_of_interest_df)
-        debug_df.loc[f"{mode_of_interest}_trips_with_replaced_mode"] = trip_label_count("Replaced_mode", mode_of_interest_df)
-
     return expanded_ct, file_suffix, quality_text, debug_df
 
 def add_energy_labels(expanded_ct, df_ei, dic_fuel):
