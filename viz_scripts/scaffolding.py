@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import sys
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -12,6 +13,9 @@ import emission.core.wrapper.localdate as ecwl
 import IPython.display as disp
 
 import emission.core.get_database as edb
+
+def no_traceback_handler(exception_type, exception, traceback):
+    print("%s: %s" % (exception_type.__name__, exception), file=sys.stderr)
 
 def get_time_query(year, month):
     if year is None and month is None:
