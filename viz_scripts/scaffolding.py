@@ -95,6 +95,9 @@ def expand_userinputs(labeled_ct):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+# CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
+
 def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -136,16 +139,26 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     file_suffix = get_file_suffix(year, month, program)
     quality_text = get_quality_text(participant_ct_df, expanded_ct)
 
-    debug_df = pd.DataFrame.from_dict({"Participant_trips": len(participant_ct_df),
-            "Trips_with_at_least_one_label": len(labeled_ct)},
-        orient='index', columns=["count"])
-    # debug_df.loc["Start_time", "count"] = dict(tq.startLD) if tq is not None else None
-    # debug_df.loc["End_time", "count"] = dict(tq.endLD) if tq is not None else None
+    trip_label_count = lambda s: len(expanded_ct[s].dropna()) if s in expanded_ct.columns else 0
+
+    debug_df = pd.DataFrame.from_dict({
+            "year": year,
+            "month": month,
+            "Registered_participants": len(get_participant_uuids(program)),
+            "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
+            "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
+            "Trips_with_at_least_one_label": len(labeled_ct),
+            "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm"),
+            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose")
+            },
+        orient='index', columns=["value"])
+
     if 'Trip_purpose' in expanded_ct.columns:
         debug_df["Commute_trips"] = len(expanded_ct.query("Trip_purpose == 'Work'"))
 
     if study_type == 'program' and 'mode_confirm' in expanded_ct.columns:
         debug_df[f"{mode_of_interest}_trips"] = len(expanded_ct.query(f"mode_confirm == '{mode_of_interest}'"))
+        debug_df[f"{mode_of_interest}_trips_with_replaced_mode"] = len(expanded_ct.query(f"mode_confirm == '{mode_of_interest}'")["Replaced_mode"]) if "Replaced_mode" in expanded_ct.columns else 0
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
@@ -177,8 +190,6 @@ def get_quality_text(before_df, after_df, mode_of_interest=None):
     after_df = dataframe after filtering (usually expanded_ct)
     mode_of_interest = optional detail to include in the text string
     """
-    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     after_pct = (len(after_df) * 100) / len(before_df) if len(before_df) != 0 else np.nan
     cq = (len(after_df), unique_users(after_df), len(before_df), unique_users(before_df),

@@ -425,7 +425,7 @@ def generate_missing_plot(plot_title,debug_df,file_name,kind):
     cellDict = the_table.get_celld()
     for i in range(1,len(debug_df)+1):
         currCellTextStr = cellDict[(i,0)].get_text().get_text()
-        if currCellTextStr == None or int(currCellTextStr) == 0:
+        if currCellTextStr == "nan" or float(currCellTextStr) == 0:
             cellDict[(i, 0)].get_text().set_color("red")
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
