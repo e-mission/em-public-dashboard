@@ -135,20 +135,6 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
-def overeall_energy_impact(x,y,color,data,plot_title,file_name):
-    plt.figure(figsize=(15, 8))
-    width = 0.8
-    ax = sns.barplot(x=x, y=y, hue=color,data=data)
-    ax.set_title(plot_title, fontsize=18)
-    ax.set_xlabel(x, fontsize=18)
-    ax.set_ylabel(y,fontsize=18)
-    ax.xaxis.set_tick_params(labelsize=15)
-    ax.yaxis.set_tick_params(labelsize=15)
-    ax.relim()
-    ax.autoscale_view()                  
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=18)
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-    
 def energy_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Energy Savings', 'Energy Loss')
@@ -191,6 +177,7 @@ def energy_impact(x,y,color,plot_title,file_name):
     # map names to colors
     cmap = {True: 'green', False: 'red'}  
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+    plt.text(0,-1.5,f"Last updated {arrow.get()}", fontsize=10)
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
@@ -327,6 +314,7 @@ def CO2_impact(x,y,color,plot_title,file_name):
     # map names to colors
     cmap = {True: 'green', False: 'red'}
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+    plt.text(0,-1.5,f"Last updated {arrow.get()}", fontsize=10)
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
