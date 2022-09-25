@@ -97,6 +97,7 @@ def expand_userinputs(labeled_ct):
 
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
+trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
 def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
     """ Inputs:
@@ -139,8 +140,6 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     file_suffix = get_file_suffix(year, month, program)
     quality_text = get_quality_text(participant_ct_df, expanded_ct)
 
-    trip_label_count = lambda s: len(expanded_ct[s].dropna()) if s in expanded_ct.columns else 0
-
     debug_df = pd.DataFrame.from_dict({
             "year": year,
             "month": month,
@@ -148,17 +147,15 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
-            "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm"),
-            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose")
+            "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm", expanded_ct),
+            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct)
             },
         orient='index', columns=["value"])
 
-    if 'Trip_purpose' in expanded_ct.columns:
-        debug_df["Commute_trips"] = len(expanded_ct.query("Trip_purpose == 'Work'"))
-
     if study_type == 'program' and 'mode_confirm' in expanded_ct.columns:
-        debug_df[f"{mode_of_interest}_trips"] = len(expanded_ct.query(f"mode_confirm == '{mode_of_interest}'"))
-        debug_df[f"{mode_of_interest}_trips_with_replaced_mode"] = len(expanded_ct.query(f"mode_confirm == '{mode_of_interest}'")["Replaced_mode"]) if "Replaced_mode" in expanded_ct.columns else 0
+        mode_of_interest_df = expanded_ct.query(f"mode_confirm == '{mode_of_interest}'")
+        debug_df.loc[f"{mode_of_interest}_trips"] = len(mode_of_interest_df)
+        debug_df.loc[f"{mode_of_interest}_trips_with_replaced_mode"] = trip_label_count("Replaced_mode", mode_of_interest_df)
 
     return expanded_ct, file_suffix, quality_text, debug_df
 

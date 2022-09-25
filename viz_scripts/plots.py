@@ -397,14 +397,8 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-def _get_plot_size(kind):
-    if kind == "pie": return (10, 10)
-    if kind == "bar": return (15, 6)
-    if kind == "energy": return (15, 8)
-    if kind == "timeseries": return (16, 4)
-
-def generate_missing_plot(plot_title,debug_df,file_name,kind):
-    f, ax = plt.subplots(figsize=_get_plot_size(kind))
+def generate_missing_plot(plot_title,debug_df,file_name):
+    f, ax = plt.subplots(figsize=(10,10))
 
     plt.title("Unable to generate plot\n"+plot_title+"\n Reason:", fontsize=25, color="red")
     # Must keep the patch visible; otherwise the entire figure becomes transparent
