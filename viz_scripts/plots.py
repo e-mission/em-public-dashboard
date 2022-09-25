@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import arrow
 import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -90,6 +91,7 @@ def pie_chart_mode(plot_title,labels,values,file_name):
                                       textprops={'size': 23})
 
     ax.set_title(plot_title, size=25)
+    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
@@ -128,6 +130,7 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
                                       textprops={'size': 23})
 
     ax.set_title(plot_title, size=25)
+    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
@@ -220,6 +223,8 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.xlabel(x, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
+    # y should be based on the max range + the biggest label ("Gas Car, with others")
+    plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
@@ -250,6 +255,7 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
     fig, ax1 = plt.subplots(figsize=(15,6))
     #bar plot creation
     ax1.set_title(plot_title, fontsize=16)
+    plt.text(0,-2,f"Last updated {arrow.get()}", fontsize=10)
     ax1.set_xlabel(x, fontsize=16)
     ax1.set_ylabel(y, fontsize=16)
     ax1 = sns.barplot(x=x, y=y, data = data, palette=colours, ci=None)
@@ -274,6 +280,9 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.xlabel(x, fontsize=16)
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
+    # heuristic where we take the max value and divide it by 8 to get the scale
+    # the 8 is heuristic based on experimentation with the CanBikeCO data
+    plt.text(0,-(data[y].max())/8,f"Last updated {arrow.get()}", fontsize=10)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def CO2_impact(x,y,color,plot_title,file_name):
