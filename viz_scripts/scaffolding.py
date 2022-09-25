@@ -33,6 +33,9 @@ def get_participant_uuids(program):
         conjunction with modifying the notebooks.
     """
     all_users = pd.json_normalize(edb.get_uuid_db().find())
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(all_users) == 0:
+        return []
     participant_list = all_users[np.logical_not(all_users.user_email.str.contains("_test_"))]
     participant_uuid_str = participant_list.uuid
     disp.display(participant_list.user_email)
@@ -48,12 +51,18 @@ def load_all_confirmed_trips(tq):
 def load_all_participant_trips(program, tq):
     participant_list = get_participant_uuids(program)
     all_ct = load_all_confirmed_trips(tq)
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(all_ct) == 0:
+        return all_ct
     participant_ct_df = all_ct[all_ct.user_id.isin(participant_list)]
     print("After filtering, found %s participant trips " % len(participant_ct_df))
     disp.display(participant_ct_df.head())
     return participant_ct_df
 
 def filter_labeled_trips(mixed_trip_df):
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(mixed_trip_df) == 0:
+        return mixed_trip_df
     labeled_ct = mixed_trip_df[mixed_trip_df.user_input != {}]
     print("After filtering, found %s labeled trips" % len(labeled_ct))
     disp.display(labeled_ct.head())
@@ -67,6 +76,9 @@ def expand_userinputs(labeled_ct):
         passed in by the notebook based on the input config.
         If used with a trip-level survey, it could be even larger.
     '''
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(labeled_ct) == 0:
+        return labeled_ct
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
     disp.display(label_only.head())
     labels_per_trip = len(label_only.columns)
@@ -83,6 +95,10 @@ def expand_userinputs(labeled_ct):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+# CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
+trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
+
 def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -98,11 +114,16 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     expanded_ct = data_quality_check(expanded_ct)
 
     # Change meters to miles
-    unit_conversions(expanded_ct)
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "distance" in expanded_ct.columns:
+        unit_conversions(expanded_ct)
 
     # Mapping new mode labels with dictionaries
-    expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "mode_confirm" in expanded_ct.columns:
+        expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
     if study_type == 'program':
+        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
             expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
         else:
@@ -111,14 +132,27 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
             print("This is a study, not expecting any replaced modes.")
 
     # Trip purpose mapping
-    if dic_pur is not None:
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
         expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
     quality_text = get_quality_text(participant_ct_df, expanded_ct)
 
-    return expanded_ct, file_suffix, quality_text
+    debug_df = pd.DataFrame.from_dict({
+            "year": year,
+            "month": month,
+            "Registered_participants": len(get_participant_uuids(program)),
+            "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
+            "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
+            "Trips_with_at_least_one_label": len(labeled_ct),
+            "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm", expanded_ct),
+            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct)
+            },
+        orient='index', columns=["value"])
+
+    return expanded_ct, file_suffix, quality_text, debug_df
 
 def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     """ Inputs:
@@ -148,7 +182,10 @@ def get_quality_text(before_df, after_df, mode_of_interest=None):
     after_df = dataframe after filtering (usually expanded_ct)
     mode_of_interest = optional detail to include in the text string
     """
-    cq = (len(after_df), len(after_df.user_id.unique()), len(before_df), len(before_df.user_id.unique()), (len(after_df) * 100) / len(before_df), )
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    after_pct = (len(after_df) * 100) / len(before_df) if len(before_df) != 0 else np.nan
+    cq = (len(after_df), unique_users(after_df), len(before_df), unique_users(before_df),
+        after_pct, )
     interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
     total_str = 'confirmed' if mode_of_interest is not None else ''
     quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
