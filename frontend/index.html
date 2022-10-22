@@ -395,17 +395,23 @@
                         const dates = getMonthList(
                             Number.parseInt(data.intro.start_month),
                             Number.parseInt(data.intro.start_year));
-                        var date_options = '';
+                        var date_options = "<option value=''>All data</option>";
                         for (var i=0;i<dates.length;i++){
                             const paddedMonth = String(dates[i][0]).padStart(2, '0');
                             const currYear = dates[i][1];
-                            date_options += `<option value='${currYear}_${paddedMonth}'>` + dates[i][0] + '/' + dates[i][1] + '</option>';
+                            // add a trailing _ to support the "All data" option
+                            // consistent with the image file construction `imgFile`
+                            date_options += `<option value='${currYear}_${paddedMonth}_'>` + dates[i][0] + '/' + dates[i][1] + '</option>';
                         }
                         $('#date').append(date_options);
-                        // Ensure that the default option is the most recent
-                        const lastVal = $("#date option:last-child").val();
+                        // The firstVal is now "everything", which will have
+                        // the biggest numbers and look most impressive
+                        // so let's stick with that and not reset to the lastVal
+                        /*
+                        // const lastVal = $("#date option:last-child").val();
                         // by setting the current val to the last one
-                        $("#date").val(lastVal);
+                        // $("#date").val(lastVal);
+                        */
 					    $('#program').load('programs.html');
                         const dynamicPublicDashboardName = `${data.intro.translated_text.en.deployment_name} Public Dashboard`
                         const projectJoinPage = data.server.connectUrl.replace("api", "join");
@@ -451,8 +457,12 @@
 					const sizex = $("#metric option:selected").data("sizex");
 					const sizey = $("#metric option:selected").data("sizey");
 					const labelText = metricLabel+" "+dateLabel+" "+programLabel;
-					const imgFile = "plots/"+metric+"_"+dateVal+"_"+program+".png";
-          			const altTextFile = "plots/"+metric+"_"+dateVal+"_"+program+".txt";
+                    // the date val now has a trailing `_` to support the "entire program" option
+                    // the file name is similar to ntrips_purpose_default.png
+                    // and without this change, even if we set the dateVal to ''
+                    // we would try to load ntrips_purpose__default.png
+					const imgFile = "plots/"+metric+"_"+dateVal+program+".png";
+          			const altTextFile = "plots/"+metric+"_"+dateVal+program+".txt";
           			const altText = loadFile(altTextFile);
 					const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
 						+ labelText
