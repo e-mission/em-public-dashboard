@@ -306,6 +306,10 @@
 			};
 
 			function getMonthList (start_month, start_year) {
+                if (isNaN(start_month) || isNaN(start_year)) {
+                    console.log("start_month = "+start_month+" start_year "+start_year+" early return");
+                    return [];
+                }
 				const date = new Date();
 				const dates = [];
 				const end_month = date.getMonth() + 1;
@@ -392,10 +396,10 @@
                             ]);
 						};
                         // Figure out all months since start date to present
+                        var date_options = "<option value=''>All data</option>";
                         const dates = getMonthList(
                             Number.parseInt(data.intro.start_month),
                             Number.parseInt(data.intro.start_year));
-                        var date_options = "<option value=''>All data</option>";
                         for (var i=0;i<dates.length;i++){
                             const paddedMonth = String(dates[i][0]).padStart(2, '0');
                             const currYear = dates[i][1];
