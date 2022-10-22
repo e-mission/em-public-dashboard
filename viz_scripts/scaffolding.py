@@ -36,7 +36,7 @@ def get_participant_uuids(program):
         Note that the "program" parameter is currently a NOP and should be removed in
         conjunction with modifying the notebooks.
     """
-    all_users = pd.json_normalize(edb.get_uuid_db().find())
+    all_users = pd.json_normalize(list(edb.get_uuid_db().find()))
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_users) == 0:
         return []
