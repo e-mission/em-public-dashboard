@@ -68,7 +68,8 @@ def compute_for_date(month, year):
         month=month,
         program=args.program,
         study_type=dynamic_config['intro']['program_or_study'],
-        mode_of_interest=mode_studied)
+        mode_of_interest=mode_studied,
+        include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False))
 
     print(f"Running at {arrow.get()} with params {params}")
 
