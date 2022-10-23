@@ -30,17 +30,20 @@ def get_time_query(year, month):
     tq = esttc.TimeComponentQuery("data.start_local_dt", query_ld, query_ld)
     return tq
 
-def get_participant_uuids(program):
+def get_participant_uuids(program, load_test_users):
     """
         Get the list of non-test users in the current program.
         Note that the "program" parameter is currently a NOP and should be removed in
         conjunction with modifying the notebooks.
     """
-    all_users = pd.json_normalize(edb.get_uuid_db().find())
+    all_users = pd.json_normalize(list(edb.get_uuid_db().find()))
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_users) == 0:
         return []
-    participant_list = all_users[np.logical_not(all_users.user_email.str.contains("_test_"))]
+    if load_test_users:
+        participant_list = all_users
+    else:
+        participant_list = all_users[np.logical_not(all_users.user_email.str.contains("_test_"))]
     participant_uuid_str = participant_list.uuid
     disp.display(participant_list.user_email)
     return participant_uuid_str
@@ -52,8 +55,8 @@ def load_all_confirmed_trips(tq):
     disp.display(all_ct.head())
     return all_ct
 
-def load_all_participant_trips(program, tq):
-    participant_list = get_participant_uuids(program)
+def load_all_participant_trips(program, tq, load_test_users):
+    participant_list = get_participant_uuids(program, load_test_users)
     all_ct = load_all_confirmed_trips(tq)
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_ct) == 0:
@@ -103,7 +106,7 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
+def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -112,7 +115,7 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
@@ -142,12 +145,12 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
-    quality_text = get_quality_text(participant_ct_df, expanded_ct)
+    quality_text = get_quality_text(participant_ct_df, expanded_ct, None, include_test_users)
 
     debug_df = pd.DataFrame.from_dict({
             "year": year,
             "month": month,
-            "Registered_participants": len(get_participant_uuids(program)),
+            "Registered_participants": len(get_participant_uuids(program, include_test_users)),
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
@@ -180,7 +183,7 @@ def add_energy_impact(expanded_ct, df_ei, dic_fuel):
     expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
     return expanded_ct
 
-def get_quality_text(before_df, after_df, mode_of_interest=None):
+def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_users=False):
     """ Inputs:
     before_df = dataframe prior to filtering (usually participant_ct_df)
     after_df = dataframe after filtering (usually expanded_ct)
@@ -192,7 +195,8 @@ def get_quality_text(before_df, after_df, mode_of_interest=None):
         after_pct, )
     interest_str = mode_of_interest + ' ' if mode_of_interest is not None else ''
     total_str = 'confirmed' if mode_of_interest is not None else ''
-    quality_text = f"Based on %s confirmed {interest_str}trips from %d users\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
+    user_str = 'testers and participants' if include_test_users else 'users'
+    quality_text = f"Based on %s confirmed {interest_str}trips from %d {user_str}\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
     print(quality_text)
     return quality_text
 
