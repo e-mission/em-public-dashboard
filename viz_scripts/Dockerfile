@@ -32,11 +32,11 @@ RUN /bin/bash -c "find /root/miniconda-*/pkgs -wholename \*info/test\* -type d |
 
 WORKDIR /usr/src/app
 
-ADD docker/start_notebook.sh /usr/src/app/start_notebook.sh
-RUN chmod u+x /usr/src/app/start_notebook.sh
+ADD docker/start_notebook.sh /usr/src/app/.docker/start_notebook.sh
+RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
 ADD docker/crontab /usr/src/app/crontab
 
 EXPOSE 8888
 
-CMD ["/bin/bash", "/usr/src/app/start_notebook.sh"]
+CMD ["/bin/bash", "/usr/src/app/.docker/start_notebook.sh"]
