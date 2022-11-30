@@ -1,28 +1,26 @@
 version: "3"
 services:
   dashboard:
-    image: danjellz/http-server:1.4
+    image: em-pub-dash-prod/frontend
+    build: frontend
     depends_on:
       - db
     ports:
       # DASH in numbers
-      - "3274:8080"
+      - "3274:6060"
     volumes:
-      - ./frontend:/public
       - ./plots:/public/plots
     networks:
        - emission
   notebook-server:
-    image: em-pub-dash-dev/viz-scripts
-    build:
-        context: viz_scripts
-        dockerfile: docker/Dockerfile.dev
+    image: em-pub-dash-prod/viz-scripts
+    build: viz_scripts
     depends_on:
       - db
     environment:
       - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
-      - CRON_MODE=
+      - CRON_MODE=TRUE
       - STUDY_CONFIG=stage-program
     ports:
       # ipynb in numbers
@@ -30,7 +28,6 @@ services:
     networks:
       - emission
     volumes:
-      - ./viz_scripts:/usr/src/app/saved-notebooks
       - ./plots:/plots
   db:
     image: mongo:4.4.0

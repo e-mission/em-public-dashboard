@@ -46,19 +46,17 @@
 		<script src="https://kit.fontawesome.com/32f532493a.js" crossorigin="anonymous"></script>
 
 		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+		<script src="https://code.jquery.com/jquery-3.6.1.min.js"   integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="   crossorigin="anonymous"></script>
 
 		<!-- == END APPLICATION HEAD == -->
 	</head>
 	<body>
 		<!-- Bootstrap core JavaScript -->
-		<script src="client/js/jquery.min.js"></script>
 		<script src="client/js/jquery.gridster.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="client/js/bootstrap.bundle.min.js"></script>
 
 		<!-- Google Tag Manager (noscript) -->
 		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KG7PVKB"
-						  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+						  height="0" width="0" style="display:none;visibility:hidden"  sandbox="allow-same-origin"></iframe></noscript>
 		<!-- End Google Tag Manager (noscript) -->
 
 		<!-- Site application banner -->
@@ -206,7 +204,7 @@
 	                <p class="mt-3" style="color:black">Developed with funding from the Vehicle Technologies Office, Office of Energy Efficiency and Renewable Energy, U.S. Department of Energy.</p>
 				</div>
 				<div class="col-lg-4 text-center">
-					<a href="https://www.energy.gov/eere/"><img class="img-fluid mb-1" style="width: 30%" src="/client/img/doe-eere.png" alt="U.S. Department of Energy Office of Energy Efficiency and Renewable Energy"></a>
+					<a href="https://www.energy.gov/eere/"><img class="img-fluid mb-1" style="width: 30%" src="client/img/doe-eere.png" alt="U.S. Department of Energy Office of Energy Efficiency and Renewable Energy"></a>
 				</div>
 			</div>
 		</div>
@@ -308,6 +306,10 @@
 			};
 
 			function getMonthList (start_month, start_year) {
+                if (isNaN(start_month) || isNaN(start_year)) {
+                    console.log("start_month = "+start_month+" start_year "+start_year+" early return");
+                    return [];
+                }
 				const date = new Date();
 				const dates = [];
 				const end_month = date.getMonth() + 1;
@@ -333,17 +335,42 @@
                 // add the initial metrics by selecting values and then simulating a click
                 // this avoids us having to refactor out the code to add a new plot
                 // which relies heavily on the mappings stored in the options
-                metricList.forEach((plot_val) => {
-                    console.log("Adding metric for "+plot_val);
-                    $("#metric").val(plot_val);
-                    $('.js-add-new').click();
-                });
+                setTimeout(function() {
+                    metricList.forEach((plot_val) => {
+                        console.log("Adding metric for "+plot_val);
+                        $("#metric").val(plot_val);
+                        $('.js-add-new').click();
+                    });
+                }, 500);
+                // we pick 500 ms here because the delay between working and non-working loads
+                // is 0.098 - 0.066 = 0.032 seconds = 32 ms, so 500 ms delay should be pretty safe
             };
+
+            /*
+             * Copied and adapted from the phone `dynamic_config.js`
+             * Adapted by supporting program name via parameter to make it
+             * easier to test against localhost
+             */
+            const _getStudyName = function(connectUrl) {
+              const _getFromParamOrDefault = function() {
+                const param_study_name = new URL(connectUrl).searchParams.get("study_config");
+                return param_study_name == null? "stage-study" : param_study_name;
+              }
+              const orig_host = new URL(connectUrl).hostname;
+              // If we are running this on dev, use a param instead to enable testing
+              if (orig_host == "localhost") { return _getFromParamOrDefault(); }
+              const first_domain = orig_host.split(".")[0];
+              if (first_domain == "openpath-stage") { return _getFromParamOrDefault(); }
+              const openpath_index = first_domain.search("-openpath");
+              if (openpath_index == -1) { return undefined; }
+              const study_name = first_domain.substr(0,openpath_index);
+              return study_name;
+            }
 
 			$(function() {
 				$(document).ready(function() {
 					// Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
-					const STUDY_CONFIG = 'stage-program';
+					const STUDY_CONFIG = _getStudyName(window.location);
 					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
 						// Load list of plots corresponding to study/program
 						if (data.intro.program_or_study=='program') {
@@ -364,25 +391,31 @@
                                 "ntrips_mode_confirm",
                                 "miles_mode_confirm",
                                 "ntrips_purpose",
-                                "ntrips_per_day",
+                                "ntrips_per_weekday",
                                 "ts_emissions_user"
                             ]);
 						};
                         // Figure out all months since start date to present
+                        var date_options = "<option value=''>All data</option>";
                         const dates = getMonthList(
                             Number.parseInt(data.intro.start_month),
                             Number.parseInt(data.intro.start_year));
-                        var date_options = '';
                         for (var i=0;i<dates.length;i++){
                             const paddedMonth = String(dates[i][0]).padStart(2, '0');
                             const currYear = dates[i][1];
-                            date_options += `<option value='${currYear}_${paddedMonth}'>` + dates[i][0] + '/' + dates[i][1] + '</option>';
+                            // add a trailing _ to support the "All data" option
+                            // consistent with the image file construction `imgFile`
+                            date_options += `<option value='${currYear}_${paddedMonth}_'>` + dates[i][0] + '/' + dates[i][1] + '</option>';
                         }
                         $('#date').append(date_options);
-                        // Ensure that the default option is the most recent
-                        const lastVal = $("#date option:last-child").val();
+                        // The firstVal is now "everything", which will have
+                        // the biggest numbers and look most impressive
+                        // so let's stick with that and not reset to the lastVal
+                        /*
+                        // const lastVal = $("#date option:last-child").val();
                         // by setting the current val to the last one
-                        $("#date").val(lastVal);
+                        // $("#date").val(lastVal);
+                        */
 					    $('#program').load('programs.html');
                         const dynamicPublicDashboardName = `${data.intro.translated_text.en.deployment_name} Public Dashboard`
                         const projectJoinPage = data.server.connectUrl.replace("api", "join");
@@ -428,8 +461,12 @@
 					const sizex = $("#metric option:selected").data("sizex");
 					const sizey = $("#metric option:selected").data("sizey");
 					const labelText = metricLabel+" "+dateLabel+" "+programLabel;
-					const imgFile = "plots/"+metric+"_"+dateVal+"_"+program+".png";
-          			const altTextFile = "plots/"+metric+"_"+dateVal+"_"+program+".txt";
+                    // the date val now has a trailing `_` to support the "entire program" option
+                    // the file name is similar to ntrips_purpose_default.png
+                    // and without this change, even if we set the dateVal to ''
+                    // we would try to load ntrips_purpose__default.png
+					const imgFile = "plots/"+metric+"_"+dateVal+program+".png";
+          			const altTextFile = "plots/"+metric+"_"+dateVal+program+".txt";
           			const altText = loadFile(altTextFile);
 					const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
 						+ labelText
