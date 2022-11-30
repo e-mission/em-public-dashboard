@@ -15,3 +15,4 @@ Skate board,human_powered,0,,0,,0,0
 Regular Bike,human_powered,0,,0,,0,0
 Not a Trip,none,0,,0,,0,0
 No Travel,none,0,,0,,0,0
+E-bike,electric,0,0.022,0.022,kWH/PMT,1166,lb_CO2/MWH

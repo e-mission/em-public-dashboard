@@ -67,6 +67,7 @@ def expand_userinputs(labeled_ct, labels_per_trip):
         passed in by the notebook based on the input config.
         If used with a trip-level survey, it could be even larger.
     '''
+    labels_per_trip = 3 # Required for compatibility
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
     disp.display(label_only.head())
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
@@ -81,6 +82,20 @@ def expand_userinputs(labeled_ct, labels_per_trip):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+def get_stage_ids():
+    # Let's get UUID lists for all the three categories
+    # stage, all, non_stage
+    stage_uuids = []
+    all_uuids = []
+    non_stage_uuids = []
+    for ue in edb.get_uuid_db().find():
+        all_uuids.append(str(ue['uuid']))
+        if ue['user_email'].startswith("stage_"):
+            stage_uuids.append(str(ue['uuid']))
+        else:
+            non_stage_uuids.append(str(ue['uuid']))
+    return stage_uuids
+
 def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -91,7 +106,11 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     # Access database
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq)
-    labeled_ct = filter_labeled_trips(participant_ct_df)
+    participant_ct_df["user_id_str"] = participant_ct_df.user_id.apply(lambda u: str(u))
+    # Remove stage users
+    stage_uuids = get_stage_ids()
+    non_stage_ct_df = participant_ct_df[~participant_ct_df['user_id_str'].isin(stage_uuids)]
+    labeled_ct = filter_labeled_trips(non_stage_ct_df)
     if study_type == 'program':
         labels_per_trip = 3
     else:
@@ -112,7 +131,7 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
-    quality_text = get_quality_text(participant_ct_df, expanded_ct)
+    quality_text = get_quality_text(non_stage_ct_df, expanded_ct)
 
     return expanded_ct, file_suffix, quality_text
 
