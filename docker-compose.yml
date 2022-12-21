@@ -2,23 +2,19 @@ version: "3"
 services:
   dashboard:
     image: em-pub-dash-prod/frontend
-    build:
-        context: frontend
-        dockerfile: docker/Dockerfile
+    build: frontend
     depends_on:
       - db
     ports:
       # DASH in numbers
-      - "3274:8080"
+      - "3274:6060"
     volumes:
       - ./plots:/public/plots
     networks:
        - emission
   notebook-server:
     image: em-pub-dash-prod/viz-scripts
-    build:
-        context: viz_scripts
-        dockerfile: docker/Dockerfile
+    build: viz_scripts
     depends_on:
       - db
     environment:

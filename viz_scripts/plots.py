@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import arrow
 import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -90,6 +91,7 @@ def pie_chart_mode(plot_title,labels,values,file_name):
                                       textprops={'size': 23})
 
     ax.set_title(plot_title, size=25)
+    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
@@ -128,24 +130,11 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
                                       textprops={'size': 23})
 
     ax.set_title(plot_title, size=25)
+    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
-def overeall_energy_impact(x,y,color,data,plot_title,file_name):
-    plt.figure(figsize=(15, 8))
-    width = 0.8
-    ax = sns.barplot(x=x, y=y, hue=color,data=data)
-    ax.set_title(plot_title, fontsize=18)
-    ax.set_xlabel(x, fontsize=18)
-    ax.set_ylabel(y,fontsize=18)
-    ax.xaxis.set_tick_params(labelsize=15)
-    ax.yaxis.set_tick_params(labelsize=15)
-    ax.relim()
-    ax.autoscale_view()                  
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=18)
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-    
 def energy_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Energy Savings', 'Energy Loss')
@@ -188,6 +177,7 @@ def energy_impact(x,y,color,plot_title,file_name):
     # map names to colors
     cmap = {True: 'green', False: 'red'}  
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+    plt.text(0,-1.5,f"Last updated {arrow.get()}", fontsize=10)
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
@@ -220,6 +210,8 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.xlabel(x, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
+    # y should be based on the max range + the biggest label ("Gas Car, with others")
+    plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
@@ -250,6 +242,7 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
     fig, ax1 = plt.subplots(figsize=(15,6))
     #bar plot creation
     ax1.set_title(plot_title, fontsize=16)
+    plt.text(0,-2,f"Last updated {arrow.get()}", fontsize=10)
     ax1.set_xlabel(x, fontsize=16)
     ax1.set_ylabel(y, fontsize=16)
     ax1 = sns.barplot(x=x, y=y, data = data, palette=colours, ci=None)
@@ -274,6 +267,9 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.xlabel(x, fontsize=16)
     plt.ylabel(y, fontsize=16)
     plt.title(plot_title, fontsize=16)
+    # heuristic where we take the max value and divide it by 8 to get the scale
+    # the 8 is heuristic based on experimentation with the CanBikeCO data
+    plt.text(0,-(data[y].max())/8,f"Last updated {arrow.get()}", fontsize=10)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def CO2_impact(x,y,color,plot_title,file_name):
@@ -318,6 +314,7 @@ def CO2_impact(x,y,color,plot_title,file_name):
     # map names to colors
     cmap = {True: 'green', False: 'red'}
     patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+    plt.text(0,-1.5,f"Last updated {arrow.get()}", fontsize=10)
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
@@ -393,5 +390,47 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     arg_min = np.argmin(df.iloc[:,1])
     arg_max = np.argmax(df.iloc[:,1])
     alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
+    alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+def generate_missing_plot(plot_title,debug_df,file_name):
+    f, ax = plt.subplots(figsize=(10,10))
+
+    plt.title("Unable to generate plot\n"+plot_title+"\n Reason:", fontsize=25, color="red")
+    # Must keep the patch visible; otherwise the entire figure becomes transparent
+    # f.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+    # ax = sns.barplot(x=debug_df['count'],y=debug_df.index, palette=sns.color_palette("Reds",n_colors=10))
+    # ax.set_xlim(0, None)
+    # for i in ax.containers:
+    #     ax.bar_label(i,)
+    the_table = plt.table(cellText=debug_df.values,
+              rowLabels=debug_df.index,
+              colLabels=debug_df.columns,
+              loc="center")
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(20)
+    the_table.scale(1, 4)
+    cellDict = the_table.get_celld()
+    for i in range(1,len(debug_df)+1):
+        currCellTextStr = cellDict[(i,0)].get_text().get_text()
+        currCellTextFloat = float(currCellTextStr)
+        if np.isnan(currCellTextFloat):
+            cellDict[(i,0)].get_text().set_text("None")
+        if np.isnan(currCellTextFloat) or currCellTextFloat == 0:
+            cellDict[(i, 0)].get_text().set_color("red")
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+
+def store_alt_text_missing(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of debug information, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
