@@ -1,5 +1,5 @@
 FROM node:18-alpine
-VOLUME /plots
+VOLUME /public/plots
 
 RUN mkdir -p /public
 WORKDIR /public

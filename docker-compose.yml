@@ -14,9 +14,7 @@ services:
        - emission
   notebook-server:
     image: em-pub-dash-prod/viz-scripts
-    build:
-        context: viz_scripts
-        dockerfile: docker/Dockerfile
+    build: viz_scripts
     depends_on:
       - db
     environment:
