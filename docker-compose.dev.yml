@@ -1,12 +1,15 @@
 version: "3"
 services:
   dashboard:
-    image: danjellz/http-server:1.4
+    image: em-pub-dash-dev/frontend
+    build:
+        context: frontend
+        dockerfile: docker/Dockerfile.dev
     depends_on:
       - db
     ports:
       # DASH in numbers
-      - "3274:8080"
+      - "3274:6060"
     volumes:
       - ./frontend:/public
       - ./plots:/public/plots
