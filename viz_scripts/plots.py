@@ -215,6 +215,35 @@ def barplot_mode(data,x,y,plot_title,file_name):
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
+def barplot_purpose(data,x,y,plot_title,file_name):
+    all_labels= ['Work', 
+                  'Home',
+                  'Meal',
+                  'Shopping',
+                  'Personal/Medical',
+                  'Recreation/Exercise', 
+                  'Transit transfer', 
+                  'Pick-up/Drop off',
+                  'Entertainment/Social',
+                  'Other',
+                  'School',
+                  'Religious',
+                  'No travel', 
+                  'not_a_trip']
+    
+    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+    sns.set(font_scale=1.5)
+    f = plt.subplots(figsize=(15, 6))
+    sns.set(style='whitegrid')
+    ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
+    plt.xlabel(x, fontsize=23)
+    plt.ylabel(y, fontsize=23)
+    plt.title(plot_title, fontsize=25)
+    # y should be based on the max range + the biggest label ("Gas Car, with others")
+    plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
     all_labels= ['Gas Car, drove alone',
                  'Bus', 
