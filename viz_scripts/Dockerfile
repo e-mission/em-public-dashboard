@@ -1,18 +1,14 @@
 # python 3
-FROM emission/e-mission-server.dev.server-only:4.0.0
-ENV SERVER_REPO=https://github.com/e-mission/e-mission-server.git
-ENV SERVER_BRANCH=join_redirect_to_static
+FROM shankari/e-mission-server:gis-based-mode-detection_2023-04-21--54-09
 
 VOLUME /plots
 
 ADD docker/environment36.dashboard.additions.yml /
 
-RUN /bin/bash -c "/clone_server.sh"
-
 WORKDIR /usr/src/app
 
-RUN /bin/bash -c "cd e-mission-server && source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
-RUN /bin/bash -c "cd e-mission-server && source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
+RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
+RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
 
 RUN mkdir -p /usr/src/app/saved-notebooks
 WORKDIR /usr/src/app/saved-notebooks
