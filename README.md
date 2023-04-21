@@ -104,7 +104,7 @@ In order to get the prototype out, there are a lot of shortcuts. We can revisit
 this later if there is sufficient interest/funding.
 
 - Using gridster (https://github.com/dsmorse/gridster.js/) and bootstrap instead of react
-- Using the pre-built (https://hub.docker.com/r/danjellz/http-server) instead of express
+- Use a pre-built node image with an install of http-server instead of express
 - Using a mounted volume instead of building a custom docker image to make deployment easier
 - Using the e-mission server codebase to generate graphs instead of a REST API
 
