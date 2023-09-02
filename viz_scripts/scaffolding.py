@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import requests
+import json
 import sys
 
 import emission.storage.timeseries.abstract_timeseries as esta
@@ -106,7 +108,7 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None, include_test_users=False):
+def load_viz_notebook_data(year, month, program, study_type, has_dynamic_labels, dynamic_labels_url, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -126,17 +128,35 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
         unit_conversions(expanded_ct)
 
     # Mapping new mode labels with dictionaries
-    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if "mode_confirm" in expanded_ct.columns:
-        expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
-    if study_type == 'program':
-        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-        if 'replaced_mode' in expanded_ct.columns:
-            expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+
+    if has_dynamic_labels:
+        print("This json has dynamic label")
+        req = requests.get(dynamic_labels_url)
+        if req.status_code != 200:
+            print("Unable to download dynamic_labels")
         else:
-            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+            print("dynamic labels download was successful.")
+            dynamic_labels = json.loads(req.text)
+
+        # Extract translations section
+        translations_data = dynamic_labels["translations"]["en"]
+
+        # Map the "key" to the "en" translations
+        expanded_ct["Mode_confirm"] = expanded_ct["mode_confirm"].map(translations_data)
+        
     else:
-            print("This is a study, not expecting any replaced modes.")
+        print("This json doesn't have dynamic label")
+        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+        if "mode_confirm" in expanded_ct.columns:
+            expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+        if study_type == 'program':
+            # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+            if 'replaced_mode' in expanded_ct.columns:
+                expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+            else:
+                print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+        else:
+                print("This is a study, not expecting any replaced modes.")
 
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
