@@ -51,29 +51,8 @@ def merge_small_entries(labels, values):
     return (v2l_df.index.to_list(),v2l_df.vals.to_list())
 
 def pie_chart_mode(plot_title,labels,values,file_name):
-    all_labels= ['Gas Car, drove alone',
-                 'Bus', 
-                 'Train', 
-                 'Free Shuttle',
-                 'Taxi/Uber/Lyft', 
-                 'Gas Car, with others', 
-                 'Bikeshare',
-                 'Scooter share',
-                 'E-bike', 
-                 'Walk', 
-                 'Skate board', 
-                 'Regular Bike', 
-                 'Not a Trip',
-                 'No Travel', 
-                 'Same Mode', 
-                 'E-car, drove alone',
-                 'E-car, with others',
-                 'Air',
-                 'Other']
-
-    val2labeldf = pd.DataFrame({"labels": labels, "values": values})
     
-    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -85,7 +64,7 @@ def pie_chart_mode(plot_title,labels,values,file_name):
  
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colours[key] for key in labels],
+                                      colors=[colors[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: func(pct, values),
                                       textprops={'size': 23})
@@ -97,22 +76,8 @@ def pie_chart_mode(plot_title,labels,values,file_name):
     plt.show()
 
 def pie_chart_purpose(plot_title,labels,values,file_name):
-    labels_trip= ['Work', 
-                  'Home',
-                  'Meal',
-                  'Shopping',
-                  'Personal/Medical',
-                  'Recreation/Exercise', 
-                  'Transit transfer', 
-                  'Pick-up/Drop off',
-                  'Entertainment/Social',
-                  'Other',
-                  'School',
-                  'Religious',
-                  'No travel', 
-                  'not_a_trip']
     
-    colours = dict(zip(labels_trip, plt.cm.tab20.colors[:len(labels_trip)]))
+    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -124,7 +89,7 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colours[key] for key in labels],
+                                      colors=[colors[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
                                       textprops={'size': 23})
@@ -181,32 +146,12 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_mode(data,x,y,plot_title,file_name):
-    all_labels= ['Gas Car, drove alone',
-                 'Bus', 
-                 'Train', 
-                 'Free Shuttle',
-                 'Taxi/Uber/Lyft', 
-                 'Gas Car, with others', 
-                 'Bikeshare',
-                 'Scooter share',
-                 'E-bike', 
-                 'Walk', 
-                 'Skate board', 
-                 'Regular Bike', 
-                 'Not a Trip',
-                 'No Travel', 
-                 'Same Mode', 
-                 'E-car, drove alone',
-                 'E-car, with others',
-                 'Air',
-                 'Other']
-    
-    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+def barplot_mode(data,x,y,plot_title, labels, file_name):
+    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
-    ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
+    ax = sns.barplot(x=x, y=y, palette=colors,data=data, ci=None)
     plt.xlabel(x, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
