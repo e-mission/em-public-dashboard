@@ -381,8 +381,10 @@
                                 addPreconfiguredMetrics([
                                     "ntrips_mode_confirm",
                                     "miles_mode_confirm",
+                                    "ntrips_sensed_mode",
+                                    "miles_sensed_mode",
                                     `ntrips_${data.intro.mode_studied}_purpose`,
-                                    `ntrips_${data.intro.mode_studied}_per_day`,
+                                    `ntrips_${data.intro.mode_studied}_per_weekday`,
                                     `sketch_CO2impact_${data.intro.mode_studied}`
                                 ]);
                             });
@@ -391,8 +393,10 @@
                             addPreconfiguredMetrics([
                                 "ntrips_mode_confirm",
                                 "miles_mode_confirm",
+                                "ntrips_sensed_mode",
+                                "miles_sensed_mode",
                                 "ntrips_purpose",
-                                "ntrips_per_weekday",
+                                "ntrips_sensed_per_weekday",
                                 "ts_emissions_user"
                             ]);
 						};
