@@ -50,6 +50,13 @@ def merge_small_entries(labels, values):
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list())
 
+
+def format_pct(pct, values):
+    total = sum(values)
+    absolute = int(round(pct*total/100.0))
+    return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
+
+
 def pie_chart_mode(plot_title,labels,values,file_name):
     all_labels= ['Gas Car, drove alone',
                  'Bus', 
@@ -78,16 +85,39 @@ def pie_chart_mode(plot_title,labels,values,file_name):
 
     m_labels, m_values = merge_small_entries(labels, values)
     
-    def func(pct, values):
-        total = sum(values)
-        absolute = int(round(pct*total/100.0))
-        return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
- 
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
                                       colors=[colours[key] for key in labels],
                                       pctdistance=0.75,
-                                      autopct= lambda pct: func(pct, values),
+                                      autopct= lambda pct: format_pct(pct, values),
+                                      textprops={'size': 23})
+
+    ax.set_title(plot_title, size=25)
+    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
+    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+    plt.show()
+
+def pie_chart_sensed_mode(plot_title,labels,values,file_name):
+    all_labels= ['IN_VEHICLE',
+                 'UNKNOWN',
+                 'WALKING',
+                 'AIR_OR_HSR',
+                 'BICYCLING',
+                 'OTHER']
+
+    val2labeldf = pd.DataFrame({"labels": labels, "values": values})
+
+    colours = dict(zip(all_labels, plt.cm.tab10.colors[:len(all_labels)]))
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
+
+    m_labels, m_values = merge_small_entries(labels, values)
+
+    wedges, texts, autotexts = ax.pie(m_values,
+                                      labels = m_labels,
+                                      colors=[colours[key] for key in labels],
+                                      pctdistance=0.75,
+                                      autopct= lambda pct: format_pct(pct, values),
                                       textprops={'size': 23})
 
     ax.set_title(plot_title, size=25)
