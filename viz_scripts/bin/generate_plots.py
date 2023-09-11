@@ -33,7 +33,8 @@ if r.status_code is not 200:
 else:
     dynamic_config = json.loads(r.text)
     print(f"Successfully downloaded config with version {dynamic_config['version']} "\
-        f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} ")
+        f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} "\
+        f"and data collection URL {dynamic_config['server']['connectUrl'] if 'server' in dynamic_config else 'default'}")
 
 if dynamic_config['intro']['program_or_study'] == 'program':
     mode_studied = dynamic_config['intro']['mode_studied']
@@ -43,10 +44,18 @@ else:
 # Check if the dynamic config contains dynamic labels 'label_options'
 # Passing the boolean flag is not enough, bcos we need to trace through the dynamic_config - pass label_options URL.
 if 'label_options' in dynamic_config:
-    has_dynamic_labels = True
     dynamic_labels_url = dynamic_config['label_options']
+
+# Parse through the dynamic_labels_url: Create a new function for this
+if  dynamic_labels_url:
+    req = requests.get(dynamic_labels_url)
+    if req.status_code != 200:
+        print("Unable to download dynamic_labels, status code: {r.status_code}")
+    else:
+        print("Dynamic labels download was successful.")
+        dynamic_labels = json.loads(req.text)
 else:
-    has_dynamic_labels = False
+    print("Dynamic labels URL is unavailable.")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
@@ -77,8 +86,7 @@ def compute_for_date(month, year):
         study_type=dynamic_config['intro']['program_or_study'],
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
-        has_dynamic_labels = has_dynamic_labels,
-        dynamic_labels_url = dynamic_labels_url)
+        dynamic_labels = dynamic_labels)
 
     print(f"Running at {arrow.get()} with params {params}")
 
