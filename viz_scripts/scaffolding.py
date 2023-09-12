@@ -154,7 +154,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
-        expanded_ct['Trip_purpose'] = expanded_ctp['purpose_confirm'].map(dic_pur)
+        expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
