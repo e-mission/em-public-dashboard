@@ -108,11 +108,6 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-# Function to map: Selected an "old_mode" col from expanded_ct and 
-# map to the value of dic_translations into "new mode" col of expanded_ct
-def update_expanded_ct(expanded_ct, new_mode, old_mode, dic_mapping):
-    expanded_ct[new_mode] = expanded_ct[old_mode].map(dic_mapping)
-
 def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -146,11 +141,11 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_ct.columns:
-        update_expanded_ct(expanded_ct, "Mode_confirm", "mode_confirm", dic_mapping)
+        expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mapping)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
-            update_expanded_ct(expanded_ct, "Replaced_mode", "replaced_mode", dic_mapping)
+            expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_mapping)
         else:
             print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
     else:
@@ -159,7 +154,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
-        update_expanded_ct(expanded_ct, "Trip_purpose", "purpose_confirm", dic_pur)
+        expanded_ct['Trip_purpose'] = expanded_ctp['purpose_confirm'].map(dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)

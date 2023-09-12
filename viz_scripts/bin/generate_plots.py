@@ -42,20 +42,22 @@ else:
     mode_studied = None
 
 # Check if the dynamic config contains dynamic labels 'label_options'
-# Passing the boolean flag is not enough, bcos we need to trace through the dynamic_config - pass label_options URL.
+# Parse through the dynamic_labels_url:
+dynamic_labels = { }
 if 'label_options' in dynamic_config:
     dynamic_labels_url = dynamic_config['label_options']
 
-# Parse through the dynamic_labels_url: Create a new function for this
-if  dynamic_labels_url:
-    req = requests.get(dynamic_labels_url)
-    if req.status_code != 200:
-        print("Unable to download dynamic_labels, status code: {r.status_code}")
+    if  dynamic_labels_url:
+        req = requests.get(dynamic_labels_url)
+        if req.status_code != 200:
+            print(f"Unable to download dynamic_labels, status code: {req.status_code}")
+        else:
+            print("Dynamic labels download was successful.")
+            dynamic_labels = json.loads(req.text)
     else:
-        print("Dynamic labels download was successful.")
-        dynamic_labels = json.loads(req.text)
+        print("Dynamic labels URL is unavailable.")
 else:
-    print("Dynamic labels URL is unavailable.")
+    print("Dynamic labels are not available.")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
@@ -86,6 +88,7 @@ def compute_for_date(month, year):
         study_type=dynamic_config['intro']['program_or_study'],
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
+        sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"),
         dynamic_labels = dynamic_labels)
 
     print(f"Running at {arrow.get()} with params {params}")
