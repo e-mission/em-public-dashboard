@@ -112,7 +112,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
-    
+
     Pipeline to load and process the data before use in visualization notebooks.
     """
     # Access database
@@ -174,6 +174,40 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
+def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
+    """ Inputs:
+    year/month/program = parameters from the visualization notebook
+
+    Pipeline to load and process the data before use in sensor-based visualization notebooks.
+    """
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    expanded_ct = participant_ct_df
+    expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get))
+    expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
+    valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
+    expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
+
+    # Change meters to miles
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "distance" in expanded_ct.columns:
+        unit_conversions(expanded_ct)
+
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    quality_text = get_quality_text_sensed(expanded_ct, include_test_users)
+
+    debug_df = pd.DataFrame.from_dict({
+            "year": year,
+            "month": month,
+            "Registered_participants": len(get_participant_uuids(program, include_test_users)),
+            "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
+            "Number of trips": len(participant_ct_df),
+            },
+        orient='index', columns=["value"])
+
+    return expanded_ct, file_suffix, quality_text, debug_df
+
 def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     """ Inputs:
     expanded_ct = dataframe of trips that has had Mode_confirm and Replaced_mode added
@@ -210,6 +244,13 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     total_str = 'confirmed' if mode_of_interest is not None else ''
     user_str = 'testers and participants' if include_test_users else 'users'
     quality_text = f"Based on %s confirmed {interest_str}trips from %d {user_str}\nof %s total {total_str} trips from %d users (%.2f%%)" % cq
+    print(quality_text)
+    return quality_text
+
+def get_quality_text_sensed(df, include_test_users=False):
+    cq = (len(df), unique_users(df))
+    user_str = 'testers and participants' if include_test_users else 'users'
+    quality_text = f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 
