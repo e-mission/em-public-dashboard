@@ -14,6 +14,7 @@ import sys
 # Full list is at
 # https://github.com/e-mission/nrel-openpath-deploy-configs/tree/main/configs
 STUDY_CONFIG = os.getenv('STUDY_CONFIG', "stage-program")
+DYNAMIC_CONFIG = os.getenv('DYNAMIC_CONFIG', "dev-emulator-study")
 
 parser = argparse.ArgumentParser(prog="generate_metrics")
 parser.add_argument("plot_notebook", help="the notebook the generates the plot")
@@ -24,7 +25,8 @@ parser.add_argument("-d", "--date", nargs=2, type=int,
 args = parser.parse_args()
 
 # Read and use parameters from the unified config file on the e-mission Github page
-download_url = "https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/" + STUDY_CONFIG + ".nrel-op.json"
+# download_url = "https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/" + STUDY_CONFIG + ".nrel-op.json"
+download_url = "https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/" + DYNAMIC_CONFIG + ".nrel-op.json"
 print("About to download config from %s" % download_url)
 r = requests.get(download_url)
 if r.status_code is not 200:
