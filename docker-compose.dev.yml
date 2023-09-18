@@ -26,8 +26,7 @@ services:
       - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
       - CRON_MODE=
-      - STUDY_CONFIG=stage-program
-      - DYNAMIC_CONFIG=dev-emulator-study
+      - STUDY_CONFIG=dev-emulator-study
     ports:
       # ipynb in numbers
       - "47962:8888"
