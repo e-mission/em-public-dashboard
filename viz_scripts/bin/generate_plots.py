@@ -94,7 +94,6 @@ def compute_for_date(month, year):
         dynamic_labels = dynamic_labels,
         sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"))
         
-
     print(f"Running at {arrow.get()} with params {params}")
 
     # Make a notebook object with these definitions

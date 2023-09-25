@@ -59,14 +59,14 @@ def format_pct(pct, values):
 
 def pie_chart_mode(plot_title,labels,values,file_name):
     
-    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
     
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colors[key] for key in labels],
+                                      colors=[colours[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: format_pct(pct, values),
                                       textprops={'size': 23})
@@ -107,7 +107,7 @@ def pie_chart_sensed_mode(plot_title,labels,values,file_name):
 
 def pie_chart_purpose(plot_title,labels,values,file_name):
     
-    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -119,7 +119,7 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colors[key] for key in labels],
+                                      colors=[colours[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
                                       textprops={'size': 23})
@@ -177,11 +177,11 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def barplot_mode(data,x,y,plot_title, labels, file_name):
-    colors = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
-    ax = sns.barplot(x=x, y=y, palette=colors,data=data, ci=None)
+    ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
     plt.xlabel(x, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
