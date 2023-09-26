@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 import sys
-import requests
-import json
+from collections import defaultdict
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -129,8 +128,10 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     
     # Extract translations key
     dic_translations = dict()
+
     if "translations" in dynamic_labels and "en" in dynamic_labels["translations"]:
         dic_translations = dynamic_labels["translations"]["en"]
+        dic_translations = defaultdict(lambda: 'Other', dic_translations)
 
     # Select the mapping based on availability of dynamic_labels
     if dic_translations:
