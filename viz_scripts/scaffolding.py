@@ -184,10 +184,12 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     expanded_ct = participant_ct_df
-    expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get))
-    expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
-    valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
-    expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
+    print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
+    if len(expanded_ct) > 0:
+        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get))
+        expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
+        valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
+        expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
 
     # Change meters to miles
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
