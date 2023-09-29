@@ -58,9 +58,9 @@ if 'label_options' in dynamic_config:
             dynamic_labels = json.loads(req.text)
             print("Dynamic labels download was successful.")
     else:
-        print("Dynamic labels URL is unavailable.")
+        print(f"dynamic_labels_url is unavailable for {dynamic_config['label_options']}")
 else:
-    print("Dynamic labels are not available.")
+    print(f"label_options is unavailable for the dynamic_config.")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
