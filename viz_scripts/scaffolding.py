@@ -343,7 +343,6 @@ def CO2_footprint_lb(df, distance, col):
     df[col+'_lb_CO2'] = np.select(conditions_col, values_col)
     return df
     
-  
 def CO2_impact_lb(df,distance):
     if 'Mode_confirm_lb_CO2' not in df.columns:
         print("Mode confirm footprint not found, computing before impact")
@@ -351,3 +350,18 @@ def CO2_impact_lb(df,distance):
     df = CO2_footprint_lb(df, distance, "Replaced_mode")
     df['CO2_Impact(lb)']  = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']),3)
     return df
+
+def compute_CO2_impact_kg(expanded_ct, dynamic_labels):
+
+    convert_miles_to_kilometer = 1.60934 # 1 Miles = 1.60934 KM
+
+    dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
+
+    if "mode_confirm" in expanded_ct.columns:
+        expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm'].map(dic_mode_kgCO2PerKm)
+
+    if "replaced_mode" in expanded_ct.columns:
+        expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode'].map(dic_mode_kgCO2PerKm)
+
+    expanded_ct['CO2_Impact(kg)']  = round ( (expanded_ct['distance_miles'] * convert_miles_to_kilometer ) * ( expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']),3)
+    return expanded_ct
