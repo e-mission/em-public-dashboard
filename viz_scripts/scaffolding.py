@@ -222,7 +222,7 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     expanded_ct = CO2_footprint_lb(expanded_ct, 'distance_miles', 'Mode_confirm')
     return expanded_ct
 
-def add_energy_impact(expanded_ct, df_ei, dic_fuel):
+def add_energy_impact(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     # Let's first calculate everything for the mode confirm
     # And then calculate everything for the replaced mode
     expanded_ct = add_energy_labels(expanded_ct, df_ei, dic_fuel)
@@ -230,7 +230,11 @@ def add_energy_impact(expanded_ct, df_ei, dic_fuel):
     expanded_ct = energy_intensity(expanded_ct, df_ei, 'Replaced_mode')
     # and then compute the impacts
     expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles')
-    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
+
+    if (len(dynamic_labels) > 0):
+        expanded_ct = compute_CO2_impact_kg(expanded_ct, dynamic_labels)
+    else:
+        expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
     return expanded_ct
 
 def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_users=False):
