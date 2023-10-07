@@ -1,5 +1,5 @@
 # python 3
-FROM shankari/e-mission-server:gis-based-mode-detection_2023-09-13--30-28
+FROM shankari/e-mission-server:master_2023-10-07--40-27
 
 VOLUME /plots
 
