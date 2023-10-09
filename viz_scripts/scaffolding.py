@@ -353,9 +353,9 @@ def CO2_footprint_lb(df, distance, col):
                        (df[col+'_fuel'] == 'diesel'),
                        (df[col+'_fuel'] == 'electric')]
 
-    gasoline_col = (df['ei_'+col]*0.000001)* df['CO2_'+col]
-    diesel_col   = (df['ei_'+col]*0.000001)* df['CO2_'+col]
-    electric_col = (((df['ei_'+col])+df['ei_trip_'+col])*0.001)*df['CO2_'+col]
+    gasoline_col = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
+    diesel_col   = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
+    electric_col = (((df[distance]*df['ei_'+col])+df['ei_trip_'+col])*0.001)*df['CO2_'+col]
 
     values_col = [gasoline_col,diesel_col,electric_col]
     df[col+'_lb_CO2'] = np.select(conditions_col, values_col)
@@ -368,9 +368,10 @@ def CO2_impact_lb(df,distance):
         print("Mode confirm footprint not found, computing before impact")
         df = CO2_footprint_lb(df, distance, "Mode_confirm")
     df = CO2_footprint_lb(df, distance, "Replaced_mode")
+    df['CO2_Impact(lb)'] = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']), 5)
 
     # Convert the CO2_Impact to be represented in kilogram
-    df['CO2_Impact(kg)']  = round(df[distance] * (df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']) * conversion_lb_to_kilogram, 5)
+    df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 5)
     return df
 
 def compute_CO2_impact_kg(expanded_ct, dynamic_labels):
