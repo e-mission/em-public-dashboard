@@ -50,17 +50,14 @@ dynamic_labels = { }
 if 'label_options' in dynamic_config:
     dynamic_labels_url = dynamic_config['label_options']
 
-    if  dynamic_labels_url:
-        req = requests.get(dynamic_labels_url)
-        if req.status_code != 200:
-            print(f"Unable to download dynamic_labels, status code: {req.status_code}")
-        else:
-            dynamic_labels = json.loads(req.text)
-            print("Dynamic labels download was successful.")
+    req = requests.get(dynamic_labels_url)
+    if req.status_code != 200:
+        print(f"Unable to download dynamic_labels_url, status code: {req.status_code} for {STUDY_CONFIG}")
     else:
-        print(f"dynamic_labels_url is unavailable for {dynamic_config['label_options']}")
+        dynamic_labels = json.loads(req.text)
+        print(f"Dynamic labels download was successful for nrel-openpath-deploy-configs: {STUDY_CONFIG}" )
 else:
-    print(f"label_options is unavailable for the dynamic_config.")
+    print(f"label_options is unavailable for the dynamic_config in {STUDY_CONFIG}")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
