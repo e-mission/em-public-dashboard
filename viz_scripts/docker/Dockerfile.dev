@@ -10,6 +10,10 @@ WORKDIR /usr/src/app
 RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
 RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
 
+COPY docker/clean_packages.sh /usr/src/app
+RUN chmod u+x /usr/src/app/clean_packages.sh
+RUN /bin/bash -c "./clean_packages.sh"
+
 ADD docker/start_notebook.sh /usr/src/app/.docker/start_notebook.sh
 RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
