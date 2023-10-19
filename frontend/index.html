@@ -374,19 +374,20 @@
 					const STUDY_CONFIG = _getStudyName(window.location);
 					$.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function(data) {
 						// Load list of plots corresponding to study/program
+						dynamic_labels = data.label_options
 						if (data.intro.program_or_study=='program')
 						{
 							// Note: We're disabling energy metrics on public dashboard when dynamic labels are available.
 							// TODO: Remove the if (data.label_options) in future when energy computation is handled properly.
-							if (data.label_options)
+							if (dynamic_labels)
 							{
 								load_file = "metrics_program_withoutEnergyMetrics.html"
-								console.log("Dynamic Label is available for: " + STUDY_CONFIG)
+								console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
 							}
 							else
 							{
 								load_file = "metrics_program_withoutEnergyMetrics.html"
-								console.log("Dynamic Label is unavailable for: " + STUDY_CONFIG)
+								console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
 							}
 							$.get(load_file, function(response) {
                                 const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
@@ -404,14 +405,14 @@
 						} 
 						else  // CASE: STUDY
 						{
-							if (data.label_options)
+							if (dynamic_labels)
 							{
-								console.log("Dynamic Label is available for: " + STUDY_CONFIG)
+								console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
 								$('#metric').load('metrics_study_withoutEnergyMetrics.html');
 							}
 							else
 							{
-								console.log("Dynamic Label is unavailable for: " + STUDY_CONFIG)
+								console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
 								$('#metric').load('metrics_study.html');
 							};
 							addPreconfiguredMetrics([
