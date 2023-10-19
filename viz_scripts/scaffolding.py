@@ -126,20 +126,10 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     if "distance" in expanded_ct.columns:
         unit_conversions(expanded_ct)
     
-    if "translations" in dynamic_labels and "en" in dynamic_labels["translations"]:
-        translations = dynamic_labels["translations"]["en"]
-        
-        def translate_labels(labels):
-            translation_mapping = {}
-            for label in labels:
-                value = label["value"]
-                translation = translations.get(value)
-                translation_mapping[value] = translation
-            return defaultdict(lambda: 'Other', translation_mapping)
-
-        dic_mode_mapping = translate_labels(dynamic_labels["MODE"])
-        dic_replaced_mapping = translate_labels(dynamic_labels["REPLACED_MODE"])
-        dic_purpose_mapping = translate_labels(dynamic_labels["PURPOSE"])
+    if dynamic_labels:
+        dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
+        dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
+        dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
 
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
@@ -185,6 +175,31 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
         orient='index', columns=["value"])
 
     return expanded_ct, file_suffix, quality_text, debug_df
+
+# Function to map the "MODE", "REPLACED_MODE", "PURPOSE" to respective en-translations
+# Input: dynamic_labels, label_type: MODE, REPLACED_MODE, PURPOSE
+# Return: Dictionary mapping between the label type and its english translation.
+def mapping_labels(dynamic_labels, label_type):
+    if "translations" in dynamic_labels and "en" in dynamic_labels["translations"]:
+        translations = dynamic_labels["translations"]["en"]
+        dic_mapping = dict()
+
+        def translate_labels(labels):
+            translation_mapping = {}
+            for label in labels:
+                value = label["value"]
+                translation = translations.get(value)
+                translation_mapping[value] = translation
+            return defaultdict(lambda: 'Other', translation_mapping)
+
+        if (label_type == "MODE"):
+            dic_mapping = translate_labels(dynamic_labels[label_type])
+        elif (label_type == "REPLACED_MODE"):
+            dic_mapping = translate_labels(dynamic_labels[label_type])
+        elif (label_type == "PURPOSE"):
+            dic_mapping = translate_labels(dynamic_labels[label_type])
+
+        return dic_mapping
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
