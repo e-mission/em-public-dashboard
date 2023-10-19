@@ -380,25 +380,15 @@
 							// TODO: Remove the if (data.label_options) in future when energy computation is handled properly.
 							if (data.label_options)
 							{
+								load_file = "metrics_program_withoutEnergyMetrics.html"
 								console.log("Dynamic Label is available for: " + STUDY_CONFIG)
-								$.get("metrics_program_withoutEnergyMetrics.html", function(response) {
-                                const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
-                                $('#metric').append(configuredResponse);
-                                addPreconfiguredMetrics([
-                                    "ntrips_mode_confirm",
-                                    "miles_mode_confirm",
-                                    "ntrips_sensed_mode",
-                                    "miles_sensed_mode",
-                                    `ntrips_${data.intro.mode_studied}_purpose`,
-                                    `ntrips_${data.intro.mode_studied}_per_weekday`,
-                                    `sketch_CO2impact_${data.intro.mode_studied}`
-                                ]);
-                            	});
 							}
 							else
 							{
+								load_file = "metrics_program_withoutEnergyMetrics.html"
 								console.log("Dynamic Label is unavailable for: " + STUDY_CONFIG)
-								$.get("metrics_program.html", function(response) {
+							}
+							$.get(load_file, function(response) {
                                 const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
                                 $('#metric').append(configuredResponse);
                                 addPreconfiguredMetrics([
@@ -411,7 +401,6 @@
                                     `sketch_CO2impact_${data.intro.mode_studied}`
                                 ]);
                             	});
-							}
 						} 
 						else  // CASE: STUDY
 						{
@@ -419,31 +408,22 @@
 							{
 								console.log("Dynamic Label is available for: " + STUDY_CONFIG)
 								$('#metric').load('metrics_study_withoutEnergyMetrics.html');
-								addPreconfiguredMetrics([
-									"ntrips_mode_confirm",
-									"miles_mode_confirm",
-									"ntrips_sensed_mode",
-									"miles_sensed_mode",
-									"ntrips_purpose",
-									"ntrips_sensed_per_weekday",
-									"ts_emissions_user"
-                            ]);
 							}
 							else
 							{
 								console.log("Dynamic Label is unavailable for: " + STUDY_CONFIG)
 								$('#metric').load('metrics_study.html');
-								addPreconfiguredMetrics([
-									"ntrips_mode_confirm",
-									"miles_mode_confirm",
-									"ntrips_sensed_mode",
-									"miles_sensed_mode",
-									"ntrips_purpose",
-									"ntrips_sensed_per_weekday",
-									"ts_emissions_user"
-								]);
-							}
-						};
+							};
+							addPreconfiguredMetrics([
+								"ntrips_mode_confirm",
+								"miles_mode_confirm",
+								"ntrips_sensed_mode",
+								"miles_sensed_mode",
+								"ntrips_purpose",
+								"ntrips_sensed_per_weekday",
+								"ts_emissions_user"
+							]);
+						}
                         // Figure out all months since start date to present
                         var date_options = "<option value=''>All data</option>";
                         const dates = getMonthList(
