@@ -126,15 +126,11 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     if "distance" in expanded_ct.columns:
         unit_conversions(expanded_ct)
     
-    if dynamic_labels:
-        dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
-        dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
-        dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
-
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_ct.columns:
         if (len(dynamic_labels)):
+            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
         else:
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
@@ -142,6 +138,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
             if (len(dynamic_labels)):
+                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
             else:
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
@@ -154,6 +151,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
         if (len(dynamic_labels)):
+             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
              expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
         else:
             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
