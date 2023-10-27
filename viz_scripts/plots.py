@@ -247,7 +247,7 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.text(0,-(data[y].max())/8,f"Last updated {arrow.get()}", fontsize=10)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def CO2_impact(x,y,color,plot_title,file_name):
+def CO2_impact(x,y,color,plot_title, xLabel, yLabel, file_name):
     color = color.map({True: 'green', False: 'red'})
     objects = ('CO2 Reduction', 'CO2 Increase')
 
@@ -256,8 +256,8 @@ def CO2_impact(x,y,color,plot_title,file_name):
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
     ax.set_title(plot_title, fontsize=18)
-    ax.set_xlabel('CO2 Emissions (kg)', fontsize=18)
-    ax.set_ylabel('Replaced Mode',fontsize=18)
+    ax.set_xlabel(xLabel, fontsize=18)
+    ax.set_ylabel(yLabel,fontsize=18)
     ax.set_yticklabels(y_labels)
     ax.xaxis.set_tick_params(labelsize=15)
     ax.yaxis.set_tick_params(labelsize=15)
