@@ -245,9 +245,9 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     expanded_ct = energy_footprint_kWH(expanded_ct, 'distance_miles', 'Mode_confirm')
 
     if (len(dynamic_labels) > 0):
-        expanded_ct = compute_CO2_footprint_kg(expanded_ct, dynamic_labels)
+        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels)
     else:
-        expanded_ct = CO2_footprint_lb(expanded_ct, 'distance_miles', 'Mode_confirm')
+        expanded_ct = CO2_footprint_default(expanded_ct, 'distance_miles', 'Mode_confirm')
     return expanded_ct
 
 def add_energy_impact(expanded_ct, df_ei, dic_fuel, dynamic_labels):
@@ -260,9 +260,9 @@ def add_energy_impact(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles')
 
     if (len(dynamic_labels) > 0):
-        expanded_ct = compute_CO2_impact_kg(expanded_ct, dynamic_labels)
+        expanded_ct = compute_CO2_impact_dynamic(expanded_ct, dynamic_labels)
     else:
-        expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
+        expanded_ct = CO2_impact_default(expanded_ct, 'distance_miles')
     return expanded_ct
 
 def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_users=False):
@@ -357,7 +357,7 @@ def energy_impact_kWH(df,distance):
     df['Energy_Impact(kWH)']  = round((df['Replaced_mode_EI(kWH)'] - df['Mode_confirm_EI(kWH)']),3)
     return df
 
-def CO2_footprint_lb(df, distance, col):
+def CO2_footprint_default(df, distance, col):
     """ Inputs:
     df = dataframe with data
     distance = distance in miles
@@ -379,19 +379,19 @@ def CO2_footprint_lb(df, distance, col):
     df[col+'_kg_CO2'] = df[col+'_lb_CO2'] * conversion_lb_to_kilogram / conversion_mile_to_kilometer
     return df
     
-def CO2_impact_lb(df,distance):
+def CO2_impact_default(df,distance):
     conversion_lb_to_kilogram = 0.453592 # 1 lb = 0.453592 KG
     if 'Mode_confirm_lb_CO2' not in df.columns:
         print("Mode confirm footprint not found, computing before impact")
-        df = CO2_footprint_lb(df, distance, "Mode_confirm")
-    df = CO2_footprint_lb(df, distance, "Replaced_mode")
+        df = CO2_footprint_default(df, distance, "Mode_confirm")
+    df = CO2_footprint_default(df, distance, "Replaced_mode")
     df['CO2_Impact(lb)'] = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']), 3)
 
     # Convert the CO2_Impact to be represented in kilogram
     df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 3)
     return df
 
-def compute_CO2_footprint_kg(expanded_ct, dynamic_labels):
+def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels):
     conversion_meter_to_kilometer = 0.001
     conversion_kilogram_to_lbs = 2.20462
     conversion_kilometer_to_mile = 0.621371
@@ -405,7 +405,7 @@ def compute_CO2_footprint_kg(expanded_ct, dynamic_labels):
 
     return expanded_ct
 
-def compute_CO2_impact_kg(expanded_ct, dynamic_labels):
+def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
     conversion_meter_to_kilometer = 0.001 # 1 meter = 0.001 kilometer
     conversion_kilogram_to_lbs = 2.20462
     conversion_kilometer_to_mile = 0.621371
