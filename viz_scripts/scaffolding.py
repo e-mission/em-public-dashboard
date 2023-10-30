@@ -426,3 +426,54 @@ def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
     expanded_ct['CO2_Impact(kg)']  = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
     expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
     return expanded_ct
+
+def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
+
+    filtered_taxi_data = data_eb[data_eb['Replaced_mode'] == "Taxi/Uber/Lyft"]
+    filtered_bus_data = data_eb[data_eb['Replaced_mode'] == "Bus"]
+    filtered_freeshuttle_data = data_eb[data_eb['Replaced_mode'] == "Free Shuttle"]
+    filtered_walk_data = data_eb[data_eb['Replaced_mode'] == "Walk"]
+
+    # Handling different cases of Replaced mode translations
+    if len(dynamic_labels) > 0:
+        filtered_GasCarShared_data = data_eb[data_eb['Replaced_mode'] == "Gas Car Shared Ride"]
+        filtered_notravel_data = data_eb[data_eb['Replaced_mode'] == "No travel"]
+        print("With Dynamic Config:")
+        print("\n")
+    else:
+        filtered_GasCarShared_data = data_eb[data_eb['Replaced_mode'] == "Gas Car, with others"]
+        filtered_notravel_data = data_eb[data_eb['Replaced_mode'] == "No Travel"]
+        print("With Default mapping:")
+        print("\n")
+
+    selected_columns = ['distance', 'Replaced_mode_kg_CO2', 'Replaced_mode_lb_CO2', 'Mode_confirm_kg_CO2','Mode_confirm_lb_CO2', "replaced_mode", "mode_confirm"]
+
+    print("Walk Data:")
+    print(str(filtered_walk_data[selected_columns].head()))
+    print("\n")
+
+    print("No Travel Data:")
+    print(str(filtered_notravel_data[selected_columns].head()))
+    print("\n")
+
+    print("Gas Car Shared Data:")
+    print(str(filtered_GasCarShared_data[selected_columns].head()))
+    print("\n")
+
+    print("Free Shuttle Data:")
+    print(str(filtered_freeshuttle_data[selected_columns].head()))
+    print("\n")
+
+    print("Bus Data:")
+    print(str(filtered_bus_data[selected_columns].head()))
+    print("\n")
+
+    print("Taxi/Uber/Lyft Data:")
+    print(str(filtered_taxi_data[selected_columns].head()))
+    print("\n")
+
+    combined_df = pd.concat([ebco2_lb['total_lb_CO2_emissions'], ebco2_kg['total_kg_CO2_emissions']], axis=1)
+    combined_df.columns = ['Total CO2 Emissions (lb)', 'Total CO2 Emissions (kg)']
+
+    print("CO2 Emissions:")
+    print(combined_df)
