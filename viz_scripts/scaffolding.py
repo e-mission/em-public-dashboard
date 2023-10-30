@@ -376,7 +376,7 @@ def CO2_footprint_default(df, distance, col):
 
     values_col = [gasoline_col,diesel_col,electric_col]
     df[col+'_lb_CO2'] = np.select(conditions_col, values_col)
-    df[col+'_kg_CO2'] = df[col+'_lb_CO2'] * conversion_lb_to_kilogram / conversion_mile_to_kilometer
+    df[col+'_kg_CO2'] = df[col+'_lb_CO2'] * conversion_lb_to_kilogram
     return df
     
 def CO2_impact_default(df,distance):
@@ -401,7 +401,7 @@ def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels):
     if "mode_confirm" in expanded_ct.columns:
         expanded_ct['Mode_confirm_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct['mode_confirm'].map(dic_mode_kgCO2PerKm))
         expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['Mode_confirm_kg_CO2'].fillna(0)
-        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs / conversion_kilometer_to_mile
+        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs
 
     return expanded_ct
 
@@ -413,14 +413,15 @@ def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
     dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
 
     if "mode_confirm" in expanded_ct.columns:
+        # The expanded_ct['Mode_confirm_kg_CO2'] is CO2 emission in terms of [distance in kms * CO2 emission in kgCO2 per km = kg of CO2]
         expanded_ct['Mode_confirm_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct['mode_confirm'].map(dic_mode_kgCO2PerKm))
         expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['Mode_confirm_kg_CO2'].fillna(0)
-        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs / conversion_kilometer_to_mile
+        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs
 
     if "replaced_mode" in expanded_ct.columns:
         expanded_ct['Replaced_mode_kg_CO2'] = (expanded_ct['distance'] * conversion_meter_to_kilometer ) * (expanded_ct['replaced_mode'].map(dic_mode_kgCO2PerKm))
         expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['Replaced_mode_kg_CO2'].fillna(0)
-        expanded_ct['Replaced_mode_lb_CO2'] = expanded_ct['Replaced_mode_kg_CO2'] * conversion_kilogram_to_lbs / conversion_kilometer_to_mile
+        expanded_ct['Replaced_mode_lb_CO2'] = expanded_ct['Replaced_mode_kg_CO2'] * conversion_kilogram_to_lbs
 
     expanded_ct['CO2_Impact(kg)']  = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
     expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
