@@ -321,7 +321,6 @@ def energy_intensity(trip_df,mode_intensity_df,col):
     mode_intensity_df = dataframe with energy/cost/time factors
     col = the column for which we want to map the intensity
     """
-
     mode_intensity_df = mode_intensity_df.copy()
     mode_intensity_df[col] = mode_intensity_df['mode']
     dic_ei_factor = dict(zip(mode_intensity_df[col],mode_intensity_df['energy_intensity_factor']))
@@ -446,7 +445,7 @@ def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels)
         print("With Default mapping:")
         print("\n")
 
-    selected_columns = ['distance', 'Replaced_mode_kg_CO2', 'Replaced_mode_lb_CO2', 'Mode_confirm_kg_CO2','Mode_confirm_lb_CO2', "replaced_mode", "mode_confirm"]
+    selected_columns = ['distance','distance_miles', 'Replaced_mode_kg_CO2', 'Replaced_mode_lb_CO2', 'Mode_confirm_kg_CO2','Mode_confirm_lb_CO2', "replaced_mode", "mode_confirm"]
 
     print("Walk Data:")
     print(str(filtered_walk_data[selected_columns].head()))
