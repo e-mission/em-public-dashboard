@@ -189,14 +189,7 @@ def mapping_labels(dynamic_labels, label_type):
                 translation = translations.get(value)
                 translation_mapping[value] = translation
             return defaultdict(lambda: 'Other', translation_mapping)
-
-        if (label_type == "MODE"):
-            dic_mapping = translate_labels(dynamic_labels[label_type])
-        elif (label_type == "REPLACED_MODE"):
-            dic_mapping = translate_labels(dynamic_labels[label_type])
-        elif (label_type == "PURPOSE"):
-            dic_mapping = translate_labels(dynamic_labels[label_type])
-
+        dic_mapping = translate_labels(dynamic_labels[label_type])
         return dic_mapping
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
@@ -245,7 +238,7 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     expanded_ct = energy_footprint_kWH(expanded_ct, 'distance_miles', 'Mode_confirm')
 
     if (len(dynamic_labels) > 0):
-        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels)
+        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, 'Mode_confirm')
     else:
         expanded_ct = CO2_footprint_default(expanded_ct, 'distance_miles', 'Mode_confirm')
     return expanded_ct
@@ -379,7 +372,6 @@ def CO2_footprint_default(df, distance, col):
     return df
     
 def CO2_impact_default(df,distance):
-    conversion_lb_to_kilogram = 0.453592 # 1 lb = 0.453592 KG
     if 'Mode_confirm_lb_CO2' not in df.columns:
         print("Mode confirm footprint not found, computing before impact")
         df = CO2_footprint_default(df, distance, "Mode_confirm")
@@ -390,39 +382,28 @@ def CO2_impact_default(df,distance):
     df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 3)
     return df
 
-def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels):
+def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, label_type):
     conversion_meter_to_kilometer = 0.001
     conversion_kilogram_to_lbs = 2.20462
     conversion_kilometer_to_mile = 0.621371
 
     dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
 
-    if "mode_confirm" in expanded_ct.columns:
-        expanded_ct['Mode_confirm_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct['mode_confirm'].map(dic_mode_kgCO2PerKm))
-        expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['Mode_confirm_kg_CO2'].fillna(0)
-        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs
+    if label_type.lower() in expanded_ct.columns:
+        # The expanded_ct['Mode_confirm_kg_CO2'] is CO2 emission in terms of [distance in kms * CO2 emission in kgCO2 per km = kg of CO2]
+        expanded_ct[label_type+'_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct[label_type.lower()].map(dic_mode_kgCO2PerKm))
+        expanded_ct[label_type+'_kg_CO2'] = expanded_ct[label_type+'_kg_CO2'].fillna(0)
+        expanded_ct[label_type+'_lb_CO2'] = expanded_ct[label_type+'_kg_CO2'] * conversion_kilogram_to_lbs
 
     return expanded_ct
 
 def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
-    conversion_meter_to_kilometer = 0.001 # 1 meter = 0.001 kilometer
-    conversion_kilogram_to_lbs = 2.20462
-    conversion_kilometer_to_mile = 0.621371
+    if 'Mode_confirm_kg_CO2' not in expanded_ct.columns:
+        print("Mode confirm footprint not found, computing before impact.")
+        compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Mode_confirm")
+    compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Replaced_mode")
 
-    dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
-
-    if "mode_confirm" in expanded_ct.columns:
-        # The expanded_ct['Mode_confirm_kg_CO2'] is CO2 emission in terms of [distance in kms * CO2 emission in kgCO2 per km = kg of CO2]
-        expanded_ct['Mode_confirm_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct['mode_confirm'].map(dic_mode_kgCO2PerKm))
-        expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['Mode_confirm_kg_CO2'].fillna(0)
-        expanded_ct['Mode_confirm_lb_CO2'] = expanded_ct['Mode_confirm_kg_CO2'] * conversion_kilogram_to_lbs
-
-    if "replaced_mode" in expanded_ct.columns:
-        expanded_ct['Replaced_mode_kg_CO2'] = (expanded_ct['distance'] * conversion_meter_to_kilometer ) * (expanded_ct['replaced_mode'].map(dic_mode_kgCO2PerKm))
-        expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['Replaced_mode_kg_CO2'].fillna(0)
-        expanded_ct['Replaced_mode_lb_CO2'] = expanded_ct['Replaced_mode_kg_CO2'] * conversion_kilogram_to_lbs
-
-    expanded_ct['CO2_Impact(kg)']  = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
+    expanded_ct['CO2_Impact(kg)'] = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
     expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
     return expanded_ct
 
