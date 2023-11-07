@@ -400,8 +400,8 @@ def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, label_type):
 def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
     if 'Mode_confirm_kg_CO2' not in expanded_ct.columns:
         print("Mode confirm footprint not found, computing before impact.")
-        compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Mode_confirm")
-    compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Replaced_mode")
+        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Mode_confirm")
+    expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Replaced_mode")
 
     expanded_ct['CO2_Impact(kg)'] = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
     expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
