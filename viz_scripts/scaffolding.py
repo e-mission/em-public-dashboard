@@ -357,7 +357,6 @@ def CO2_footprint_default(df, distance, col):
     """
 
     conversion_lb_to_kilogram = 0.453592 # 1 lb = 0.453592 kg
-    conversion_mile_to_kilometer = 1.60934 # 1 mile = 1.60934 km
 
     conditions_col = [(df[col+'_fuel'] =='gasoline'),
                        (df[col+'_fuel'] == 'diesel'),
@@ -385,7 +384,6 @@ def CO2_impact_default(df,distance):
 def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, label_type):
     conversion_meter_to_kilometer = 0.001
     conversion_kilogram_to_lbs = 2.20462
-    conversion_kilometer_to_mile = 0.621371
 
     dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
 
