@@ -1,10 +1,16 @@
 import pandas as pd
 import numpy as np
 import sys
+from tqdm import tqdm
+from shapely import Point
 
 import emission.storage.timeseries.abstract_timeseries as esta
+import emission.storage.timeseries.builtin_timeseries as bts
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
+import emission.storage.decorations.trip_queries as esdt
+from pandarallel import pandarallel
+
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -45,14 +51,14 @@ def get_participant_uuids(program, load_test_users):
     else:
         participant_list = all_users[np.logical_not(all_users.user_email.str.contains("_test_"))]
     participant_uuid_str = participant_list.uuid
-    disp.display(participant_list.user_email)
+    # disp.display(participant_list.user_email)
     return participant_uuid_str
 
 def load_all_confirmed_trips(tq):
     agg = esta.TimeSeries.get_aggregate_time_series()
     all_ct = agg.get_data_df("analysis/confirmed_trip", tq)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
-    disp.display(all_ct.head())
+    # disp.display(all_ct.head())
     return all_ct
 
 def load_all_participant_trips(program, tq, load_test_users):
@@ -63,7 +69,7 @@ def load_all_participant_trips(program, tq, load_test_users):
         return all_ct
     participant_ct_df = all_ct[all_ct.user_id.isin(participant_list)]
     print("After filtering, found %s participant trips " % len(participant_ct_df))
-    disp.display(participant_ct_df.head())
+    # disp.display(participant_ct_df.head())
     return participant_ct_df
 
 def filter_labeled_trips(mixed_trip_df):
@@ -72,7 +78,7 @@ def filter_labeled_trips(mixed_trip_df):
         return mixed_trip_df
     labeled_ct = mixed_trip_df[mixed_trip_df.user_input != {}]
     print("After filtering, found %s labeled trips" % len(labeled_ct))
-    disp.display(labeled_ct.head())
+    # disp.display(labeled_ct.head())
     return labeled_ct
 
 def expand_userinputs(labeled_ct):
@@ -87,7 +93,7 @@ def expand_userinputs(labeled_ct):
     if len(labeled_ct) == 0:
         return labeled_ct
     label_only = pd.DataFrame(labeled_ct.user_input.to_list(), index=labeled_ct.index)
-    disp.display(label_only.head())
+    # disp.display(label_only.head())
     labels_per_trip = len(label_only.columns)
     print("Found %s columns of length %d" % (label_only.columns, labels_per_trip))
     expanded_ct = pd.concat([labeled_ct, label_only], axis=1)
@@ -99,8 +105,75 @@ def expand_userinputs(labeled_ct):
     assert len(expanded_ct.columns) == len(labeled_ct.columns) + labels_per_trip, \
         ("Mismatch after expanding labels, expanded_ct.columns = %s != labeled_ct.columns %s" %
             (len(expanded_ct.columns), len(labeled_ct.columns)))
-    disp.display(expanded_ct.head())
+    # disp.display(expanded_ct.head())
     return expanded_ct
+
+def get_section_durations(confirmed_trips: pd.DataFrame):
+
+    # Initialize the parallel processing.
+    pandarallel.initialize(progress_bar=True)
+
+    """
+    Extract section-wise durations from trips for every trips.
+
+    TOOO: There is a massive scope to improve performance here.
+        Since we apply row-wise and there are no inter-row dependencies,
+        Speeding this up is very possible. Exploring packages like parallel-pandas
+        is definitely something we could do.
+    """
+
+    # No worries, the inner function has access to these variables.
+    fallback_key = 'analysis/inferred_section'
+    primary_key = 'analysis/cleaned_section'
+
+    def get_durations(user_id, trip_id):
+
+        inferred_sections = esdt.get_sections_for_trip(key = fallback_key,
+            user_id = user_id, trip_id = trip_id)
+
+        if inferred_sections and len(inferred_sections) > 0:
+            return [x.data.duration for x in inferred_sections]
+        
+        print("Falling back to confirmed trips...")
+
+        cleaned_sections = esdt.get_sections_for_trip(key = primary_key,
+            user_id = user_id, trip_id = trip_id)
+    
+        if cleaned_sections and len(cleaned_sections) > 0:
+            return [x.data.duration for x in cleaned_sections]
+
+        return []
+
+    confirmed_trips['section_durations'] = confirmed_trips.parallel_apply(
+        lambda x: get_durations(x.original_user_id, x.cleaned_trip), axis=1
+    )
+
+    return confirmed_trips
+
+
+def get_section_coordinates(confirmed_trips: pd.DataFrame):
+    # Initialize pandarallel
+    pandarallel.initialize(progress_bar=True)
+
+    key = 'analysis/inferred_section'
+
+    def get_coordinates(user_id, trip_id, distances):
+        sections = esdt.get_sections_for_trip(key = key,
+            user_id = user_id, trip_id = trip_id)
+
+        if sections and len(sections) > 0 and len(distances) == len(sections):
+            argmax = np.argmax(distances)
+            section = sections[argmax]
+            return section.data.start_loc['coordinates'], section.data.end_loc['coordinates']
+
+        return []
+
+    confirmed_trips['section_locations_argmax'] = confirmed_trips.parallel_apply(
+        lambda x: get_coordinates(x.original_user_id, x.cleaned_trip, x.section_distances), axis=1
+    )
+
+    return confirmed_trips
+
 
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
@@ -117,6 +190,7 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     tq = get_time_query(year, month)
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     labeled_ct = filter_labeled_trips(participant_ct_df)
+    # labeled_ct = get_section_durations(labeled_ct)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
 
