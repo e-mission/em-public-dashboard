@@ -405,8 +405,11 @@ def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
     expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
     return expanded_ct
 
-def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
 
+# Function to print the emission calculations in both Metric and Imperial System. Helps in debugging for emission calculation.
+# Used this function specifically to test with label_options: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-program-label-options.json
+# Config: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/configs/dev-emulator-program.nrel-op.json
+def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
     filtered_taxi_data = data_eb[data_eb['Replaced_mode'] == "Taxi/Uber/Lyft"]
     filtered_bus_data = data_eb[data_eb['Replaced_mode'] == "Bus"]
     filtered_freeshuttle_data = data_eb[data_eb['Replaced_mode'] == "Free Shuttle"]
