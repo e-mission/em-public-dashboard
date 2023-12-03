@@ -34,12 +34,30 @@ else:
     dynamic_config = json.loads(r.text)
     print(f"Successfully downloaded config with version {dynamic_config['version']} "\
         f"for {dynamic_config['intro']['translated_text']['en']['deployment_name']} "\
-        f"and data collection URL {dynamic_config['server']['connectUrl']}")
+        f"and data collection URL {dynamic_config['server']['connectUrl'] if 'server' in dynamic_config else 'default'}")
 
 if dynamic_config['intro']['program_or_study'] == 'program':
     mode_studied = dynamic_config['intro']['mode_studied']
 else:
     mode_studied = None
+
+# dynamic_labels can  be referenced from 
+# https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-study-label-options.json
+dynamic_labels = { }
+
+# Check if the dynamic config contains dynamic labels 'label_options'
+# Parse through the dynamic_labels_url:
+if 'label_options' in dynamic_config:
+    dynamic_labels_url = dynamic_config['label_options']
+
+    req = requests.get(dynamic_labels_url)
+    if req.status_code != 200:
+        print(f"Unable to download dynamic_labels_url, status code: {req.status_code} for {STUDY_CONFIG}")
+    else:
+        dynamic_labels = json.loads(req.text)
+        print(f"Dynamic labels download was successful for nrel-openpath-deploy-configs: {STUDY_CONFIG}" )
+else:
+    print(f"label_options is unavailable for the dynamic_config in {STUDY_CONFIG}")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
@@ -70,6 +88,7 @@ def compute_for_date(month, year):
         study_type=dynamic_config['intro']['program_or_study'],
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
+        dynamic_labels = dynamic_labels,
         sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"))
 
     print(f"Running at {arrow.get()} with params {params}")

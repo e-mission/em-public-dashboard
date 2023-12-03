@@ -58,29 +58,8 @@ def format_pct(pct, values):
 
 
 def pie_chart_mode(plot_title,labels,values,file_name):
-    all_labels= ['Gas Car, drove alone',
-                 'Bus', 
-                 'Train', 
-                 'Free Shuttle',
-                 'Taxi/Uber/Lyft', 
-                 'Gas Car, with others', 
-                 'Bikeshare',
-                 'Scooter share',
-                 'E-bike', 
-                 'Walk', 
-                 'Skate board', 
-                 'Regular Bike', 
-                 'Not a Trip',
-                 'No Travel', 
-                 'Same Mode', 
-                 'E-car, drove alone',
-                 'E-car, with others',
-                 'Air',
-                 'Other']
-
-    val2labeldf = pd.DataFrame({"labels": labels, "values": values})
     
-    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -127,22 +106,8 @@ def pie_chart_sensed_mode(plot_title,labels,values,file_name):
     plt.show()
 
 def pie_chart_purpose(plot_title,labels,values,file_name):
-    labels_trip= ['Work', 
-                  'Home',
-                  'Meal',
-                  'Shopping',
-                  'Personal/Medical',
-                  'Recreation/Exercise', 
-                  'Transit transfer', 
-                  'Pick-up/Drop off',
-                  'Entertainment/Social',
-                  'Other',
-                  'School',
-                  'Religious',
-                  'No travel', 
-                  'not_a_trip']
     
-    colours = dict(zip(labels_trip, plt.cm.tab20.colors[:len(labels_trip)]))
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -211,28 +176,8 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_mode(data,x,y,plot_title,file_name):
-    all_labels= ['Gas Car, drove alone',
-                 'Bus', 
-                 'Train', 
-                 'Free Shuttle',
-                 'Taxi/Uber/Lyft', 
-                 'Gas Car, with others', 
-                 'Bikeshare',
-                 'Scooter share',
-                 'E-bike', 
-                 'Walk', 
-                 'Skate board', 
-                 'Regular Bike', 
-                 'Not a Trip',
-                 'No Travel', 
-                 'Same Mode', 
-                 'E-car, drove alone',
-                 'E-car, with others',
-                 'Air',
-                 'Other']
-    
-    colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
+def barplot_mode(data,x,y,plot_title, labels, file_name):
+    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
@@ -302,7 +247,7 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.text(0,-(data[y].max())/8,f"Last updated {arrow.get()}", fontsize=10)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def CO2_impact(x,y,color,plot_title,file_name):
+def CO2_impact(x,y,color,plot_title, xLabel, yLabel, file_name):
     color = color.map({True: 'green', False: 'red'})
     objects = ('CO2 Reduction', 'CO2 Increase')
 
@@ -311,8 +256,8 @@ def CO2_impact(x,y,color,plot_title,file_name):
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
     ax.set_title(plot_title, fontsize=18)
-    ax.set_xlabel('CO2 Emissions (lb)', fontsize=18)
-    ax.set_ylabel('Replaced Mode',fontsize=18)
+    ax.set_xlabel(xLabel, fontsize=18)
+    ax.set_ylabel(yLabel,fontsize=18)
     ax.set_yticklabels(y_labels)
     ax.xaxis.set_tick_params(labelsize=15)
     ax.yaxis.set_tick_params(labelsize=15)
