@@ -111,3 +111,13 @@ this later if there is sufficient interest/funding.
 The one part where we are NOT cutting corners is in the parts where we expect
 contributions from others. We are going to build in automated tests for that
 part to ensure non-bitrotted code.
+
+## Trobleshooting Tips
+
+Please be sure you are running analysis notebooks through the notebook server, not another avenue such as VScode, this is to prevent dependency issues. 
+
+You may need to increase the resources avaliable to Docker if:
+- the dataset is large
+- you believe you've loaded the data but there is none when running the notebooks
+- the notebook can't connect to the database
+- when you try and start the container for the database it exits with code 14
