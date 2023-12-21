@@ -111,3 +111,25 @@ this later if there is sufficient interest/funding.
 The one part where we are NOT cutting corners is in the parts where we expect
 contributions from others. We are going to build in automated tests for that
 part to ensure non-bitrotted code.
+
+## Trobleshooting Tips
+
+Please be sure you are running analysis notebooks through the notebook server, not another avenue such as VScode, this is to prevent dependency issues. 
+
+You may need to increase the resources avaliable to Docker if:
+- the dataset is large
+- you believe you've loaded the data but there is none when running the notebooks
+- the notebook can't connect to the database
+- when you try and start the container for the database it exits with code 14
+- 
+
+## Large Dataset Workaround
+
+This is not the standard method of loading data, and we are not reccomending this method or promising that it will work, but the following has worked for us in order to cut down on resources required in order to work with a large dataset in a pinch.
+
+1. unpack the zipped files in your local file system
+2. copy the `stage_analysis`, `stage_profiles`, and `stage_uuids` files into the mongo docker container
+3. place the files in a `tmp/dump/Stage_database` folder
+4. from the command line in `tmp`, run a `mongorestore`
+
+This process restores the most basic files, reducing size, but also the analysis that will be possible. Using the script to restore all of the data is the reccomended method. These steps may be helpful if the dataset is larger than your machine can handle. 
