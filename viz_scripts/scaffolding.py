@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import sys
+from collections import defaultdict
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -106,7 +107,7 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=None, include_test_users=False):
+def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -124,15 +125,23 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "distance" in expanded_ct.columns:
         unit_conversions(expanded_ct)
-
-    # Mapping new mode labels with dictionaries
+    
+    # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_ct.columns:
-        expanded_ct['Mode_confirm']= expanded_ct['mode_confirm'].map(dic_re)
+        if (len(dynamic_labels)):
+            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
+            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
+        else:
+            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
-            expanded_ct['Replaced_mode']= expanded_ct['replaced_mode'].map(dic_re)
+            if (len(dynamic_labels)):
+                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
+                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
+            else:
+                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
         else:
             print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
     else:
@@ -141,7 +150,11 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
-        expanded_ct['Trip_purpose']= expanded_ct['purpose_confirm'].map(dic_pur)
+        if (len(dynamic_labels)):
+             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
+             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
+        else:
+            expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -160,6 +173,24 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
         orient='index', columns=["value"])
 
     return expanded_ct, file_suffix, quality_text, debug_df
+
+# Function to map the "MODE", "REPLACED_MODE", "PURPOSE" to respective en-translations
+# Input: dynamic_labels, label_type: MODE, REPLACED_MODE, PURPOSE
+# Return: Dictionary mapping between the label type and its english translation.
+def mapping_labels(dynamic_labels, label_type):
+    if "translations" in dynamic_labels and "en" in dynamic_labels["translations"]:
+        translations = dynamic_labels["translations"]["en"]
+        dic_mapping = dict()
+
+        def translate_labels(labels):
+            translation_mapping = {}
+            for label in labels:
+                value = label["value"]
+                translation = translations.get(value)
+                translation_mapping[value] = translation
+            return defaultdict(lambda: 'Other', translation_mapping)
+        dic_mapping = translate_labels(dynamic_labels[label_type])
+        return dic_mapping
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
@@ -197,7 +228,7 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-def add_energy_labels(expanded_ct, df_ei, dic_fuel):
+def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     """ Inputs:
     expanded_ct = dataframe of trips that has had Mode_confirm and Replaced_mode added
     dic/df_* = label mappings for energy impact and fuel
@@ -205,18 +236,26 @@ def add_energy_labels(expanded_ct, df_ei, dic_fuel):
     expanded_ct['Mode_confirm_fuel']= expanded_ct['Mode_confirm'].map(dic_fuel)
     expanded_ct = energy_intensity(expanded_ct, df_ei, 'Mode_confirm')
     expanded_ct = energy_footprint_kWH(expanded_ct, 'distance_miles', 'Mode_confirm')
-    expanded_ct = CO2_footprint_lb(expanded_ct, 'distance_miles', 'Mode_confirm')
+
+    if (len(dynamic_labels) > 0):
+        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, 'Mode_confirm')
+    else:
+        expanded_ct = CO2_footprint_default(expanded_ct, 'distance_miles', 'Mode_confirm')
     return expanded_ct
 
-def add_energy_impact(expanded_ct, df_ei, dic_fuel):
+def add_energy_impact(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     # Let's first calculate everything for the mode confirm
     # And then calculate everything for the replaced mode
-    expanded_ct = add_energy_labels(expanded_ct, df_ei, dic_fuel)
+    expanded_ct = add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels)
     expanded_ct['Replaced_mode_fuel']= expanded_ct['Replaced_mode'].map(dic_fuel)
     expanded_ct = energy_intensity(expanded_ct, df_ei, 'Replaced_mode')
     # and then compute the impacts
     expanded_ct = energy_impact_kWH(expanded_ct, 'distance_miles')
-    expanded_ct = CO2_impact_lb(expanded_ct, 'distance_miles')
+
+    if (len(dynamic_labels) > 0):
+        expanded_ct = compute_CO2_impact_dynamic(expanded_ct, dynamic_labels)
+    else:
+        expanded_ct = CO2_impact_default(expanded_ct, 'distance_miles')
     return expanded_ct
 
 def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_users=False):
@@ -275,7 +314,6 @@ def energy_intensity(trip_df,mode_intensity_df,col):
     mode_intensity_df = dataframe with energy/cost/time factors
     col = the column for which we want to map the intensity
     """
-
     mode_intensity_df = mode_intensity_df.copy()
     mode_intensity_df[col] = mode_intensity_df['mode']
     dic_ei_factor = dict(zip(mode_intensity_df[col],mode_intensity_df['energy_intensity_factor']))
@@ -311,29 +349,112 @@ def energy_impact_kWH(df,distance):
     df['Energy_Impact(kWH)']  = round((df['Replaced_mode_EI(kWH)'] - df['Mode_confirm_EI(kWH)']),3)
     return df
 
-def CO2_footprint_lb(df, distance, col):
+def CO2_footprint_default(df, distance, col):
     """ Inputs:
     df = dataframe with data
     distance = distance in miles
     col = Replaced_mode or Mode_confirm
     """
+
+    conversion_lb_to_kilogram = 0.453592 # 1 lb = 0.453592 kg
+
     conditions_col = [(df[col+'_fuel'] =='gasoline'),
                        (df[col+'_fuel'] == 'diesel'),
                        (df[col+'_fuel'] == 'electric')]
-   
     gasoline_col = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
     diesel_col   = (df[distance]*df['ei_'+col]*0.000001)* df['CO2_'+col]
     electric_col = (((df[distance]*df['ei_'+col])+df['ei_trip_'+col])*0.001)*df['CO2_'+col]
 
     values_col = [gasoline_col,diesel_col,electric_col]
     df[col+'_lb_CO2'] = np.select(conditions_col, values_col)
+    df[col+'_kg_CO2'] = df[col+'_lb_CO2'] * conversion_lb_to_kilogram
     return df
     
-  
-def CO2_impact_lb(df,distance):
+def CO2_impact_default(df,distance):
     if 'Mode_confirm_lb_CO2' not in df.columns:
         print("Mode confirm footprint not found, computing before impact")
-        df = CO2_footprint_lb(df, distance, "Mode_confirm")
-    df = CO2_footprint_lb(df, distance, "Replaced_mode")
-    df['CO2_Impact(lb)']  = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']),3)
+        df = CO2_footprint_default(df, distance, "Mode_confirm")
+    df = CO2_footprint_default(df, distance, "Replaced_mode")
+    df['CO2_Impact(lb)'] = round((df['Replaced_mode_lb_CO2'] - df['Mode_confirm_lb_CO2']), 3)
+
+    # Convert the CO2_Impact to be represented in kilogram
+    df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 3)
     return df
+
+def compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, label_type):
+    conversion_meter_to_kilometer = 0.001
+    conversion_kilogram_to_lbs = 2.20462
+
+    dic_mode_kgCO2PerKm = {mode["value"]: mode["kgCo2PerKm"] for mode in dynamic_labels["MODE"]}
+
+    if label_type.lower() in expanded_ct.columns:
+        # The expanded_ct['Mode_confirm_kg_CO2'] is CO2 emission in terms of [distance in kms * CO2 emission in kgCO2 per km = kg of CO2]
+        expanded_ct[label_type+'_kg_CO2'] = ((expanded_ct['distance'] * conversion_meter_to_kilometer )) * (expanded_ct[label_type.lower()].map(dic_mode_kgCO2PerKm))
+        expanded_ct[label_type+'_kg_CO2'] = expanded_ct[label_type+'_kg_CO2'].fillna(0)
+        expanded_ct[label_type+'_lb_CO2'] = expanded_ct[label_type+'_kg_CO2'] * conversion_kilogram_to_lbs
+
+    return expanded_ct
+
+def compute_CO2_impact_dynamic(expanded_ct, dynamic_labels):
+    if 'Mode_confirm_kg_CO2' not in expanded_ct.columns:
+        print("Mode confirm footprint not found, computing before impact.")
+        expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Mode_confirm")
+    expanded_ct = compute_CO2_footprint_dynamic(expanded_ct, dynamic_labels, "Replaced_mode")
+
+    expanded_ct['CO2_Impact(kg)'] = round ((expanded_ct['Replaced_mode_kg_CO2'] - expanded_ct['Mode_confirm_kg_CO2']), 3)
+    expanded_ct['CO2_Impact(lb)'] = round ((expanded_ct['Replaced_mode_lb_CO2'] - expanded_ct['Mode_confirm_lb_CO2']), 3)
+    return expanded_ct
+
+
+# Function to print the emission calculations in both Metric and Imperial System. Helps in debugging for emission calculation.
+# Used this function specifically to test with label_options: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-program-label-options.json
+# Config: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/configs/dev-emulator-program.nrel-op.json
+def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
+    filtered_taxi_data = data_eb[data_eb['Replaced_mode'] == "Taxi/Uber/Lyft"]
+    filtered_bus_data = data_eb[data_eb['Replaced_mode'] == "Bus"]
+    filtered_freeshuttle_data = data_eb[data_eb['Replaced_mode'] == "Free Shuttle"]
+    filtered_walk_data = data_eb[data_eb['Replaced_mode'] == "Walk"]
+
+    # Handling different cases of Replaced mode translations
+    if len(dynamic_labels) > 0:
+        filtered_GasCarShared_data = data_eb[data_eb['Replaced_mode'] == "Gas Car Shared Ride"]
+        filtered_notravel_data = data_eb[data_eb['Replaced_mode'] == "No travel"]
+        print("With Dynamic Config:")
+        print("\n")
+    else:
+        filtered_GasCarShared_data = data_eb[data_eb['Replaced_mode'] == "Gas Car, with others"]
+        filtered_notravel_data = data_eb[data_eb['Replaced_mode'] == "No Travel"]
+        print("With Default mapping:")
+        print("\n")
+
+    selected_columns = ['distance','distance_miles', 'Replaced_mode_kg_CO2', 'Replaced_mode_lb_CO2', 'Mode_confirm_kg_CO2','Mode_confirm_lb_CO2', "replaced_mode", "mode_confirm"]
+
+    print("Walk Data:")
+    print(str(filtered_walk_data[selected_columns].head()))
+    print("\n")
+
+    print("No Travel Data:")
+    print(str(filtered_notravel_data[selected_columns].head()))
+    print("\n")
+
+    print("Gas Car Shared Data:")
+    print(str(filtered_GasCarShared_data[selected_columns].head()))
+    print("\n")
+
+    print("Free Shuttle Data:")
+    print(str(filtered_freeshuttle_data[selected_columns].head()))
+    print("\n")
+
+    print("Bus Data:")
+    print(str(filtered_bus_data[selected_columns].head()))
+    print("\n")
+
+    print("Taxi/Uber/Lyft Data:")
+    print(str(filtered_taxi_data[selected_columns].head()))
+    print("\n")
+
+    combined_df = pd.concat([ebco2_lb['total_lb_CO2_emissions'], ebco2_kg['total_kg_CO2_emissions']], axis=1)
+    combined_df.columns = ['Total CO2 Emissions (lb)', 'Total CO2 Emissions (kg)']
+
+    print("CO2 Emissions:")
+    print(combined_df)
