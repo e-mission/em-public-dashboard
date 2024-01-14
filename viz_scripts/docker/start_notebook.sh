@@ -17,6 +17,12 @@ mkdir -p saved-notebooks/conf/storage
 cp conf/storage/db.conf saved-notebooks/conf/storage/db.conf
 cat saved-notebooks/conf/storage/db.conf
 
+### Ensure that the analysis config is available so that we can use the functions from core
+### instead of recreating them
+mkdir -p saved-notebooks/conf/analysis
+cp conf/analysis/debug.conf.json.sample saved-notebooks/conf/analysis/debug.conf.json.sample
+cat saved-notebooks/conf/analysis/debug.conf.json.sample
+
 #set Web Server host using environment variable
 echo "Web host = "${WEB_SERVER_HOST}
 
