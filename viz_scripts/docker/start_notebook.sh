@@ -5,9 +5,9 @@
 echo "DB host = "${DB_HOST}
 if [ -z ${DB_HOST} ] ; then
     local_host=`hostname -i`
-    sed "s_localhost_${local_host}_" conf/storage/db.conf.sample > conf/storage/db.conf
+    sed "s-localhost-${local_host}_" conf/storage/db.conf.sample > conf/storage/db.conf
 else
-    sed "s_localhost_${DB_HOST}_" conf/storage/db.conf.sample > conf/storage/db.conf
+    sed "s-localhost-${DB_HOST}-" conf/storage/db.conf.sample > conf/storage/db.conf
 fi
 
 ### configure the saved-notebooks directory for persistent notebooks
