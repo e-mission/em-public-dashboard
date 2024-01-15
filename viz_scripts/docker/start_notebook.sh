@@ -5,9 +5,9 @@
 echo "DB host = "${DB_HOST}
 if [ -z ${DB_HOST} ] ; then
     local_host=`hostname -i`
-    sed "s_localhost_${local_host}_" conf/storage/db.conf.sample > conf/storage/db.conf
+    sed "s-localhost-${local_host}_" conf/storage/db.conf.sample > conf/storage/db.conf
 else
-    sed "s_localhost_${DB_HOST}_" conf/storage/db.conf.sample > conf/storage/db.conf
+    sed "s-localhost-${DB_HOST}-" conf/storage/db.conf.sample > conf/storage/db.conf
 fi
 
 ### configure the saved-notebooks directory for persistent notebooks
@@ -16,6 +16,12 @@ fi
 mkdir -p saved-notebooks/conf/storage
 cp conf/storage/db.conf saved-notebooks/conf/storage/db.conf
 cat saved-notebooks/conf/storage/db.conf
+
+### Ensure that the analysis config is available so that we can use the functions from core
+### instead of recreating them
+mkdir -p saved-notebooks/conf/analysis
+cp conf/analysis/debug.conf.json.sample saved-notebooks/conf/analysis/debug.conf.json.sample
+cat saved-notebooks/conf/analysis/debug.conf.json.sample
 
 #set Web Server host using environment variable
 echo "Web host = "${WEB_SERVER_HOST}
