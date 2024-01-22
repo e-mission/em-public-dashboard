@@ -307,6 +307,7 @@ def data_quality_check(expanded_ct):
 
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
+    df['distance_kms'] = df["distance"] / 1000 #meters to kms
 
 def energy_intensity(trip_df,mode_intensity_df,col):
     """ Inputs:
