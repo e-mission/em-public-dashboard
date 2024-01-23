@@ -211,7 +211,7 @@ def barplot_mode2(data,x,y,y2,plot_title,labels,file_name):
     fig, ax1 = plt.subplots(figsize=(15,6))
     #bar plot creation
     ax1.set_title(plot_title, fontsize=25)
-    plt.text(0,-2,f"Last updated {arrow.get()}", fontsize=10)
+    plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
     ax1.set_xlabel(x, fontsize=23)
     ax1.set_ylabel(y, fontsize=23)
     ax1 = sns.barplot(x=x, y=y, data = data, palette=colours, ci=None)
