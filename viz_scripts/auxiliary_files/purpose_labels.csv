@@ -45,3 +45,117 @@ not_a trip,not_a_trip
 on_the way home,Home
 other,Other
 nan,nan
+dog,Recreation/Exercise
+vet,Personal/Medical
+picked_up a couch?,Pick-up/Drop off
+pick_drop_person,Pick-up/Drop off
+at_work,Other
+car_maintenance,Shopping
+gas_for car,Shopping
+subway,Meal
+with_dog,Recreation/Exercise
+mall,Shopping
+bread,Shopping
+applebee's,Meal
+library,Entertainment/Social
+city_market,Shopping
+gas,Shopping
+restaurant,Meal
+food,Meal
+disneyland,Entertainment/Social
+wend's,Meal
+go_kart,Entertainment/Social
+helping_injured friend,Personal/Medical
+teaching_daughter to drive,Personal/Medical
+auto_mechanic,Shopping
+side_job,Work
+gass_up,Shopping
+haircut,Personal/Medical
+car_wash,Shopping
+mechanic,Shopping
+lunch_break to home and back,Meal
+visit_son at college,Entertainment/Social
+covid_test,Personal/Medical
+road_trip,Entertainment/Social
+business/bank,Personal/Medical
+visit_family,Entertainment/Social
+fuel,Shopping
+bank,Personal/Medical
+vacation,Entertainment/Social
+sar_duty officer shift,Work
+family,Entertainment/Social
+laundry,Personal/Medical
+dog_park,Recreation/Exercise
+social,Entertainment/Social
+"emergency_response, call",Work
+walking_the dog,Recreation/Exercise
+work_(still injured),Work
+airport,Pick-up/Drop off
+home_(still injured),Home
+food,Meal
+car_care,Shopping
+walk_the dog,Recreation/Exercise
+training,Recreation/Exercise
+playground,Recreation/Exercise
+visiting_family,Entertainment/Social
+dog_walk,Recreation/Exercise
+visit,Entertainment/Social
+gas,Shopping
+i_don't know,not_a_trip
+grandchildren,Entertainment/Social
+visit_friend,Entertainment/Social
+hanging_out,Entertainment/Social
+cat_sitting,Personal/Medical
+learning_e bike,Recreation/Exercise
+rescue_training,Work
+walking_my dog,Recreation/Exercise
+visiting_friends,Entertainment/Social
+driving_practice,Personal/Medical
+volunteer_sar headquarters to drop gear off,Work
+haircut,Personal/Medical
+moving,Pick-up/Drop off
+medical,Personal/Medical
+helping_a friend move,Pick-up/Drop off
+out_to eat,Meal
+house_sitting,Personal/Medical
+grandparent_visit!,Entertainment/Social
+getting_my bike,Pick-up/Drop off
+dogsit,Personal/Medical
+dogsitting/house_sitting,Personal/Medical
+cv_19 testing,Personal/Medical
+just_hanging out,Entertainment/Social
+school_trip,School
+laundry_mat,Personal/Medical
+walking_dog,Recreation/Exercise
+visit_fried,Entertainment/Social
+visit_parents,Entertainment/Social
+coffee,Meal
+catch_a flight,Pick-up/Drop off
+mountain_rescue hq,Work
+visiting_grandparents,Entertainment/Social
+pick_up rocks,Pick-up/Drop off
+health,Personal/Medical
+parent_meeting for kids' school,Personal/Medical
+side_job,Work
+going_to assist a friend moving,Pick-up/Drop off
+basketball_practice,Recreation/Exercise
+dentist,Personal/Medical
+emissions_testing,Personal/Medical
+piano,Entertainment/Social
+to_and from house,Home
+visiting_a friend,Entertainment/Social
+pick_up,Pick-up/Drop off
+sar_training,Work
+hq,Work
+funeral_procession,Personal/Medical
+get_gas,Shopping
+large_shopping,Shopping
+helping_someone move,Pick-up/Drop off
+community_cycle visit,Entertainment/Social
+house_sitting for a friend,Personal/Medical
+to_hotel,Pick-up/Drop off
+bike_tours,Recreation/Exercise
+watching_friends cat,Personal/Medical
+ride,Recreation/Exercise
+cruise_for e bike,Recreation/Exercise
+bread,Shopping
