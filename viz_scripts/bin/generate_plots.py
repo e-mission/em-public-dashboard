@@ -44,6 +44,9 @@ else:
 # dynamic_labels can  be referenced from 
 # https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-study-label-options.json
 dynamic_labels = { }
+translated_mode_values = { }
+translated_purpose_values = { }
+translated_replaced_values = { }
 
 # Check if the dynamic config contains dynamic labels 'label_options'
 # Parse through the dynamic_labels_url:
@@ -56,6 +59,18 @@ if 'label_options' in dynamic_config:
     else:
         dynamic_labels = json.loads(req.text)
         print(f"Dynamic labels download was successful for nrel-openpath-deploy-configs: {STUDY_CONFIG}" )
+
+        mode_values = [item["value"] for item in dynamic_labels.get("MODE", [])]
+        purpose_values = [item["value"] for item in dynamic_labels.get("PURPOSE", [])]
+        replaced_mode_values = [item["value"] for item in dynamic_labels.get("REPLACED_MODE", [])]
+
+        translated_mode_values = [dynamic_labels["translations"]["en"].get(value, value) for value in mode_values]
+        translated_purpose_values = [dynamic_labels["translations"]["en"].get(value, value) for value in purpose_values]
+        translated_replaced_mode_values = [dynamic_labels["translations"]["en"].get(value, value) for value in replaced_mode_values]
+
+        print("Translated MODE Values:", translated_mode_values)
+        print("Translated PURPOSE Values:", translated_purpose_values)
+        print("Translated REPLACED MODE Values:", translated_replaced_mode_values)
 else:
     print(f"label_options is unavailable for the dynamic_config in {STUDY_CONFIG}")
 
@@ -89,6 +104,9 @@ def compute_for_date(month, year):
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
         dynamic_labels = dynamic_labels,
+        mode_labels = translated_mode_values,
+        purpose_labels = translated_purpose_values,
+        replaced_labels = translated_replaced_mode_values,
         sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"))
 
     print(f"Running at {arrow.get()} with params {params}")
