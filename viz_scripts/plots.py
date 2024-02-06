@@ -57,9 +57,9 @@ def format_pct(pct, values):
     return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
 
 
-def pie_chart_mode(plot_title,labels,values,file_name):
+def pie_chart_mode(plot_title,labels,values,unfiltered_labels,file_name):
     
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+    colours = dict(zip(unfiltered_labels, plt.cm.tab20.colors[:len(unfiltered_labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -105,9 +105,9 @@ def pie_chart_sensed_mode(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
-def pie_chart_purpose(plot_title,labels,values,file_name):
+def pie_chart_purpose(plot_title,labels,values,unfiltered_labels,file_name):
     
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+    colours = dict(zip(unfiltered_labels, plt.cm.tab20.colors[:len(unfiltered_labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
