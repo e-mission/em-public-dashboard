@@ -176,20 +176,6 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_sensed_mode(data,x,y,plot_title, labels, file_name):
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
-    sns.set(font_scale=1.5)
-    f = plt.subplots(figsize=(15, 6))
-    sns.set(style='whitegrid')
-    ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
-
-    plt.xlabel(x, fontsize=23)
-    plt.ylabel(y, fontsize=23)
-    plt.title(plot_title, fontsize=25)
-    plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-
 def barplot_mode(data,x,y,plot_title, labels, file_name):
     colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
