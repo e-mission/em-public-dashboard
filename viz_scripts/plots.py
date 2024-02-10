@@ -210,7 +210,7 @@ def barplot_mode2(data,x,y,y2,plot_title,file_name):
                  'E-car, with others',
                  'Air',
                  'Other']
-     
+    
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
     sns.set(font_scale=1.5)
 
