@@ -192,25 +192,25 @@ def barplot_mode(data,x,y,plot_title, labels, file_name):
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
     all_labels= ['Gas Car, drove alone',
-                'Bus',
-                'Train',
-                'Free Shuttle',
-                'Taxi/Uber/Lyft',
-                'Gas Car, with others',
-                'Bikeshare',
-                'Scooter share',
-                'E-bike',
-                'Walk',
-                'Skate board',
-                'Regular Bike',
-                'Not a Trip',
-                'No Travel',
-                'Same Mode',
-                'E-car, drove alone',
-                'E-car, with others',
-                'Air',
-                'Other']
-
+                 'Bus', 
+                 'Train', 
+                 'Free Shuttle',
+                 'Taxi/Uber/Lyft', 
+                 'Gas Car, with others', 
+                 'Bikeshare',
+                 'Scooter share',
+                 'E-bike', 
+                 'Walk', 
+                 'Skate board', 
+                 'Regular Bike', 
+                 'Not a Trip',
+                 'No Travel', 
+                 'Same Mode', 
+                 'E-car, drove alone',
+                 'E-car, with others',
+                 'Air',
+                 'Other']
+    
     colours = dict(zip(all_labels, plt.cm.tab20.colors[:len(all_labels)]))
     sns.set(font_scale=1.5)
 
