@@ -307,6 +307,7 @@ def data_quality_check(expanded_ct):
 
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
+    df['distance_kms'] = df["distance"] / 1000 #meters to kms
 
 def energy_intensity(trip_df,mode_intensity_df,col):
     """ Inputs:
@@ -458,3 +459,22 @@ def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels)
 
     print("CO2 Emissions:")
     print(combined_df)
+
+'''
+input: boolean (True = use miles & false = use kms, etc)
+returns: four Strings used to handle units in the notebooks
+'''
+def get_units(use_imperial):
+    if use_imperial:
+        label_units = "Miles"
+        short_label = "miles"
+        weight_unit = "lb"
+    else:
+        label_units = "Kilometers"
+        short_label = "kms"
+        weight_unit = "kg"
+
+    label_units_lower = label_units.lower()
+    distance_col = "distance_" + short_label
+    
+    return label_units, short_label, label_units_lower, distance_col, weight_unit

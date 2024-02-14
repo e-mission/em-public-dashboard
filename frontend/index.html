@@ -400,6 +400,9 @@
         // Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
         const STUDY_CONFIG = _getStudyName(window.location);
         $.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function (data) {
+          // get units
+          const dist_units = (data.display_config.use_imperial) ? "miles" : "kilometers";
+          console.log("Units for display are", data.display_config.use_imperial, dist_units);
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
           if (data.intro.program_or_study == 'program') {
@@ -415,7 +418,9 @@
             }
             $.get(load_file, function (response) {
               const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
-              $('#metric').append(configuredResponse);
+              console.log("configuring units");
+              const unitConfigured = configuredResponse.replaceAll("${data.display_config.use_imperial}", dist_units);
+              $('#metric').append(unitConfigured);
               addPreconfiguredMetrics([
                 "ntrips_mode_confirm",
                 "miles_mode_confirm",
@@ -431,21 +436,29 @@
           {
             if (dynamic_labels) {
               console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
-              $('#metric').load('metrics_study_withoutEnergyMetrics.html');
+              load_file = 'metrics_study_withoutEnergyMetrics.html'
+              // $('#metric').load('metrics_study_withoutEnergyMetrics.html');
             }
             else {
               console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
-              $('#metric').load('metrics_study.html');
+              load_file = 'metrics_study.html'
+              // $('#metric').load('metrics_study.html');
             };
-            addPreconfiguredMetrics([
-              "ntrips_mode_confirm",
-              "miles_mode_confirm",
-              "ntrips_sensed_mode",
-              "miles_sensed_mode",
-              "ntrips_purpose",
-              "ntrips_sensed_per_weekday",
-              "ts_emissions_user"
-            ]);
+            console.log("loading study, replacing units")
+            $.get(load_file, function (response) {
+              console.log("configuring units");
+              const unitConfigured = response.replaceAll("${data.display_config.use_imperial}", dist_units);
+              $('#metric').append(unitConfigured);
+              addPreconfiguredMetrics([
+                "ntrips_mode_confirm",
+                "miles_mode_confirm",
+                "ntrips_sensed_mode",
+                "miles_sensed_mode",
+                "ntrips_purpose",
+                "ntrips_sensed_per_weekday",
+                "ts_emissions_user"
+              ]);
+            });
           }
           // Figure out all months since start date to present
           var date_options = "<option value=''>All data</option>";

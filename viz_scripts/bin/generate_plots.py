@@ -89,6 +89,7 @@ def compute_for_date(month, year):
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
         dynamic_labels = dynamic_labels,
+        use_imperial = dynamic_config.get('display_config', {}).get('use_imperial', True),
         sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"))
 
     print(f"Running at {arrow.get()} with params {params}")
