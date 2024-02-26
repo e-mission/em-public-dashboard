@@ -292,6 +292,22 @@ def store_alt_text_bar(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
+def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of item names, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = ""
+
+    for i in range(len(df)):
+        alt_text += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}</td></tr>"
+
+    alt_text = access_alt_html(alt_text, chart_name, var_name)
+
+    return alt_text
+
 def store_alt_text_pie(df, chart_name, var_name):
     """ Inputs:
     df = dataframe with index of item names, first column is counts
@@ -317,6 +333,39 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     arg_max = np.argmax(df.iloc[:,1])
     alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
     alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+# Creating html table with col as Trip Type, Mode, Count, and Proportion
+def access_alt_html(alt_text, chart_name, var_name):
+    """ Inputs:
+    alt_text = the text describing the chart
+    chart_name = the alt text file to save or update
+    var_name = the variable being analyzed across bars
+    """
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{chart_name}</title>
+    </head>
+    <body>
+        <h2>{chart_name}</h2>
+        <p>{var_name}</p>
+        <table border="1">
+            <tr>
+                <th>Trip Type</th>
+                <th>Mode</th>
+                <th>Count</th>
+                <th>Proportion</th>
+            </tr>
+            {alt_text}
+        </table>
+    </body>
+    </html>
+    """
+    with open(SAVE_DIR + chart_name + ".html", 'w') as f:
+        f.write(html_content)
+
     return alt_text
 
 def generate_missing_plot(plot_title,debug_df,file_name):
