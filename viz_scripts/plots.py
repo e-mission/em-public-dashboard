@@ -130,6 +130,15 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
+def calculate_pct(labels, values):
+    v2l_df = pd.DataFrame({"vals": values}, index=labels)
+
+    # Calculate % for all the values
+    vs = v2l_df.vals.sum()
+    v2l_df["pct"] = v2l_df.vals.apply(lambda x: (x/vs) * 100)
+
+    return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
+
 def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
     fig, ax = plt.subplots(1,1, figsize=(18,6))
