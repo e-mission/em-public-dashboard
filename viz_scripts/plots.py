@@ -5,6 +5,7 @@ import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
+from itertools import product
 
 sns.set_style("whitegrid")
 sns.set()
@@ -146,6 +147,20 @@ def process_trip_data(labels, values, trip_type):
     df_total_trip = pd.DataFrame(data_trip)
     df_total_trip['Trip Type'] = trip_type
     return df_total_trip
+
+# Input: List of all dataframes
+# Ouput: A single dataframe such that Trip Type has all Mode
+def merge_dataframes(all_data_frames):
+    # Concatenate DataFrames
+    df = pd.concat(all_data_frames, ignore_index=True)
+
+    # Create DataFrame with unique combinations of 'Trip Type' and 'Mode'
+    unique_combinations = pd.DataFrame(list(product(df['Trip Type'].unique(), df['Mode'].unique())), columns=['Trip Type', 'Mode'])
+
+    # Merge the original DataFrame with the unique combinations DataFrame
+    merged_df = pd.merge(unique_combinations, df, on=['Trip Type', 'Mode'], how='left').fillna(0)
+
+    return merged_df
 
 def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
