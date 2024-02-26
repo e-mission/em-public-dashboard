@@ -130,6 +130,35 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
+def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
+
+    fig, ax = plt.subplots(1,1, figsize=(18,6))
+    width = 0.8
+
+    running_total_long = [0] * num_bars
+
+    for mode in pd.unique(df.Mode):
+        long = df[df['Mode'] == mode]
+
+        if not long.empty:
+            labels = long['Trip Type']
+            vals = long['Proportion']
+            bar_labels = long['Count']
+            vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
+            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode)
+            ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
+            running_total_long = [total + val for total, val in zip(running_total_long, vals)]
+        else:
+            print(f"{mode} is unavailable.")
+    ax.set_title(plot_title, fontsize=25)
+    ax.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
+    ax.tick_params(axis='y', labelsize=18)
+    ax.tick_params(axis='x', labelsize=18)
+    plt.subplots_adjust(bottom=0.25)
+
+    fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+    plt.show()
+
 def energy_impact(x,y,color,plot_title,file_name):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Energy Savings', 'Energy Loss')
