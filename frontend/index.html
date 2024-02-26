@@ -531,6 +531,7 @@
         // and without this change, even if we set the dateVal to ''
         // we would try to load ntrips_purpose__default.png
         const imgFile = "plots/" + metric + "_" + dateVal + program + ".png";
+        const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
         const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
