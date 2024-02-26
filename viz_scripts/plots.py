@@ -139,6 +139,14 @@ def calculate_pct(labels, values):
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
+# Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
+def process_trip_data(labels, values, trip_type):
+    m_labels, m_values, m_pct = calculate_pct(labels, values)
+    data_trip = {'Mode': m_labels, 'Count': m_values, 'Proportion': m_pct}
+    df_total_trip = pd.DataFrame(data_trip)
+    df_total_trip['Trip Type'] = trip_type
+    return df_total_trip
+
 def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
     fig, ax = plt.subplots(1,1, figsize=(18,6))
