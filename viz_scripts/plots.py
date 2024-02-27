@@ -52,8 +52,8 @@ def merge_dataframes(all_data_frames):
     return merged_df
 
 def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
-
-    fig, ax = plt.subplots(1,1, figsize=(18,6))
+    sns.set(font_scale=1.5)
+    fig, ax = plt.subplots(1,1, figsize=(15,6))
     width = 0.8
 
     running_total_long = [0] * num_bars
@@ -77,6 +77,8 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
     ax.tick_params(axis='x', labelsize=18)
     plt.subplots_adjust(bottom=0.25)
 
+    ax.set_xlabel('Proportion (Count)', fontsize=20)
+    ax.set_ylabel('Trip Types', fontsize=20)
     fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
