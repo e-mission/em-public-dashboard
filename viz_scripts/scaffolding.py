@@ -275,10 +275,10 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     print(quality_text)
     return quality_text
 
-def get_quality_text_sensed(df, include_test_users=False):
+def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
-    quality_text = f"Based on %s trips from %d {user_str}" % cq
+    quality_text = f"Based on %s trips ({cutoff_text}) from %d {user_str}" % cq if cutoff_text else f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 
