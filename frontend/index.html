@@ -422,11 +422,9 @@
               const unitConfigured = configuredResponse.replaceAll("${data.display_config.use_imperial}", dist_units);
               $('#metric').append(unitConfigured);
               addPreconfiguredMetrics([
-                "ntrips_mode_confirm",
-                "miles_mode_confirm",
-                "ntrips_sensed_mode",
-                "miles_sensed_mode",
-                `ntrips_${data.intro.mode_studied}_purpose`,
+                "ntrips_total",
+                "distance_mode",
+                "ntrips_purpose",
                 `ntrips_${data.intro.mode_studied}_per_weekday`,
                 `sketch_CO2impact_${data.intro.mode_studied}`
               ]);
@@ -450,10 +448,8 @@
               const unitConfigured = response.replaceAll("${data.display_config.use_imperial}", dist_units);
               $('#metric').append(unitConfigured);
               addPreconfiguredMetrics([
-                "ntrips_mode_confirm",
-                "miles_mode_confirm",
-                "ntrips_sensed_mode",
-                "miles_sensed_mode",
+                "ntrips_total",
+                "distance_mode",
                 "ntrips_purpose",
                 "ntrips_sensed_per_weekday",
                 "ts_emissions_user"
