@@ -48,7 +48,6 @@ def merge_dataframes(all_data_frames):
 
     # Merge the original DataFrame with the unique combinations DataFrame
     merged_df = pd.merge(unique_combinations, df, on=['Trip Type', 'Mode'], how='left').fillna(0)
-
     return merged_df
 
 def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
@@ -58,15 +57,28 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
     running_total_long = [0] * num_bars
 
-    for mode in pd.unique(df.Mode):
+    mode_mapping = {
+        "IN_VEHICLE": "IN_VEHICLE (Sensed)",
+        "UNKNOWN": "UNKNOWN (Sensed)",
+        "OTHER": "OTHER (Sensed)",
+        "BICYCLING": "BICYCLING (Sensed)",
+        "WALKING": "WALKING (Sensed)",
+        "AIR_OR_HSR": "AIR_OR_HSR (Sensed)"
+    }
+
+    colors = plt.cm.tab20.colors[:len(pd.unique(df['Mode']))]
+
+    for idx, mode in enumerate(pd.unique(df.Mode)):
         long = df[df['Mode'] == mode]
 
         if not long.empty:
             labels = long['Trip Type']
             vals = long['Proportion']
             bar_labels = long['Count']
+
+            mode = mode_mapping.get(mode, mode)
             vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
-            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode)
+            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color = colors[idx])
             ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
             running_total_long = [total + val for total, val in zip(running_total_long, vals)]
         else:
@@ -78,6 +90,7 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
     ax.tick_params(axis='x', labelsize=18, rotation=90)
     # The Last updated text is placed just right below the X-axis
     plt.text(0,ax.xaxis.get_label().get_position()[0] - 1,f"Last updated {arrow.get()}", fontsize=12)
+
     ax.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
     plt.subplots_adjust(bottom=0.25)
     fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
