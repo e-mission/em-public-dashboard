@@ -25,7 +25,7 @@ def calculate_pct(labels, values):
 
     # Calculate % for all the values
     vs = v2l_df.vals.sum()
-    v2l_df["pct"] = v2l_df.vals.apply(lambda x: (x/vs) * 100)
+    v2l_df["pct"] = v2l_df.vals.apply(lambda x: round((x/vs) * 100, 1))
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
@@ -349,12 +349,11 @@ def access_alt_html(alt_text, chart_name, var_name):
     <!DOCTYPE html>
     <html>
     <head>
-        <title>{chart_name}</title>
+        <title>{var_name}</title>
     </head>
     <body>
-        <h2>{chart_name}</h2>
         <p>{var_name}</p>
-        <table border="1">
+        <table border="1" style="background-color: white;">
             <tr>
                 <th>Trip Type</th>
                 <th>Mode</th>
