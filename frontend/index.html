@@ -495,6 +495,36 @@
   <script type="text/javascript">
     var gridster;
 
+    // Inital loading, the checkbox is disabled
+    $('.js-add-new-checkbox').prop('disabled', true);
+    $('.js-add-new-checkbox').prop('checked', false);
+
+    function updateCheckBoxState() {
+      const selectedMetricValue = $("#metric").val();
+
+      if ( (selectedMetricValue == "ntrips_total") ||
+        (selectedMetricValue == "ntrips_under80") ||
+        (selectedMetricValue == "ntrips_commute_mode_confirm") ||
+        (selectedMetricValue == "distance_mode") ||
+        (selectedMetricValue == "ntrips_purpose") ||
+        (selectedMetricValue == "ntrips_${data.intro.mode_studied}_replaced") ||
+        (selectedMetricValue == "distance_${data.intro.mode_studied}_replaced_mode") )
+        {
+          $('.js-add-new-checkbox').prop('disabled', false);
+          console.log("Checkbox is enabled for: " + selectedMetricValue)
+        }
+          else
+        {
+          $('.js-add-new-checkbox').prop('disabled', true);
+          console.log("Checkbox is disabled for: " + selectedMetricValue);
+        }
+      }
+
+      // Change the checkbox enabled property based on the metric dropdown selection
+      $("#metric").on("change", function() {
+          updateCheckBoxState();
+      });
+
     function loadFile(filePath) {
       var result = null;
       var xmlhttp = new XMLHttpRequest();
