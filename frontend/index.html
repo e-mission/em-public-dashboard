@@ -395,11 +395,13 @@
       return study_name;
     }
 
+    let global_mode_studied;
     $(function () {
       $(document).ready(function () {
         // Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
         const STUDY_CONFIG = _getStudyName(window.location);
         $.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function (data) {
+          global_mode_studied = data.intro.mode_studied;
           // get units
           const dist_units = (data.display_config.use_imperial) ? "miles" : "kilometers";
           console.log("Units for display are", data.display_config.use_imperial, dist_units);
@@ -530,13 +532,61 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
+        let selectedMetric = ((metric === 'ntrips_total') ||
+                              (metric === 'ntrips_purpose') ||
+                              (metric === 'ntrips_under80') ||
+                              (metric === 'ntrips_commute_mode_confirm') ||
+                              (metric === 'distance_mode') ||
+                              (metric === `ntrips_${global_mode_studied}_replaced`)||
+                              (metric === `distance_${global_mode_studied}_replaced_mode`))
+                              ? metric : "";
+
+        const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
+
+        if (selectedMetric === metric){
+          const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
+            + labelText
+            + "&nbsp;"
+            + "<button class= 'btn btn_default addInfo' style='color: black; background-color: none; border-color: white;' data-info='" + encodeURIComponent(JSON.stringify(jsonData))+ "'> More Info </button>"
+            + "&nbsp;"
+            + "<button class='remove'>x</button>"
+            + "<img src='" + imgFile + "' alt='" + altText + "' width=90% height=90%>"
+            + "</li>",
+            sizex, sizey];
+          gridster.add_widget.apply(gridster, nw);
+        }
+        else{
+          const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
             + labelText
             + "<button class='remove'>x</button>"
             + "<img src='" + imgFile + "' alt='" + altText + "' width=90% height=90%>"
             + "</li>",
             sizex, sizey];
           gridster.add_widget.apply(gridster, nw);
+        }
+      });
+
+      $('body').on("click", ".gridster ul > li .addInfo", function () {
+        const addButton = $(this);
+        const additionalInfo = JSON.parse(decodeURIComponent(addButton.data('info')));
+        const metric = additionalInfo.metric;
+        const dateVal = additionalInfo.dateVal;
+        const program = additionalInfo.program;
+        const metricLabel = additionalInfo.metricLabel;
+        const dateLabel = additionalInfo.dateLabel;
+        const programLabel = additionalInfo.programLabel;
+        const sizex = additionalInfo.sizex;
+        const sizey = additionalInfo.sizey;
+        const labelText = metricLabel + " " + dateLabel + " " + programLabel;
+        const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
+
+        const nw_additionalInformation = ["<li data-min-sizex='2' data-min-sizey='2'>"
+          + labelText
+          + "<button class='remove'>x</button>"
+          + "<object data='" + htmlFile + "' type='text/html' style='margin-top: 20px;' width='90%' height='90%'></object>"
+          + "</li>",
+          sizex, sizey];
+        gridster.add_widget.apply(gridster, nw_additionalInformation);
       });
 
       $('body').on("click", ".gridster ul > li .remove", function () {
