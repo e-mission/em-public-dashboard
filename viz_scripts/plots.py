@@ -328,19 +328,6 @@ def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
 
     return alt_text, alt_html
 
-def store_alt_text_pie(df, chart_name, var_name):
-    """ Inputs:
-    df = dataframe with index of item names, first column is counts
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
-    """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Pie chart of {var_name}."
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100, 1)}%."
-    alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
-
 def store_alt_text_timeseries(df, chart_name, var_name):
     """ Inputs:
     df = dataframe with first col of dates, second column is values
