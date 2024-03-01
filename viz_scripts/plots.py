@@ -310,19 +310,23 @@ def store_alt_text_bar(df, chart_name, var_name):
 
 def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
     """ Inputs:
-    df = dataframe with index of item names, first column is counts
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
+    df = dataframe combining columns as Trip Type, Mode, Count, Proportion
+    chart_name = name of the chart
+    var_name = the variable being analyzed across bars
     """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = ""
-
+    # Generate alt text file
+    alt_text = f"Stacked Bar chart of {var_name}."
     for i in range(len(df)):
-        alt_text += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}</td></tr>"
+        alt_text += f"Trip Type: {df['Trip Type'].iloc[i]} - Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
+    alt_text = access_alt_text(alt_text, chart_name)
 
-    alt_text = access_alt_html(alt_text, chart_name, var_name)
+    # Generate html table
+    alt_html = ""
+    for i in range(len(df)):
+        alt_html += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
+    alt_html = access_alt_html(alt_html, chart_name, var_name)
 
-    return alt_text
+    return alt_text, alt_html
 
 def store_alt_text_pie(df, chart_name, var_name):
     """ Inputs:
