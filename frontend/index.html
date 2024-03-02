@@ -423,7 +423,7 @@
               $('#metric').append(unitConfigured);
               addPreconfiguredMetrics([
                 "ntrips_total",
-                "distance_mode",
+                "total_trip_length",
                 "ntrips_purpose",
                 `ntrips_${data.intro.mode_studied}_per_weekday`,
                 `sketch_CO2impact_${data.intro.mode_studied}`
@@ -449,7 +449,7 @@
               $('#metric').append(unitConfigured);
               addPreconfiguredMetrics([
                 "ntrips_total",
-                "distance_mode",
+                "total_trip_length",
                 "ntrips_purpose",
                 "ntrips_sensed_per_weekday",
                 "ts_emissions_user"
@@ -534,7 +534,7 @@
                               (metric === 'ntrips_purpose') ||
                               (metric === 'ntrips_under80') ||
                               (metric === 'ntrips_commute_mode_confirm') ||
-                              (metric === 'distance_mode'))
+                              (metric === 'total_trip_length'))
                               ? metric : "";
 
         const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
