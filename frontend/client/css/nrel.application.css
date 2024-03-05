@@ -8,7 +8,8 @@ header .logo{
 }
 @media (min-width:768px){
 	#content {
-		margin-top:1em
+		margin-top:1em;
+		overflow-x: scroll
 	}
 	header .logo{
 		background-position:center right
