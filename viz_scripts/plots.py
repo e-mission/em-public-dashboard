@@ -96,9 +96,7 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
     ax.tick_params(axis='x', labelsize=18, rotation=90)
     # The Last updated text is placed just right below the X-axis
     plt.text(0,ax.xaxis.get_label().get_position()[0] - 1,f"Last updated {arrow.get()}", fontsize=12)
-
-    ax.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
-
+    ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize = 15)
     plt.subplots_adjust(bottom=0.25)
     fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
