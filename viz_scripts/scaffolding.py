@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import sys
 from collections import defaultdict
+from collections import OrderedDict
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -191,6 +193,25 @@ def mapping_labels(dynamic_labels, label_type):
             return defaultdict(lambda: 'Other', translation_mapping)
         dic_mapping = translate_labels(dynamic_labels[label_type])
         return dic_mapping
+
+# Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
+# Input: dynamic_labels, dic_re, and dic_pur
+# Output: Map for color with mode and purpose
+def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
+    if len(dynamic_labels) > 0:
+        mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
+        replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
+        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
+        combined_mode_values = mode_values + replaced_mode_values
+    else:
+        # Addition of 'Other' is required to the list since it's missing from auxillary_files/mode_labels.csv and auxillary_files/purpose_labels.csv
+        combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
+        purpose_values = (list(OrderedDict.fromkeys(dic_pur.values())) + ['Other'])
+
+    colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
+    colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
+
+    return colors_mode, colors_purpose
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
