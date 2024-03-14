@@ -35,17 +35,6 @@ CV = False
 random.seed(SEED)
 np.random.seed(SEED)
 
-class SPLIT_TYPE(Enum):
-    INTRA_USER = 0
-    INTER_USER = 1
-    TARGET = 2
-    MODE = 3
-    
-
-class SPLIT(Enum):
-    TRAIN = 0
-    TEST = 1
-
     
 class SPLIT_TYPE(Enum):
     INTRA_USER = 0
