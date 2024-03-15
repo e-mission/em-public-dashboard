@@ -111,7 +111,7 @@ def expand_userinputs(labeled_ct):
 def get_section_durations(confirmed_trips: pd.DataFrame):
 
     # Initialize the parallel processing.
-    pandarallel.initialize(progress_bar=True)
+    pandarallel.initialize(progress_bar=False)
 
     """
     Extract section-wise durations from trips for every trips.
@@ -153,7 +153,7 @@ def get_section_durations(confirmed_trips: pd.DataFrame):
 
 def get_section_coordinates(confirmed_trips: pd.DataFrame):
     # Initialize pandarallel
-    pandarallel.initialize(progress_bar=True)
+    pandarallel.initialize(progress_bar=False)
 
     key = 'analysis/inferred_section'
 
