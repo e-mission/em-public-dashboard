@@ -344,6 +344,12 @@
       const end_year = date.getFullYear();
       var current_month = start_month;
       var current_year = start_year;
+
+      //testing dfc fermata .. doesn't start until April...
+      // if ((current_month >= end_month) && (current_year >= end_year)) {
+      //   current_month = current_month - 2; //dfc has not started yet...
+      // }
+
       dates.push([current_month, current_year]);
       while (!(current_month == end_month && current_year == end_year)) {
         current_month += 1;
@@ -355,6 +361,25 @@
         dates.push([current_month, current_year]);
       };
       return dates;
+    };
+
+    function getDictionaryList(form_list) {
+      var quest_dict = {};
+        return new Promise(async (resolve) => {
+          for (i in form_list) {
+            response = await fetch(form_list[i]);
+            text = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, "text/xml");
+            labels = doc.getElementsByTagName("label");
+              for (i in labels) {
+                try {
+                  quest_dict[labels[i].parentNode.getAttribute("ref").split('/').slice(-1)] = labels[i].firstChild.data;
+                } catch (e) { }
+              } 
+            }
+          resolve(quest_dict);
+        })
     };
   </script>
 
@@ -405,7 +430,40 @@
           console.log("Units for display are", data.display_config.use_imperial, dist_units);
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
-          if (data.intro.program_or_study == 'program') {
+          surveys = data.survey_info.surveys 
+          console.log(data.survey_info['trip-labels'])
+          if (data.survey_info['trip-labels'] === 'ENKETO') {
+            survey_list = Object.keys(surveys)
+            survey_list = survey_list.filter(name => name !== 'UserProfileSurvey')
+
+            sheet_list = []
+            for (name in survey_list) {
+              form_path = data.survey_info.surveys[survey_list[name]].formPath;
+              //hard code the old survey
+              // form_path = 'https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/survey_resources/dfc-fermata/fermata-ev-return-trip-v0.xml';
+              //THIS ASSUMES THE FILENAME IS THE SAME AS THE FORM PATH BUT WITH xml FILE TYPE
+              l_path = form_path.split('.')
+              l_path[-1] = 'xml'
+              sheet_path = l_path.join('.')
+              sheet_list.push(sheet_path)
+            }
+
+            getDictionaryList(sheet_list).then((quest_dict) => {
+              console.log(quest_dict);
+              load_file = "metrics_study_surveys.html"
+              $.get(load_file, function (file) {
+                Object.entries(quest_dict).forEach(([key, value]) => {
+                  var text = '<option ' + 'value="' + key + '" data-sizex="4" data-sizey="4">' + value + '</option>';
+                  file = file.concat('\n', text);
+                });
+                console.log(file);
+                $('#metric').append(file);
+                addPreconfiguredMetrics(Object.keys(quest_dict).slice(0, 5)); //only adding the first 6 elements
+              });
+            });         
+          
+          }
+          else if (data.intro.program_or_study == 'program') {
             // Note: We're disabling energy metrics on public dashboard when dynamic labels are available.
             // TODO: Remove the if (data.label_options) in future when energy computation is handled properly.
             if (dynamic_labels) {
