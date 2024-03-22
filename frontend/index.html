@@ -443,7 +443,8 @@
               // form_path = 'https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/survey_resources/dfc-fermata/fermata-ev-return-trip-v0.xml';
               //THIS ASSUMES THE FILENAME IS THE SAME AS THE FORM PATH BUT WITH xml FILE TYPE
               l_path = form_path.split('.')
-              l_path[-1] = 'xml'
+              l_path.splice(l_path.length -1, 1, 'xml');
+              console.log(l_path);
               sheet_path = l_path.join('.')
               sheet_list.push(sheet_path)
             }
