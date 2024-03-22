@@ -41,9 +41,11 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: build docker image
       run: |
-        docker build -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./frontend
+        docker build -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}_dashboard:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./frontend
+        docker build -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./viz_scripts
         docker images
 
     - name: push docker image
       run: |
-        docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_dashboard:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}

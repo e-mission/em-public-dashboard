@@ -3,6 +3,11 @@ FROM shankari/e-mission-server:master_2024-02-10--19-38
 
 VOLUME /plots
 
+ENV DB_HOST=db
+ENV WEB_SERVER_HOST=0.0.0.0
+ENV CRON_MODE= 
+ENV STUDY_CONFIG=stage-program
+
 ADD docker/environment36.dashboard.additions.yml /
 
 WORKDIR /usr/src/app
