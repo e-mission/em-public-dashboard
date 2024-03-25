@@ -5,6 +5,7 @@ import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
+from itertools import product
 
 sns.set_style("whitegrid")
 sns.set()
@@ -19,115 +20,87 @@ import IPython.display as disp
 
 SAVE_DIR="/plots/"
 
-
-def merge_small_entries(labels, values):
+def calculate_pct(labels, values):
     v2l_df = pd.DataFrame({"vals": values}, index=labels)
 
     # Calculate % for all the values
     vs = v2l_df.vals.sum()
-    v2l_df["pct"] = v2l_df.vals.apply(lambda x: (x/vs) * 100)
-    disp.display(v2l_df)
+    v2l_df["pct"] = v2l_df.vals.apply(lambda x: round((x/vs) * 100, 1))
 
-    # Find small chunks to combine
-    small_chunk = v2l_df.where(lambda x: x.pct <= 2).dropna()
-    misc_count = small_chunk.sum()
+    return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
-    v2l_df = v2l_df.drop(small_chunk.index)
-    disp.display(v2l_df)
+# Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
+def process_trip_data(labels, values, trip_type):
+    m_labels, m_values, m_pct = calculate_pct(labels, values)
+    data_trip = {'Mode': m_labels, 'Count': m_values, 'Proportion': m_pct}
+    df_total_trip = pd.DataFrame(data_trip)
+    df_total_trip['Trip Type'] = trip_type
+    return df_total_trip
 
-    # This part if a bit tricky
-    # We could have already had a non-zero other, and it could be small or large
-    if "Other" not in v2l_df.index:
-        # zero other will end up with misc_count
-        v2l_df.loc["Other"] = misc_count
-    elif "Other" in small_chunk.index:
-        # non-zero small other will already be in misc_count
-        v2l_df.loc["Other"] = misc_count
+# Input: List of all dataframes
+# Ouput: A single dataframe such that Trip Type has all Mode
+def merge_dataframes(all_data_frames):
+    # Concatenate DataFrames
+    df = pd.concat(all_data_frames, ignore_index=True)
+
+    # Create DataFrame with unique combinations of 'Trip Type' and 'Mode'
+    unique_combinations = pd.DataFrame(list(product(df['Trip Type'].unique(), df['Mode'].unique())), columns=['Trip Type', 'Mode'])
+
+    # Merge the original DataFrame with the unique combinations DataFrame
+    merged_df = pd.merge(unique_combinations, df, on=['Trip Type', 'Mode'], how='left').fillna(0)
+    return merged_df
+
+def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
+    sns.set(font_scale=1.5)
+    fig, ax = plt.subplots(1, 1, figsize=(15, 6))
+
+    if num_bars == 1:
+        width = 2
+        ax.set_ylim(-0.4, 3)
     else:
-        # non-zero large other, will not already be in misc_count
-        v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
-    disp.display(v2l_df)
+        width = 0.8
 
-    return (v2l_df.index.to_list(),v2l_df.vals.to_list())
+    running_total_long = [0] * num_bars
 
+    mode_mapping = {
+        "IN_VEHICLE": "IN_VEHICLE (Sensed)",
+        "UNKNOWN": "UNKNOWN (Sensed)",
+        "OTHER": "OTHER (Sensed)",
+        "BICYCLING": "BICYCLING (Sensed)",
+        "WALKING": "WALKING (Sensed)",
+        "AIR_OR_HSR": "AIR_OR_HSR (Sensed)"
+    }
 
-def format_pct(pct, values):
-    total = sum(values)
-    absolute = int(round(pct*total/100.0))
-    return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
+    colors = plt.cm.tab20.colors[:len(pd.unique(df['Mode']))]
 
+    for idx, mode in enumerate(pd.unique(df.Mode)):
+        long = df[df['Mode'] == mode]
 
-def pie_chart_mode(plot_title,labels,values,file_name):
-    
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
+        if not long.empty:
+            labels = long['Trip Type']
+            vals = long['Proportion']
+            bar_labels = long['Count']
 
-    m_labels, m_values = merge_small_entries(labels, values)
-    
-    wedges, texts, autotexts = ax.pie(m_values,
-                                      labels = m_labels,
-                                      colors=[colours[key] for key in labels],
-                                      pctdistance=0.75,
-                                      autopct= lambda pct: format_pct(pct, values),
-                                      textprops={'size': 23})
+            mode = mode_mapping.get(mode, mode)
+            vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
+            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color = colors[idx])
+            ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
+            running_total_long = [total + val for total, val in zip(running_total_long, vals)]
+        else:
+            print(f"{mode} is unavailable.")
 
-    ax.set_title(plot_title, size=25)
-    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-    plt.show()
-
-def pie_chart_sensed_mode(plot_title,labels,values,file_name):
-    all_labels= ['IN_VEHICLE',
-                 'UNKNOWN',
-                 'WALKING',
-                 'AIR_OR_HSR',
-                 'BICYCLING',
-                 'OTHER']
-
-    val2labeldf = pd.DataFrame({"labels": labels, "values": values})
-
-    colours = dict(zip(all_labels, plt.cm.tab10.colors[:len(all_labels)]))
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
-
-    m_labels, m_values = merge_small_entries(labels, values)
-
-    wedges, texts, autotexts = ax.pie(m_values,
-                                      labels = m_labels,
-                                      colors=[colours[key] for key in labels],
-                                      pctdistance=0.75,
-                                      autopct= lambda pct: format_pct(pct, values),
-                                      textprops={'size': 23})
-
-    ax.set_title(plot_title, size=25)
-    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
-    plt.show()
-
-def pie_chart_purpose(plot_title,labels,values,file_name):
-    
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
-
-    m_labels, m_values = merge_small_entries(labels, values)
-    
-    def func(pct, values):
-        total = sum(values)
-        absolute = int(round(pct*total/100.0))
-        return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 3 else''
-    
-    wedges, texts, autotexts = ax.pie(m_values,
-                                      labels = m_labels,
-                                      colors=[colours[key] for key in labels],
-                                      pctdistance=0.85,
-                                      autopct=lambda pct: func(pct, values),
-                                      textprops={'size': 23})
-
-    ax.set_title(plot_title, size=25)
-    plt.text(-1.3,-1.3,f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(autotexts, **{'color':'white', 'weight':'bold', 'fontsize':20})
-    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+    ax.set_title(plot_title, fontsize=25)
+    ax.set_xlabel('Proportion (Count)', fontsize=20)
+    ax.set_ylabel('Trip Types', fontsize=20)
+    ax.tick_params(axis='y', labelsize=18)
+    ax.tick_params(axis='x', labelsize=18, rotation=90)
+    # The Last updated text is placed just right below the X-axis
+    plt.text(0,ax.xaxis.get_label().get_position()[0] - 1,f"Last updated {arrow.get()}", fontsize=12)
+    # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
+    ax.set_xlim(right=ax.get_xlim()[1]+1.0, auto=True)
+    ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize = 15)
+    plt.subplots_adjust(bottom=0.25)
+    fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
 def energy_impact(x,y,color,plot_title,file_name):
@@ -342,18 +315,25 @@ def store_alt_text_bar(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-def store_alt_text_pie(df, chart_name, var_name):
+def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
     """ Inputs:
-    df = dataframe with index of item names, first column is counts
-    chart_name = what to label chart by in the dictionary
-    var_name = the variable being analyzed across pie slices
+    df = dataframe combining columns as Trip Type, Mode, Count, Proportion
+    chart_name = name of the chart
+    var_name = the variable being analyzed across bars
     """
-    # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Pie chart of {var_name}."
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0] / np.sum(df.iloc[:,0]) * 100, 1)}%."
+    # Generate alt text file
+    alt_text = f"Stacked Bar chart of {var_name}."
+    for i in range(len(df)):
+        alt_text += f"Trip Type: {df['Trip Type'].iloc[i]} - Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
     alt_text = access_alt_text(alt_text, chart_name)
-    return alt_text
+
+    # Generate html table
+    alt_html = ""
+    for i in range(len(df)):
+        alt_html += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
+    alt_html = access_alt_html(alt_html, chart_name, var_name)
+
+    return alt_text, alt_html
 
 def store_alt_text_timeseries(df, chart_name, var_name):
     """ Inputs:
@@ -367,6 +347,38 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     arg_max = np.argmax(df.iloc[:,1])
     alt_text += f" First minimum is {np.round(df.iloc[arg_min,1], 1)} on {df.iloc[arg_min,0]}. First maximum is {np.round(df.iloc[arg_max,1], 1)} on {df.iloc[arg_max,0]}."
     alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+# Creating html table with col as Trip Type, Mode, Count, and Proportion
+def access_alt_html(alt_text, chart_name, var_name):
+    """ Inputs:
+    alt_text = the text describing the chart
+    chart_name = the alt text file to save or update
+    var_name = the variable being analyzed across bars
+    """
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{var_name}</title>
+    </head>
+    <body>
+        <p>{var_name}</p>
+        <table border="1" style="background-color: white;">
+            <tr>
+                <th>Trip Type</th>
+                <th>Mode</th>
+                <th>Count</th>
+                <th>Proportion</th>
+            </tr>
+            {alt_text}
+        </table>
+    </body>
+    </html>
+    """
+    with open(SAVE_DIR + chart_name + ".html", 'w') as f:
+        f.write(html_content)
+
     return alt_text
 
 def generate_missing_plot(plot_title,debug_df,file_name):
