@@ -374,7 +374,10 @@
             labels = doc.getElementsByTagName("label");
               for (i in labels) {
                 try {
-                  quest_dict[labels[i].parentNode.getAttribute("ref").split('/').slice(-1)] = labels[i].firstChild.data;
+                  if ((labels[i].parentNode.getAttribute("appearance") !== "label")) //label type questions don't ever have answers
+                  {
+                    quest_dict[labels[i].parentNode.getAttribute("ref").split('/').slice(-1)] = labels[i].firstChild.data;
+                  }
                 } catch (e) { }
               } 
             }
