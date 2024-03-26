@@ -39,13 +39,15 @@ def merge_small_entries(labels, values):
     # We could have already had a non-zero other, and it could be small or large
     if "Other" not in v2l_df.index:
         # zero other will end up with misc_count
-        v2l_df.loc["Other"] = misc_count
+        if misc_count.vals > 0:
+            v2l_df.loc["Other"] = misc_count
     elif "Other" in small_chunk.index:
         # non-zero small other will already be in misc_count
         v2l_df.loc["Other"] = misc_count
     else:
         # non-zero large other, will not already be in misc_count
         v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
+    
     disp.display(v2l_df)
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list())
