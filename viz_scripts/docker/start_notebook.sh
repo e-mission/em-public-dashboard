@@ -5,9 +5,9 @@
 echo "DB host = "${DB_HOST}
 if [ -z ${DB_HOST} ] ; then
     local_host=`hostname -i`
-    sed "s-localhost-${local_host}_" conf/storage/db.conf.sample > conf/storage/db.conf
+    jq --arg db_host "$local_host" '.timeseries.url = $db_host' conf/storage/db.conf.sample > conf/storage/db.conf
 else
-    sed "s-localhost-${DB_HOST}-" conf/storage/db.conf.sample > conf/storage/db.conf
+    jq --arg db_host "$DB_HOST" '.timeseries.url = $db_host' conf/storage/db.conf.sample > conf/storage/db.conf
 fi
 
 ### configure the saved-notebooks directory for persistent notebooks
