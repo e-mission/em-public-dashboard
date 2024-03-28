@@ -5,8 +5,9 @@ VOLUME /plots
 
 ENV DB_HOST=db
 ENV WEB_SERVER_HOST=0.0.0.0
-ENV CRON_MODE= 
+ENV CRON_MODE=TRUE 
 ENV STUDY_CONFIG=stage-program
+ENV PROD_STAGE=TRUE
 
 ADD docker/environment36.dashboard.additions.yml /
 
@@ -37,6 +38,10 @@ ADD docker/start_notebook.sh /usr/src/app/.docker/start_notebook.sh
 RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
 ADD docker/crontab /usr/src/app/crontab
+
+ADD docker/cert.sh /usr/src/app/.docker/cert.sh
+RUN chmod u+x /usr/src/app/.docker/cert.sh
+RUN /usr/src/app/.docker/cert.sh
 
 EXPOSE 8888
 
