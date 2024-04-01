@@ -122,7 +122,6 @@ You may need to increase the resources avaliable to Docker if:
 - the notebook can't connect to the database
 - when you try and start the container for the database it exits with code 14
 
-
 ## Large Dataset Workaround
 
 This is not the standard method of loading data, and we are not reccomending this method or promising that it will work, but the following has worked for us in order to cut down on resources required in order to work with a large dataset in a pinch.
