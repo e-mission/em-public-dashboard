@@ -56,6 +56,13 @@ def load_all_confirmed_trips(tq):
     disp.display(all_ct.head())
     return all_ct
 
+def load_all_composite_trips(tq):
+    agg = esta.TimeSeries.get_aggregate_time_series()
+    all_ct = agg.get_data_df("analysis/composite_trip", tq)
+    print("Loaded all composite trips of length %s" % len(all_ct))
+    disp.display(all_ct.head())
+    return all_ct
+
 def load_all_participant_trips(program, tq, load_test_users):
     participant_list = get_participant_uuids(program, load_test_users)
     all_ct = load_all_confirmed_trips(tq)
