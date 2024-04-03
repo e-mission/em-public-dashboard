@@ -3,12 +3,6 @@ FROM shankari/e-mission-server:master_2024-02-10--19-38
 
 VOLUME /plots
 
-ENV DB_HOST=db
-ENV WEB_SERVER_HOST=0.0.0.0
-ENV CRON_MODE=TRUE 
-ENV STUDY_CONFIG=stage-program
-ENV PROD_STAGE=TRUE
-
 ADD docker/environment36.dashboard.additions.yml /
 
 WORKDIR /usr/src/app
@@ -38,10 +32,6 @@ ADD docker/start_notebook.sh /usr/src/app/.docker/start_notebook.sh
 RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
 ADD docker/crontab /usr/src/app/crontab
-
-ADD docker/cert.sh /usr/src/app/.docker/cert.sh
-RUN chmod u+x /usr/src/app/.docker/cert.sh
-RUN /usr/src/app/.docker/cert.sh
 
 EXPOSE 8888
 
