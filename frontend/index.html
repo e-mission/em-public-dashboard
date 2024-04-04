@@ -374,7 +374,7 @@
             labels = doc.getElementsByTagName("label");
               for (i in labels) {
                 try {
-                  if ((labels[i].parentNode.getAttribute("appearance") !== "label")) //label type questions don't ever have answers
+                  if ((labels[i].parentNode.getAttribute("appearance") !== "label" && labels[i].parentNode.nodeName != "input")) //label type questions don't ever have answers
                   {
                     quest_dict[labels[i].parentNode.getAttribute("ref").split('/').slice(-1)] = labels[i].firstChild.data;
                   }
