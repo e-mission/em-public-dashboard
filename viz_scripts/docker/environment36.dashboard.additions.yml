@@ -8,3 +8,4 @@ dependencies:
   - nbparameterise==0.6
   - devcron==0.4
   - pillow==10.3.0
+  
