@@ -112,6 +112,41 @@ def expand_userinputs(labeled_ct):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+def expand_inferredlabels(inferred_ct):
+    if len(inferred_ct) == 0:
+        return inferred_ct
+
+    # Function to find the labels with the highest 'p'
+    def find_max_p_labels(item):
+        max_p = 0
+        max_labels = {}
+        for value in item:
+            if value['p'] > max_p:
+                max_p = value['p']
+                max_labels = value['labels']
+        return max_labels, max_p
+
+    # Create two empty lists to store labels and p values
+    max_labels_list = []
+    max_p_list = []
+
+    # Iterate over the Series and apply the function
+    for item in inferred_ct.inferred_labels:
+        labels, p = find_max_p_labels(item)
+        max_labels_list.append(labels)
+        max_p_list.append(p)
+
+    print(f"\n Length of the list is {len(max_labels_list)} \n")
+
+    inferred_only_labels = pd.DataFrame(max_labels_list, index=inferred_ct.index)
+    disp.display(inferred_only_labels)
+    inferred_only_p = pd.DataFrame(max_p_list, index=inferred_ct.index, columns=['p'])
+    disp.display(inferred_only_p)
+    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels, inferred_only_p], axis=1)
+    expanded_inferred_ct.reset_index(drop=True, inplace=True)
+    disp.display(expanded_inferred_ct.head())
+    return expanded_inferred_ct
+
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
