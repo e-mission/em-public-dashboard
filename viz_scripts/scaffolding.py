@@ -319,6 +319,46 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     print(quality_text)
     return quality_text
 
+def get_quality_data_u80(before_df, after_df):
+    after_pct = (len(after_df) * 100) / len(before_df) if len(before_df) != 0 else np.nan
+    main_dict = {
+                'before_df':len(before_df),
+                'unique_users_before': unique_users(before_df),
+                'after_df':len(after_df),
+                'unique_users_after': unique_users(after_df),
+                'after_pct':after_pct }
+    return main_dict
+
+def get_quality_data_inferred(total_inferred_df, total_confirmed_df, inferred_df, confirmed_df):
+    after_pct_confirmed = (len(confirmed_df) * 100) / len(total_confirmed_df) if len(total_confirmed_df) != 0 else np.nan
+    after_pct_inferred = (len(inferred_df) * 100) / len(total_inferred_df) if len(total_inferred_df) != 0 else np.nan
+    mode_values_dict = \
+                    {'inferred_trip': len(total_inferred_df),
+                    'unique_users_inferred': unique_users(total_inferred_df),
+                    'mode_inferred_trip': len(inferred_df),
+                    'after_pct_inferred': after_pct_inferred,
+                    'unique_users_inferred_mode': unique_users(inferred_df),
+                    'confirmed_trip': len(total_confirmed_df),
+                    'unique_users_confirmed':unique_users(confirmed_df),
+                    'mode_confirmed_trip': len(confirmed_df),
+                    'after_pct_confirmed': after_pct_confirmed,
+                    'unique_users_confirmed_mode': unique_users(confirmed_df)}
+    return mode_values_dict
+
+def get_quality_data(total_df, inferred_df, confirmed_df):
+    after_pct_confirmed = (len(confirmed_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
+    after_pct_inferred = (len(inferred_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
+    values_dict = \
+                {'total_trip' : len(total_df),
+                'unique_users_total': unique_users(total_df),
+                'inferred_trip': len(inferred_df),
+                'pct_inferred': after_pct_inferred,
+                'unique_users_inferred': unique_users(inferred_df),
+                'confirmed_trip': len(confirmed_df),
+                'pct_confirmed': after_pct_confirmed,
+                'unique_users_confirmed': unique_users(confirmed_df)}
+    return values_dict
+
 def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
