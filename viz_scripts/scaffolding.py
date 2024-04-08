@@ -329,8 +329,8 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     print(quality_text)
     return quality_text
 
-def get_quality_data_u80(before_df, after_df):
-    after_pct = (len(after_df) * 100) / len(before_df) if len(before_df) != 0 else np.nan
+def get_quality_data_u80(total_df, before_df, after_df):
+    after_pct = (len(after_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
     main_dict = {
                 'before_df':len(before_df),
                 'unique_users_before': unique_users(before_df),
