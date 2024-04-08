@@ -188,8 +188,26 @@ def process_notebook_data(df, study_type, dynamic_labels, dic_re, dic_pur):
             df['Trip_purpose'] = df['purpose_confirm'].map(dic_pur)
     return df
 
-    # Document data quality
+def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+    """ Inputs:
+    year/month/program/study_type = parameters from the visualization notebook
+    dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
+
+    Pipeline to load and process the data before use in visualization notebooks.
+    """
+    # Access database
+    tq = get_time_query(year, month)
     file_suffix = get_file_suffix(year, month, program)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+
+    labeled_ct = filter_labeled_trips(participant_ct_df)
+    expanded_ct = expand_userinputs(labeled_ct)
+    expanded_ct = data_quality_check(expanded_ct)
+    expanded_ct = process_notebook_data(expanded_ct, study_type, dynamic_labels, dic_re, dic_pur)
+    inferred_ct = filter_inferred_trips(participant_ct_df)
+    expanded_it = expand_inferredlabels(inferred_ct)
+    expanded_it = process_notebook_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
+    values_dict = get_quality_data(participant_ct_df, expanded_it, expanded_ct)
     quality_text = get_quality_text(participant_ct_df, expanded_ct, None, include_test_users)
 
     debug_df = pd.DataFrame.from_dict({
@@ -198,13 +216,17 @@ def process_notebook_data(df, study_type, dynamic_labels, dic_re, dic_pur):
             "Registered_participants": len(get_participant_uuids(program, include_test_users)),
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
+            "Participant_with_at_least_one_inferred_trip": unique_users(inferred_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
+            "Trips_with_at_least_one_inference": len(inferred_ct),
             "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm", expanded_ct),
-            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct)
+            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct),
+            "Trips_with_mode_confirm_label_inferred": trip_label_count("Mode_confirm", expanded_it),
+            "Trips_with_trip_purpose_label_inferred": trip_label_count("Trip_purpose", expanded_it)
             },
         orient='index', columns=["value"])
 
-    return expanded_ct, file_suffix, quality_text, debug_df
+    return expanded_ct, expanded_it, file_suffix, quality_text, debug_df, values_dict
 
 # Function to map the "MODE", "REPLACED_MODE", "PURPOSE" to respective en-translations
 # Input: dynamic_labels, label_type: MODE, REPLACED_MODE, PURPOSE
