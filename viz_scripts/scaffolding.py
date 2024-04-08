@@ -76,6 +76,15 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
+def filter_inferred_trips(mixed_trip_df):
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(mixed_trip_df) == 0:
+        return mixed_trip_df
+    inferred_ct = mixed_trip_df[mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))]
+    print("After filtering, found %s inferred trips" % len(inferred_ct))
+    disp.display(inferred_ct.head())
+    return inferred_ct
+
 def expand_userinputs(labeled_ct):
     '''
     param: labeled_ct: a dataframe of confirmed trips, some of which have labels
