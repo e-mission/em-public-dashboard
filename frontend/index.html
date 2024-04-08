@@ -394,7 +394,7 @@
       const study_name = first_domain.substr(0, openpath_index);
       return study_name;
     }
-
+    var mode_studied
     $(function () {
       $(document).ready(function () {
         // Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
@@ -403,6 +403,7 @@
           // get units
           const dist_units = (data.display_config.use_imperial) ? "miles" : "kilometers";
           console.log("Units for display are", data.display_config.use_imperial, dist_units);
+          mode_studied = data.intro.mode_studied
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
           if (data.intro.program_or_study == 'program') {
@@ -530,14 +531,14 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        const isStackedMetric = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm', 'total_trip_length'].includes(metric);
+        const isStackedMetric = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm', 'total_trip_length', 'total_trip_length_land',`ntrips_${mode_studied}_total`,`ntrips_${mode_studied}_purpose`, `total_trip_${mode_studied}_length_replaced_mode`].includes(metric);
         const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
 
         if (isStackedMetric){
           const nw = ["<li data-min-sizex='2' data-min-sizey='2'>"
             + labelText
             + "&nbsp;"
-            + "<button class= 'btn btn_default addInfo' style='color: black; background-color: none; border-color: white;' data-info='" + encodeURIComponent(JSON.stringify(jsonData))+ "'> More Info </button>"
+            + "<button class= 'btn btn_default addInfo' style='color: black; background-color: none; border-color: white;' data-info='" + encodeURIComponent(JSON.stringify(jsonData))+ "'> View as Text </button>"
             + "&nbsp;"
             + "<button class='remove'>x</button>"
             + "<img src='" + imgFile + "' alt='" + altText + "' width=90% height=90%>"
