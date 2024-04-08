@@ -151,41 +151,28 @@ def expand_inferredlabels(inferred_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
-    """ Inputs:
-    year/month/program/study_type = parameters from the visualization notebook
-    dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
-
-    Pipeline to load and process the data before use in visualization notebooks.
-    """
-    # Access database
-    tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
-    labeled_ct = filter_labeled_trips(participant_ct_df)
-    expanded_ct = expand_userinputs(labeled_ct)
-    expanded_ct = data_quality_check(expanded_ct)
-
+def process_notebook_data(df, study_type, dynamic_labels, dic_re, dic_pur):
     # Change meters to miles
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if "distance" in expanded_ct.columns:
-        unit_conversions(expanded_ct)
-    
+    if "distance" in df.columns:
+        unit_conversions(df)
+
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if "mode_confirm" in expanded_ct.columns:
+    if "mode_confirm" in df.columns:
         if (len(dynamic_labels)):
             dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
-            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_mode_mapping)
         else:
-            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_re)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-        if 'replaced_mode' in expanded_ct.columns:
+        if 'replaced_mode' in df.columns:
             if (len(dynamic_labels)):
                 dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
-                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_replaced_mapping)
             else:
-                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_re)
         else:
             print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
     else:
@@ -193,12 +180,13 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
 
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
+    if dic_pur is not None and "purpose_confirm" in df.columns:
         if (len(dynamic_labels)):
              dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
-             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
+             df['Trip_purpose'] = df['purpose_confirm'].map(dic_purpose_mapping)
         else:
-            expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
+            df['Trip_purpose'] = df['purpose_confirm'].map(dic_pur)
+    return df
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
