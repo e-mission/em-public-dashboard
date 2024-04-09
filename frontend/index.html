@@ -460,8 +460,9 @@
                   var text = '<option ' + 'value="' + key + '" data-sizex="4" data-sizey="4">' + value + '</option>';
                   file = file.concat('\n', text);
                 });
-                console.log(file);
-                $('#metric').append(file);
+                console.log("configuring units");
+                const unitConfigured = file.replaceAll("${data.display_config.use_imperial}", dist_units);
+                $('#metric').append(unitConfigured);
                 addPreconfiguredMetrics(Object.keys(quest_dict).slice(0, 5)); //only adding the first 6 elements
               });
             });         
