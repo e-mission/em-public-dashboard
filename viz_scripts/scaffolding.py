@@ -74,6 +74,16 @@ def load_all_participant_trips(program, tq, load_test_users):
     disp.display(participant_ct_df.head())
     return participant_ct_df
 
+def filter_composite_trips(all_comp_trips, program, load_test_users):
+    participant_list = get_participant_uuids(program, load_test_users)
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(all_comp_trips) == 0:
+        return all_comp_trips
+    participant_ct_df = all_comp_trips[all_comp_trips.user_id.isin(participant_list)]
+    print("After filtering, found %s participant trips " % len(participant_ct_df))
+    disp.display(participant_ct_df.head())
+    return participant_ct_df
+
 def filter_labeled_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
