@@ -83,7 +83,7 @@ def stacked_bar_chart_generic(plot_title, df, file_name, colors_combined, num_ba
 
     running_total_long = [0] * num_bars
 
-    for mode in enumerate(pd.unique(df.Mode)):
+    for idx, mode in enumerate(pd.unique(df.Mode)):
         long = df[df['Mode'] == mode]
 
         if not long.empty:
