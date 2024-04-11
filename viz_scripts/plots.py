@@ -62,15 +62,6 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
     running_total_long = [0] * num_bars
 
-    mode_mapping = {
-        "IN_VEHICLE": "IN_VEHICLE (Sensed)",
-        "UNKNOWN": "UNKNOWN (Sensed)",
-        "OTHER": "OTHER (Sensed)",
-        "BICYCLING": "BICYCLING (Sensed)",
-        "WALKING": "WALKING (Sensed)",
-        "AIR_OR_HSR": "AIR_OR_HSR (Sensed)"
-    }
-
     colors = plt.cm.tab20.colors[:len(pd.unique(df['Mode']))]
 
     for idx, mode in enumerate(pd.unique(df.Mode)):
@@ -80,8 +71,6 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
             labels = long['Trip Type']
             vals = long['Proportion']
             bar_labels = long['Count']
-
-            mode = mode_mapping.get(mode, mode)
             vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
             bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color = colors[idx])
             ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
