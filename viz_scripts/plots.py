@@ -50,7 +50,7 @@ def merge_dataframes(all_data_frames):
     merged_df = pd.merge(unique_combinations, df, on=['Trip Type', 'Mode'], how='left').fillna(0)
     return merged_df
 
-def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
+def stacked_bar_chart_generic(plot_title, df, file_name, colors_combined, num_bars):
     sns.set(font_scale=1.5)
     fig, ax = plt.subplots(1, 1, figsize=(15, 6))
 
@@ -62,9 +62,7 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
 
     running_total_long = [0] * num_bars
 
-    colors = plt.cm.tab20.colors[:len(pd.unique(df['Mode']))]
-
-    for idx, mode in enumerate(pd.unique(df.Mode)):
+    for mode in enumerate(pd.unique(df.Mode)):
         long = df[df['Mode'] == mode]
 
         if not long.empty:
@@ -72,7 +70,7 @@ def stacked_bar_chart_generic(plot_title, df, file_name, num_bars):
             vals = long['Proportion']
             bar_labels = long['Count']
             vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
-            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color = colors[idx])
+            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color=colors_combined[mode])
             ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
             running_total_long = [total + val for total, val in zip(running_total_long, vals)]
         else:
