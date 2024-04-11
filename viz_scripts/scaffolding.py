@@ -196,8 +196,9 @@ def mapping_labels(dynamic_labels, label_type):
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
-# Output: Map for color with mode and purpose
+# Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
+    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER"]
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
@@ -210,8 +211,15 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
 
     colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
+    colors_sensed = dict(zip(sensed_values, plt.cm.tab20.colors[:len(sensed_values)]))
 
-    return colors_mode, colors_purpose
+    # Aggregating the color and different mode combination into a single dictionary
+    colors_combined = {}
+    colors_combined.update(colors_mode)
+    colors_combined.update(colors_purpose)
+    colors_combined.update(colors_sensed)
+
+    return colors_combined
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
