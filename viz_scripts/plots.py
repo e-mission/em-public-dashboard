@@ -20,18 +20,39 @@ import IPython.display as disp
 
 SAVE_DIR="/plots/"
 
-def calculate_pct(labels, values):
+def merge_small_entries(labels, values):
     v2l_df = pd.DataFrame({"vals": values}, index=labels)
 
     # Calculate % for all the values
     vs = v2l_df.vals.sum()
     v2l_df["pct"] = v2l_df.vals.apply(lambda x: round((x/vs) * 100, 1))
+    disp.display(v2l_df)
+
+    # Find small chunks to combine
+    small_chunk = v2l_df.where(lambda x: x.pct <= 2).dropna()
+    misc_count = small_chunk.sum()
+
+    v2l_df = v2l_df.drop(small_chunk.index)
+    disp.display(v2l_df)
+
+    # This part if a bit tricky
+    # We could have already had a non-zero other, and it could be small or large
+    if "Other" not in v2l_df.index:
+        # zero other will end up with misc_count
+        v2l_df.loc["Other"] = misc_count
+    elif "Other" in small_chunk.index:
+        # non-zero small other will already be in misc_count
+        v2l_df.loc["Other"] = misc_count
+    else:
+        # non-zero large other, will not already be in misc_count
+        v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
+    disp.display(v2l_df)
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
 # Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
-    m_labels, m_values, m_pct = calculate_pct(labels, values)
+    m_labels, m_values, m_pct = merge_small_entries(labels, values)
     data_trip = {'Mode': m_labels, 'Count': m_values, 'Proportion': m_pct}
     df_total_trip = pd.DataFrame(data_trip)
     df_total_trip['Trip Type'] = trip_type
