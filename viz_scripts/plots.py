@@ -313,19 +313,13 @@ def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
     chart_name = name of the chart
     var_name = the variable being analyzed across bars
     """
-    # Generate alt text file
-    alt_text = f"Stacked Bar chart of {var_name}."
-    for i in range(len(df)):
-        alt_text += f"Trip Type: {df['Trip Type'].iloc[i]} - Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
-    alt_text = access_alt_text(alt_text, chart_name)
-
     # Generate html table
     alt_html = ""
     for i in range(len(df)):
         alt_html += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     alt_html = access_alt_html(alt_html, chart_name, var_name)
 
-    return alt_text, alt_html
+    return alt_html
 
 def store_alt_text_timeseries(df, chart_name, var_name):
     """ Inputs:
@@ -342,9 +336,9 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     return alt_text
 
 # Creating html table with col as Trip Type, Mode, Count, and Proportion
-def access_alt_html(alt_text, chart_name, var_name):
+def access_alt_html(alt_html, chart_name, var_name):
     """ Inputs:
-    alt_text = the text describing the chart
+    html_body = the text describing the chart
     chart_name = the alt text file to save or update
     var_name = the variable being analyzed across bars
     """
@@ -363,7 +357,7 @@ def access_alt_html(alt_text, chart_name, var_name):
                 <th>Count</th>
                 <th>Proportion</th>
             </tr>
-            {alt_text}
+            {alt_html}
         </table>
     </body>
     </html>
@@ -371,7 +365,7 @@ def access_alt_html(alt_text, chart_name, var_name):
     with open(SAVE_DIR + chart_name + ".html", 'w') as f:
         f.write(html_content)
 
-    return alt_text
+    return alt_html
 
 def generate_missing_plot(plot_title,debug_df,file_name):
     f, ax = plt.subplots(figsize=(10,10))
