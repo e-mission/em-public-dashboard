@@ -20,6 +20,15 @@ import IPython.display as disp
 
 SAVE_DIR="/plots/"
 
+def calculate_pct(labels, values):
+    v2l_df = pd.DataFrame({"vals": values}, index=labels)
+
+    # Calculate % for all the values
+    vs = v2l_df.vals.sum()
+    v2l_df["pct"] = v2l_df.vals.apply(lambda x: round((x/vs) * 100, 1))
+
+    return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
+
 def merge_small_entries(labels, values):
     v2l_df = pd.DataFrame({"vals": values}, index=labels)
 
@@ -52,11 +61,16 @@ def merge_small_entries(labels, values):
 
 # Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
+    m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
+    data_trip_expanded = {'Mode': m_labels_expanded, 'Count': m_values_expanded, 'Proportion': m_pct_expanded}
+    df_total_trip_expanded = pd.DataFrame(data_trip_expanded)
+    df_total_trip_expanded['Trip Type'] = trip_type
+
     m_labels, m_values, m_pct = merge_small_entries(labels, values)
     data_trip = {'Mode': m_labels, 'Count': m_values, 'Proportion': m_pct}
     df_total_trip = pd.DataFrame(data_trip)
     df_total_trip['Trip Type'] = trip_type
-    return df_total_trip
+    return df_total_trip_expanded, df_total_trip
 
 def plot_stacked_bar_chart(dataframes, colors_combined,bar_count, plot_title, file_name):
     fig, ax_list = plt.subplots(bar_count, 1, figsize=(15, 2 * bar_count), sharex=True)
