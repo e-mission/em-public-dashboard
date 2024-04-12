@@ -58,57 +58,41 @@ def process_trip_data(labels, values, trip_type):
     df_total_trip['Trip Type'] = trip_type
     return df_total_trip
 
-# Input: List of all dataframes
-# Ouput: A single dataframe such that Trip Type has all Mode
-def merge_dataframes(all_data_frames):
-    # Concatenate DataFrames
-    df = pd.concat(all_data_frames, ignore_index=True)
-
-    # Create DataFrame with unique combinations of 'Trip Type' and 'Mode'
-    unique_combinations = pd.DataFrame(list(product(df['Trip Type'].unique(), df['Mode'].unique())), columns=['Trip Type', 'Mode'])
-
-    # Merge the original DataFrame with the unique combinations DataFrame
-    merged_df = pd.merge(unique_combinations, df, on=['Trip Type', 'Mode'], how='left').fillna(0)
-    return merged_df
-
-def stacked_bar_chart_generic(plot_title, df, file_name, colors_combined, num_bars):
+def plot_stacked_bar_chart(dataframes, colors_combined,bar_count, plot_title, file_name):
+    fig, ax_list = plt.subplots(bar_count, 1, figsize=(15, 2 * bar_count), sharex=True)
+    # Whenever we have a single bar,ax_list will only be an object and not an array.
+    if bar_count == 1:
+        ax_list = [ax_list]
     sns.set(font_scale=1.5)
-    fig, ax = plt.subplots(1, 1, figsize=(15, 6))
+    width = 0.2
+    for df_idx, df in enumerate(dataframes):
+        running_total_long = [0]
+        ax = ax_list[df_idx]
+        for idx, mode in enumerate(pd.unique(df['Mode'])):
+            long = df[df['Mode'] == mode]
+            if not long.empty:
+                labels = long['Trip Type']
+                vals = long['Proportion']
+                bar_labels = long['Count']
+                vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(bar_labels, vals)]
+                bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color=colors_combined[mode])
+                ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
+                running_total_long = [total + val for total, val in zip(running_total_long, vals)]
+            else:
+                print(f"{mode} is unavailable in dataframe {df_idx + 1}.")
+        ax.tick_params(axis='y', labelsize=18)
+        ax.tick_params(axis='x', labelsize=18, rotation=90)
+        ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15)
+        # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
+        ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
 
-    if num_bars == 1:
-        width = 2
-        ax.set_ylim(-0.4, 3)
-    else:
-        width = 0.8
-
-    running_total_long = [0] * num_bars
-
-    for idx, mode in enumerate(pd.unique(df.Mode)):
-        long = df[df['Mode'] == mode]
-
-        if not long.empty:
-            labels = long['Trip Type']
-            vals = long['Proportion']
-            bar_labels = long['Count']
-            vals_str = [f'{y:.1f} %\n({x:.0f})' if y>4 else '' for x, y in zip(bar_labels, vals)]
-            bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color=colors_combined[mode])
-            ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
-            running_total_long = [total + val for total, val in zip(running_total_long, vals)]
-        else:
-            print(f"{mode} is unavailable.")
-
-    ax.set_title(plot_title, fontsize=25)
-    ax.set_xlabel('Proportion (Count)', fontsize=20)
-    ax.set_ylabel('Trip Types', fontsize=20)
-    ax.tick_params(axis='y', labelsize=18)
-    ax.tick_params(axis='x', labelsize=18, rotation=90)
-    # The Last updated text is placed just right below the X-axis
-    plt.text(0,ax.xaxis.get_label().get_position()[0] - 1,f"Last updated {arrow.get()}", fontsize=12)
-    # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
-    ax.set_xlim(right=ax.get_xlim()[1]+1.0, auto=True)
-    ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize = 15)
-    plt.subplots_adjust(bottom=0.25)
-    fig.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+    # Setting label and title for the figure since these would be common for all sub-plots
+    fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y=ax_list[0].xaxis.get_label().get_position()[0] - 0.62, va='top')
+    fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
+    fig.suptitle(plot_title, fontsize=25,va = 'bottom')
+    plt.text(0, ax_list[bar_count-1].xaxis.get_label().get_position()[0] - 0.62, f"Last updated {arrow.get()}", fontsize=12)
+    plt.subplots_adjust(hspace=0.1, top= 0.95)
+    fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
 
 def energy_impact(x,y,color,plot_title,file_name):
