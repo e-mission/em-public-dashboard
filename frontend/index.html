@@ -565,8 +565,8 @@
       });
 
       $('body').on("click", ".gridster ul > li .addInfo", function () {
-        const addButton = $(this);
-        const additionalInfo = JSON.parse(decodeURIComponent(addButton.data('info')));
+        const additionalInfoButton = $(this);
+        const additionalInfo = JSON.parse(decodeURIComponent(additionalInfoButton.data('info')));
         const metric = additionalInfo.metric;
         const dateVal = additionalInfo.dateVal;
         const program = additionalInfo.program;
