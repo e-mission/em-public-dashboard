@@ -59,6 +59,42 @@ def merge_small_entries(labels, values):
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
+def process_data_frame(df, df_col, trip_type):
+    labels = df[df_col].value_counts(dropna=True).keys().tolist()
+    values = df[df_col].value_counts(dropna=True).tolist()
+    return process_trip_data(labels, values, trip_type)
+
+def process_distance_data(df, df_col, distance_col, label_units_lower, trip_type):
+    dist = df.groupby(df_col).agg({distance_col: ['sum', 'count', 'mean']})
+    dist.columns = ['Total (' + label_units_lower + ')', 'Count', 'Average (' + label_units_lower + ')']
+    dist = dist.reset_index()
+    dist = dist.sort_values(by=['Total (' + label_units_lower + ')'], ascending=False)
+
+    dist_dict = dict(zip(dist[df_col], dist['Total (' + label_units_lower + ')']))
+    labels_dist = []
+    values_dist = []
+
+    for x, y in dist_dict.items():
+        labels_dist.append(x)
+        values_dist.append(y)
+
+    return process_trip_data(labels_dist, values_dist, trip_type)
+
+def process_data_for_cutoff(df, df_col, distance_col, trip_type):
+    cutoff = df.distance.quantile(0.8)
+    if pd.isna(cutoff):
+        cutoff = 0
+
+    dist_threshold = df[distance_col].quantile(0.8).round(1)
+    dist_threshold = str(dist_threshold)
+
+    labels = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).keys().tolist()
+    values = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).tolist()
+    processed_data_expanded, processed_data = process_trip_data(labels, values, trip_type)
+
+    return processed_data_expanded, processed_data, cutoff, dist_threshold
+
+
 # Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
     """ Inputs:
