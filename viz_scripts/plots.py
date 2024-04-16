@@ -61,6 +61,11 @@ def merge_small_entries(labels, values):
 
 # Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
+    """ Inputs:
+    labels = Displayed labels (e.g. "Gas car, drove alone")
+    values = Corresponding vlaues of these labels
+    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
+    """
     m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
     data_trip_expanded = {'Mode': m_labels_expanded, 'Count': m_values_expanded, 'Proportion': m_pct_expanded}
     df_total_trip_expanded = pd.DataFrame(data_trip_expanded)
