@@ -533,8 +533,6 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        console.log(metric)
-        console.log(`ntrips_${mode_studied}_total`)
         const isStackedMetric = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm',
                                  'total_trip_length', 'total_trip_length_land',`ntrips_${mode_studied}_total`,
                                  `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`]
