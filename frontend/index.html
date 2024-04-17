@@ -419,7 +419,7 @@
               console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
             }
             $.get(load_file, function (response) {
-              const configuredResponse = response.replaceAll("${data.intro.mode_studied}", data.intro.mode_studied);
+              const configuredResponse = response.replaceAll("${data.intro.mode_studied}", mode_studied);
               console.log("configuring units");
               const unitConfigured = configuredResponse.replaceAll("${data.display_config.use_imperial}", dist_units);
               $('#metric').append(unitConfigured);
@@ -427,9 +427,9 @@
                 "ntrips_total",
                 "total_trip_length",
                 "ntrips_purpose",
-                `ntrips_${data.intro.mode_studied}_purpose`,
-                `ntrips_${data.intro.mode_studied}_per_weekday`,
-                `sketch_CO2impact_${data.intro.mode_studied}`
+                `ntrips_${mode_studied}_purpose`,
+                `ntrips_${mode_studied}_per_weekday`,
+                `sketch_CO2impact_${mode_studied}`
               ]);
             });
           }
