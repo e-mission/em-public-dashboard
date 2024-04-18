@@ -59,16 +59,13 @@ def format_pct(pct, values):
     return "{:.1f}%\n({:d})".format(pct, absolute) if pct > 4 else''
 
 
-def pie_chart_mode(plot_title,labels,values,file_name):
-    
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
+def pie_chart_mode(plot_title,labels,values,colors_map,file_name):
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
-
     m_labels, m_values = merge_small_entries(labels, values)
-    
+
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colours[key] for key in labels],
+                                      colors=[colors_map[key] for key in labels],
                                       pctdistance=0.75,
                                       autopct= lambda pct: format_pct(pct, values),
                                       textprops={'size': 23})
@@ -107,9 +104,8 @@ def pie_chart_sensed_mode(plot_title,labels,values,file_name):
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
     plt.show()
 
-def pie_chart_purpose(plot_title,labels,values,file_name):
+def pie_chart_purpose(plot_title,labels,values,colors_map,file_name):
     
-    colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(aspect="equal"))
 
     m_labels, m_values = merge_small_entries(labels, values)
@@ -121,7 +117,7 @@ def pie_chart_purpose(plot_title,labels,values,file_name):
     
     wedges, texts, autotexts = ax.pie(m_values,
                                       labels = m_labels,
-                                      colors=[colours[key] for key in labels],
+                                      colors=[colors_map[key] for key in labels],
                                       pctdistance=0.85,
                                       autopct=lambda pct: func(pct, values),
                                       textprops={'size': 23})
