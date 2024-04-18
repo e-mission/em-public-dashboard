@@ -205,9 +205,8 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
         purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
         combined_mode_values = mode_values + replaced_mode_values
     else:
-        # Addition of 'Other' is required to the list since it's missing from auxillary_files/mode_labels.csv and auxillary_files/purpose_labels.csv
-        combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
-        purpose_values = (list(OrderedDict.fromkeys(dic_pur.values())) + ['Other'])
+        combined_mode_values = list(OrderedDict.fromkeys(dic_re.values()))
+        purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
 
     colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
