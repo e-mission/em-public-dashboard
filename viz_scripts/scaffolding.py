@@ -76,6 +76,15 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
+def filter_inferred_trips(mixed_trip_df):
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(mixed_trip_df) == 0:
+        return mixed_trip_df
+    inferred_ct = mixed_trip_df[mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))]
+    print("After filtering, found %s inferred trips" % len(inferred_ct))
+    disp.display(inferred_ct.head())
+    return inferred_ct
+
 def expand_userinputs(labeled_ct):
     '''
     param: labeled_ct: a dataframe of confirmed trips, some of which have labels
@@ -103,9 +112,81 @@ def expand_userinputs(labeled_ct):
     disp.display(expanded_ct.head())
     return expanded_ct
 
+def expand_inferredlabels(inferred_ct):
+    if len(inferred_ct) == 0:
+        return inferred_ct
+
+    # Function to find the labels with the highest 'p'
+    def find_max_p_labels(item):
+        max_p = 0
+        max_labels = {}
+        for value in item:
+            if value['p'] > max_p:
+                max_p = value['p']
+                max_labels = value['labels']
+        return max_labels, max_p
+
+    # Create two empty lists to store labels and p values
+    max_labels_list = []
+    max_p_list = []
+
+    # Iterate over the Series and apply the function
+    for item in inferred_ct.inferred_labels:
+        labels, p = find_max_p_labels(item)
+        max_labels_list.append(labels)
+        max_p_list.append(p)
+
+    print(f"\n Length of the list is {len(max_labels_list)} \n")
+
+    inferred_only_labels = pd.DataFrame(max_labels_list, index=inferred_ct.index)
+    disp.display(inferred_only_labels)
+    inferred_only_p = pd.DataFrame(max_p_list, index=inferred_ct.index, columns=['p'])
+    disp.display(inferred_only_p)
+    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels, inferred_only_p], axis=1)
+    expanded_inferred_ct.reset_index(drop=True, inplace=True)
+    disp.display(expanded_inferred_ct.head())
+    return expanded_inferred_ct
+
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
+
+def process_notebook_data(df, study_type, dynamic_labels, dic_re, dic_pur):
+    # Change meters to miles
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "distance" in df.columns:
+        unit_conversions(df)
+
+    # Map new mode labels with translations dictionary from dynamic_labels
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "mode_confirm" in df.columns:
+        if (len(dynamic_labels)):
+            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_mode_mapping)
+        else:
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_re)
+    if study_type == 'program':
+        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+        if 'replaced_mode' in df.columns:
+            if (len(dynamic_labels)):
+                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_replaced_mapping)
+            else:
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_re)
+        else:
+            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+    else:
+            print("This is a study, not expecting any replaced modes.")
+
+    # Trip purpose mapping
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if dic_pur is not None and "purpose_confirm" in df.columns:
+        if (len(dynamic_labels)):
+             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
+             df['Trip_purpose'] = df['purpose_confirm'].map(dic_purpose_mapping)
+        else:
+            df['Trip_purpose'] = df['purpose_confirm'].map(dic_pur)
+    return df
 
 def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
@@ -116,48 +197,17 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     """
     # Access database
     tq = get_time_query(year, month)
+    file_suffix = get_file_suffix(year, month, program)
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
-
-    # Change meters to miles
-    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if "distance" in expanded_ct.columns:
-        unit_conversions(expanded_ct)
-    
-    # Map new mode labels with translations dictionary from dynamic_labels
-    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if "mode_confirm" in expanded_ct.columns:
-        if (len(dynamic_labels)):
-            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
-            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
-        else:
-            expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
-    if study_type == 'program':
-        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-        if 'replaced_mode' in expanded_ct.columns:
-            if (len(dynamic_labels)):
-                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
-                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
-            else:
-                expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
-        else:
-            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
-    else:
-            print("This is a study, not expecting any replaced modes.")
-
-    # Trip purpose mapping
-    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
-        if (len(dynamic_labels)):
-             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
-             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
-        else:
-            expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
-
-    # Document data quality
-    file_suffix = get_file_suffix(year, month, program)
+    expanded_ct = process_notebook_data(expanded_ct, study_type, dynamic_labels, dic_re, dic_pur)
+    inferred_ct = filter_inferred_trips(participant_ct_df)
+    expanded_it = expand_inferredlabels(inferred_ct)
+    expanded_it = process_notebook_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
+    values_dict = get_quality_data(participant_ct_df, expanded_it, expanded_ct)
     quality_text = get_quality_text(participant_ct_df, expanded_ct, None, include_test_users)
 
     debug_df = pd.DataFrame.from_dict({
@@ -166,13 +216,17 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
             "Registered_participants": len(get_participant_uuids(program, include_test_users)),
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
+            "Participant_with_at_least_one_inferred_trip": unique_users(inferred_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
+            "Trips_with_at_least_one_inference": len(inferred_ct),
             "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm", expanded_ct),
-            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct)
+            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct),
+            "Trips_with_mode_confirm_label_inferred": trip_label_count("Mode_confirm", expanded_it),
+            "Trips_with_trip_purpose_label_inferred": trip_label_count("Trip_purpose", expanded_it)
             },
         orient='index', columns=["value"])
 
-    return expanded_ct, file_suffix, quality_text, debug_df
+    return expanded_ct, expanded_it, file_suffix, quality_text, debug_df, values_dict
 
 # Function to map the "MODE", "REPLACED_MODE", "PURPOSE" to respective en-translations
 # Input: dynamic_labels, label_type: MODE, REPLACED_MODE, PURPOSE
@@ -275,10 +329,50 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     print(quality_text)
     return quality_text
 
-def get_quality_text_sensed(df, include_test_users=False):
+def get_quality_data_u80(total_df, before_df, after_df):
+    after_pct = (len(after_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
+    main_dict = {
+                'before_df':len(before_df),
+                'unique_users_before': unique_users(before_df),
+                'after_df':len(after_df),
+                'unique_users_after': unique_users(after_df),
+                'after_pct':after_pct }
+    return main_dict
+
+def get_quality_data_inferred(total_inferred_df, total_confirmed_df, inferred_df, confirmed_df):
+    after_pct_confirmed = (len(confirmed_df) * 100) / len(total_confirmed_df) if len(total_confirmed_df) != 0 else np.nan
+    after_pct_inferred = (len(inferred_df) * 100) / len(total_inferred_df) if len(total_inferred_df) != 0 else np.nan
+    mode_values_dict = \
+                    {'inferred_trip': len(total_inferred_df),
+                    'unique_users_inferred': unique_users(total_inferred_df),
+                    'mode_inferred_trip': len(inferred_df),
+                    'after_pct_inferred': after_pct_inferred,
+                    'unique_users_inferred_mode': unique_users(inferred_df),
+                    'confirmed_trip': len(total_confirmed_df),
+                    'unique_users_confirmed':unique_users(confirmed_df),
+                    'mode_confirmed_trip': len(confirmed_df),
+                    'after_pct_confirmed': after_pct_confirmed,
+                    'unique_users_confirmed_mode': unique_users(confirmed_df)}
+    return mode_values_dict
+
+def get_quality_data(total_df, inferred_df, confirmed_df):
+    after_pct_confirmed = (len(confirmed_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
+    after_pct_inferred = (len(inferred_df) * 100) / len(total_df) if len(total_df) != 0 else np.nan
+    values_dict = \
+                {'total_trip' : len(total_df),
+                'unique_users_total': unique_users(total_df),
+                'inferred_trip': len(inferred_df),
+                'pct_inferred': after_pct_inferred,
+                'unique_users_inferred': unique_users(inferred_df),
+                'confirmed_trip': len(confirmed_df),
+                'pct_confirmed': after_pct_confirmed,
+                'unique_users_confirmed': unique_users(confirmed_df)}
+    return values_dict
+
+def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
-    quality_text = f"Based on %s trips from %d {user_str}" % cq
+    quality_text = f"Based on %s trips ({cutoff_text}) from %d {user_str}" % cq if cutoff_text else f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 
@@ -307,6 +401,7 @@ def data_quality_check(expanded_ct):
 
 def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
+    df['distance_kms'] = df["distance"] / 1000 #meters to kms
 
 def energy_intensity(trip_df,mode_intensity_df,col):
     """ Inputs:
@@ -458,3 +553,22 @@ def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels)
 
     print("CO2 Emissions:")
     print(combined_df)
+
+'''
+input: boolean (True = use miles & false = use kms, etc)
+returns: four Strings used to handle units in the notebooks
+'''
+def get_units(use_imperial):
+    if use_imperial:
+        label_units = "Miles"
+        short_label = "miles"
+        weight_unit = "lb"
+    else:
+        label_units = "Kilometers"
+        short_label = "kms"
+        weight_unit = "kg"
+
+    label_units_lower = label_units.lower()
+    distance_col = "distance_" + short_label
+    
+    return label_units, short_label, label_units_lower, distance_col, weight_unit
