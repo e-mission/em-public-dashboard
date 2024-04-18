@@ -230,6 +230,18 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
 
     return colors_mode, colors_purpose
 
+# Function: Maps survey answers to colors.
+# Input: dictionary of raw and translated survey answers
+# Output: Map for color with survey answers
+def mapping_color_surveys(dic_options):
+    dictionary_values = (list(OrderedDict.fromkeys(dic_options.values())))
+    
+    colors = {}
+    for i in range(len(dictionary_values)):
+        colors[dictionary_values[i]] = plt.cm.tab20.colors[i%20]
+
+    return colors
+
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
     year/month/program = parameters from the visualization notebook

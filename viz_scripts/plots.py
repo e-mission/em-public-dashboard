@@ -110,6 +110,17 @@ def pie_chart_purpose(plot_title,labels,values,colors_map,file_name):
 
     m_labels, m_values = merge_small_entries(labels, values)
     
+    for key in labels:
+        if key not in colors_map.keys():
+            #likely a "selected multiple" case
+            i = 0
+            avg_color = (0, 0, 0)
+            for selection in key.split("\n"):
+                avg_color = tuple(map(lambda i, j: i + j, avg_color, colors_map[selection]))
+                i+=1
+
+            colors_map[key] = tuple(map(lambda i, j: i / j, avg_color, (i, i, i)))
+    
     def func(pct, values):
         total = sum(values)
         absolute = int(round(pct*total/100.0))
