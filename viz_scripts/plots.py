@@ -5,7 +5,6 @@ import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
-from itertools import product
 
 sns.set_style("whitegrid")
 sns.set()
@@ -93,7 +92,6 @@ def process_data_for_cutoff(df, df_col, distance_col, trip_type):
     processed_data_expanded, processed_data = process_trip_data(labels, values, trip_type)
 
     return processed_data_expanded, processed_data, cutoff, dist_threshold
-
 
 # Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
@@ -425,7 +423,6 @@ def access_alt_html(alt_html, chart_name, var_name):
     """
     with open(SAVE_DIR + chart_name + ".html", 'w') as f:
         f.write(html_content)
-
     return alt_html
 
 def generate_missing_plot(plot_title,debug_df,file_name):
