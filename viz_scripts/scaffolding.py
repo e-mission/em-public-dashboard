@@ -238,7 +238,7 @@ def mapping_color_surveys(dic_options):
     
     colors = {}
     for i in range(len(dictionary_values)):
-        colors[dictionary_values[i]] = plt.cm.tab20.colors[i%20]
+        colors[dictionary_values[i]] = plt.cm.tab10.colors[i%10]
 
     return colors
 
