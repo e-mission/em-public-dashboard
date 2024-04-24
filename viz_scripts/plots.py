@@ -111,17 +111,15 @@ def process_trip_data(labels, values, trip_type):
     df_total_trip['Trip Type'] = trip_type
     return df_total_trip_expanded, df_total_trip
 
-def plot_stacked_bar_chart(dataframes, colors_combined,bar_count, plot_title, file_name):
-    fig, ax_list = plt.subplots(bar_count, 1, figsize=(15, 2 * bar_count), sharex=True)
-    # Whenever we have a single bar,ax_list will only be an object and not an array.
-    if bar_count == 1:
-        ax_list = [ax_list]
+def plot_stacked_bar_chart(df, bar_name, ax,colors_combined):
     sns.set(font_scale=1.5)
     width = 0.2
-    for df_idx, df in enumerate(dataframes):
-        running_total_long = [0]
-        ax = ax_list[df_idx]
-        for idx, mode in enumerate(pd.unique(df['Mode'])):
+    running_total_long = [0]
+    if df.empty:
+        ax.text(0.5, 0.5, f"No data available for {bar_name}", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
+        ax.yaxis.set_visible(False)
+    else:
+        for mode in pd.unique(df['Mode']):
             long = df[df['Mode'] == mode]
             if not long.empty:
                 labels = long['Trip Type']
@@ -132,18 +130,19 @@ def plot_stacked_bar_chart(dataframes, colors_combined,bar_count, plot_title, fi
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 running_total_long = [total + val for total, val in zip(running_total_long, vals)]
             else:
-                print(f"{mode} is unavailable in dataframe {df_idx + 1}.")
+                print(f"{long} is empty")
         ax.tick_params(axis='y', labelsize=18)
         ax.tick_params(axis='x', labelsize=18, rotation=90)
         ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15)
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
 
-    # Setting label and title for the figure since these would be common for all sub-plots
-    fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y=ax_list[0].xaxis.get_label().get_position()[0] - 0.62, va='top')
+def add_stacked_bar_chart_title(fig, ax, plot_title, file_name):
+    # Setup label and title for the figure since these would be common for all sub-plots
+    fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
     fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
-    plt.text(0, ax_list[bar_count-1].xaxis.get_label().get_position()[0] - 0.62, f"Last updated {arrow.get()}", fontsize=12)
+    plt.text(0,ax.xaxis.get_label().get_position()[0] - 0.62, f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
