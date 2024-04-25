@@ -59,11 +59,24 @@ def merge_small_entries(labels, values):
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
 def process_data_frame(df, df_col, trip_type):
+    """ Inputs:
+    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
+    df_col = Column from the above df, likely Mode_confirm, primary_mode
+    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
+    """
     labels = df[df_col].value_counts(dropna=True).keys().tolist()
     values = df[df_col].value_counts(dropna=True).tolist()
+
     return process_trip_data(labels, values, trip_type)
 
 def process_distance_data(df, df_col, distance_col, label_units_lower, trip_type):
+    """ Inputs:
+    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
+    df_col = Column from the above df, likely Mode_confirm, primary_mode
+    distance_col = Column associated with distance from above data frame
+    label_units_lower = lbs/kg
+    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
+    """
     dist = df.groupby(df_col).agg({distance_col: ['sum', 'count', 'mean']})
     dist.columns = ['Total (' + label_units_lower + ')', 'Count', 'Average (' + label_units_lower + ')']
     dist = dist.reset_index()
@@ -80,6 +93,12 @@ def process_distance_data(df, df_col, distance_col, label_units_lower, trip_type
     return process_trip_data(labels_dist, values_dist, trip_type)
 
 def process_data_for_cutoff(df, df_col, distance_col, trip_type):
+    """ Inputs:
+    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
+    df_col = E.g. Column from the above df, likely Mode_confirm, primary_mode
+    distance_col = Column associated with distance from above data frame
+    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
+    """
     cutoff = df.distance.quantile(0.8)
     if pd.isna(cutoff):
         cutoff = 0
@@ -93,12 +112,15 @@ def process_data_for_cutoff(df, df_col, distance_col, trip_type):
 
     return processed_data_expanded, processed_data, cutoff, dist_threshold
 
-# Create dataframe with cols: 'Mode' 'Count' and 'Proportion'
+# Create dataframes with cols: 'Mode' 'Count' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
     """ Inputs:
     labels = Displayed labels (e.g. "Gas car, drove alone")
     values = Corresponding vlaues of these labels
     trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
+    Returns:
+    df_total_trip_expanded = Data frame without consolidation of Others, used to create the alt_html table
+    df_total_trip = Data frame with consolidation of Others, used to represent the Bar Charts.
     """
     m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
     data_trip_expanded = {'Mode': m_labels_expanded, 'Count': m_values_expanded, 'Proportion': m_pct_expanded}
@@ -111,24 +133,31 @@ def process_trip_data(labels, values, trip_type):
     df_total_trip['Trip Type'] = trip_type
     return df_total_trip_expanded, df_total_trip
 
-def plot_stacked_bar_chart(df, bar_name, ax,colors_combined):
+# Creates/ Appends single bar to the 100% Stacked Bar Chart
+def plot_stacked_bar_chart(df, bar_name, ax, colors_combined):
+    """ Inputs:
+    df = Data frame corresponding to the bar in a stacked bar chart
+    bar_name = Text to represent in case data frame is empty (e.g. "Sensed Trip")
+    ax = axis information
+    colors_combined = color mapping dictionary
+    """
     sns.set(font_scale=1.5)
-    width = 0.2
-    running_total_long = [0]
+    bar_height = 0.2
+    bar_width = [0]
     if df.empty:
-        ax.text(0.5, 0.5, f"No data available for {bar_name}", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
+        ax.text(x = 0.5, y = 0.5, s = f"No data available for {bar_name}", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
         ax.yaxis.set_visible(False)
     else:
         for mode in pd.unique(df['Mode']):
             long = df[df['Mode'] == mode]
             if not long.empty:
-                labels = long['Trip Type']
-                vals = long['Proportion']
-                bar_labels = long['Count']
-                vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(bar_labels, vals)]
-                bar = ax.barh(labels, vals, width, left=running_total_long, label=mode, color=colors_combined[mode])
+                mode_label = long['Trip Type']
+                mode_prop = long['Proportion']
+                mode_count = long['Count']
+                vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
+                bar = ax.barh(y=mode_label, width=mode_prop, height=bar_height, left=bar_width, label=mode, color=colors_combined[mode])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
-                running_total_long = [total + val for total, val in zip(running_total_long, vals)]
+                bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
                 print(f"{long} is empty")
         ax.tick_params(axis='y', labelsize=18)
@@ -137,12 +166,13 @@ def plot_stacked_bar_chart(df, bar_name, ax,colors_combined):
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
 
+# Adds chart title, x and y axis label to the 100% Stacked Bar Chart
 def add_stacked_bar_chart_title(fig, ax, plot_title, file_name):
     # Setup label and title for the figure since these would be common for all sub-plots
     fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
     fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
-    plt.text(0,ax.xaxis.get_label().get_position()[0] - 0.62, f"Last updated {arrow.get()}", fontsize=12)
+    plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
