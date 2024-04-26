@@ -355,12 +355,12 @@ def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
     plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
     ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def access_alt_text(alt_text, chart_name):
+def access_alt_text(alt_text, chart_name, write_permission='w'):
     """ Inputs:
     alt_text = the text describing the chart
     chart_name = the alt text file to save or update
     """
-    f = open(SAVE_DIR+chart_name+".txt",'w')
+    f = open(SAVE_DIR+chart_name+".txt", write_permission)
     f.write(alt_text)
     f.close()
     return alt_text
@@ -389,25 +389,19 @@ def store_alt_text_bar(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
+def store_alt_text_stacked_bar_chart(df, chart_name, write_permission='w'):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Mode, Count, Proportion
     chart_name = name of the chart
     var_name = the variable being analyzed across bars
     """
     # Generate alt text file
-    alt_text = f"Stacked Bar chart of {var_name}."
+    alt_text = f"\n\n Trip Type: {df['Trip Type'][0]}"
     for i in range(len(df)):
-        alt_text += f"Trip Type: {df['Trip Type'].iloc[i]} - Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
-    alt_text = access_alt_text(alt_text, chart_name)
+        alt_text += f"Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
+    alt_text = access_alt_text(alt_text, chart_name, write_permission)
 
-    # Generate html table
-    alt_html = ""
-    for i in range(len(df)):
-        alt_html += f"<tr><td>{df['Trip Type'].iloc[i]}</td><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
-    alt_html = access_alt_html(alt_html, chart_name, var_name)
-
-    return alt_html
+    return alt_text
 
 def store_alt_text_timeseries(df, chart_name, var_name):
     """ Inputs:
@@ -424,23 +418,34 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     return alt_text
 
 # Creating html table with col as Trip Type, Mode, Count, and Proportion
-def access_alt_html(alt_html, chart_name, var_name):
+def access_alt_html(html_content, chart_name, write_permission):
     """ Inputs:
     html_body = the text describing the chart
     chart_name = the alt text file to save or update
     var_name = the variable being analyzed across bars
     """
+    with open(SAVE_DIR + chart_name + ".html", f'{write_permission}') as f:
+        f.write(html_content)
+
+    return html_content
+
+def store_alt_html_stacked_bar_chart(df, chart_name, write_permission='w'):
+    """ Inputs:
+    df = dataframe combining columns as Trip Type, Mode, Count, Proportion
+    chart_name = name of the chart
+    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
+    """
+    # Generate html table
+    alt_html = "\n"
+    for i in range(len(df)):
+        alt_html += f"<tr><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     html_content = f"""
     <!DOCTYPE html>
     <html>
-    <head>
-        <title>{var_name}</title>
-    </head>
     <body>
-        <p>{var_name}</p>
+        <p>Trip Type: {df['Trip Type'][0]}</p>
         <table border="1" style="background-color: white;">
             <tr>
-                <th>Trip Type</th>
                 <th>Mode</th>
                 <th>Count</th>
                 <th>Proportion</th>
@@ -450,8 +455,8 @@ def access_alt_html(alt_html, chart_name, var_name):
     </body>
     </html>
     """
-    with open(SAVE_DIR + chart_name + ".html", 'w') as f:
-        f.write(html_content)
+    alt_html = access_alt_html(html_content, chart_name, write_permission)
+
     return alt_html
 
 def generate_missing_plot(plot_title,debug_df,file_name):
