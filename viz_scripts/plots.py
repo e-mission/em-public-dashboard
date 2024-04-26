@@ -459,6 +459,38 @@ def store_alt_html_stacked_bar_chart(df, chart_name, write_permission='w'):
 
     return alt_html
 
+def create_alt_html_title(plot_title, chart_name, write_permission, missing_text):
+    """ Inputs:
+    plot_title = Overall plot title
+    chart_name = name of the chart
+    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
+    """
+    plot_title += f"\n {missing_text}"
+    alt_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <body>
+        <p>{plot_title}</p>
+    </body>
+    </html>
+    """
+    alt_html = access_alt_html(alt_html, chart_name, write_permission)
+
+    return alt_html
+
+def create_alt_text_title(plot_title, chart_name, write_permission, missing_text):
+    """ Inputs:
+    plot_title = Overall plot title
+    chart_name = name of the chart
+    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
+    missing_text = Text to indicate missing data
+    """
+    # if not missing_text:
+    plot_title += f"\n {missing_text}"
+    alt_text = access_alt_text(plot_title, chart_name, write_permission)
+
+    return alt_text
+
 def generate_missing_plot(plot_title,debug_df,file_name):
     f, ax = plt.subplots(figsize=(10,10))
 
