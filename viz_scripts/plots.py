@@ -389,17 +389,17 @@ def store_alt_text_bar(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-def store_alt_text_stacked_bar_chart(df, chart_name, write_permission='w'):
+# Appends bar information into the alt_text file
+def store_alt_text_stacked_bar_chart(df, chart_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Mode, Count, Proportion
     chart_name = name of the chart
-    var_name = the variable being analyzed across bars
     """
     # Generate alt text file
     alt_text = f"\n\n Trip Type: {df['Trip Type'][0]}"
     for i in range(len(df)):
         alt_text += f"Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
-    alt_text = access_alt_text(alt_text, chart_name, write_permission)
+    alt_text = access_alt_text(alt_text, chart_name, 'a')
 
     return alt_text
 
@@ -429,7 +429,8 @@ def access_alt_html(html_content, chart_name, write_permission):
 
     return html_content
 
-def store_alt_html_stacked_bar_chart(df, chart_name, write_permission='w'):
+# Appends bar information into into the alt_html
+def store_alt_html_stacked_bar_chart(df, chart_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Mode, Count, Proportion
     chart_name = name of the chart
@@ -455,11 +456,11 @@ def store_alt_html_stacked_bar_chart(df, chart_name, write_permission='w'):
     </body>
     </html>
     """
-    alt_html = access_alt_html(html_content, chart_name, write_permission)
+    alt_html = access_alt_html(html_content, chart_name, 'a')
 
     return alt_html
 
-def create_alt_html_title(plot_title, chart_name, write_permission, missing_text):
+def create_alt_html_title(plot_title, chart_name, missing_text=""):
     """ Inputs:
     plot_title = Overall plot title
     chart_name = name of the chart
@@ -474,11 +475,11 @@ def create_alt_html_title(plot_title, chart_name, write_permission, missing_text
     </body>
     </html>
     """
-    alt_html = access_alt_html(alt_html, chart_name, write_permission)
+    alt_html = access_alt_html(alt_html, chart_name, 'w')
 
     return alt_html
 
-def create_alt_text_title(plot_title, chart_name, write_permission, missing_text):
+def create_alt_text_title(plot_title, chart_name, missing_text=""):
     """ Inputs:
     plot_title = Overall plot title
     chart_name = name of the chart
@@ -487,7 +488,7 @@ def create_alt_text_title(plot_title, chart_name, write_permission, missing_text
     """
     # if not missing_text:
     plot_title += f"\n {missing_text}"
-    alt_text = access_alt_text(plot_title, chart_name, write_permission)
+    alt_text = access_alt_text(plot_title, chart_name, 'w')
 
     return alt_text
 
