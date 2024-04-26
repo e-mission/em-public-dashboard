@@ -434,7 +434,6 @@ def store_alt_html_stacked_bar_chart(df, chart_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Mode, Count, Proportion
     chart_name = name of the chart
-    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
     """
     # Generate html table
     alt_html = "\n"
@@ -460,11 +459,12 @@ def store_alt_html_stacked_bar_chart(df, chart_name):
 
     return alt_html
 
+# Creates the html file, and appends plot_title
 def create_alt_html_title(plot_title, chart_name, missing_text=""):
     """ Inputs:
     plot_title = Overall plot title
     chart_name = name of the chart
-    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
+    missing_text = Text to indicate missing data
     """
     plot_title += f"\n {missing_text}"
     alt_html = f"""
@@ -479,11 +479,11 @@ def create_alt_html_title(plot_title, chart_name, missing_text=""):
 
     return alt_html
 
+# Creates the alt text file, and appends the plot_title
 def create_alt_text_title(plot_title, chart_name, missing_text=""):
     """ Inputs:
     plot_title = Overall plot title
     chart_name = name of the chart
-    write_permission = file write permission type i.e. 'w' for override the file, 'a' for append to the file
     missing_text = Text to indicate missing data
     """
     # if not missing_text:
