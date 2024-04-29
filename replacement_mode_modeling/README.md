@@ -1,8 +1,16 @@
+
 # Efforts towards predicting the replaced mode without user labels
 
 ## Prerequisites:
 - These experiments were conducted on top of the `emission` anaconda environment. Please ensure that this environment is available to you before re-running the code.
-- In addition, the script uses `seaborn` for plotting and `pandarallel` for parallel pandas processing.
+- In addition, some notebooks use `seaborn` for plotting and `pandarallel` for parallel pandas processing. The packages can be installed in the following manner:
+
+```
+(After activating emission conda env)
+pip3 install pandarallel==1.6.5
+pip3 install seaborn==0.12.2
+```
+
 - Ensure you have the following data sources loaded in your MongoDB Docker container:
 	- Stage_database (All CEO)
 	- Durham
