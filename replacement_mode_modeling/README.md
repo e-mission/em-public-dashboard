@@ -17,6 +17,9 @@ pip3 install seaborn==0.12.2
 	- Masscec
 	- Ride2own
 	- UPRM NICR
+
+- Additionally, please also procure the CanBikeCO survey CSV file and place it in the `viz_scripts/` directory.
+
 - Once these data sources are procured and loaded in your Mongo container, you will need to add the inferred sections to the data. To do this, please run the [add_sections_and_summaries_to_trips.py](https://github.com/e-mission/e-mission-server/blob/master/bin/historical/migrations/add_sections_and_summaries_to_trips.py) script. **NOTE**: If you see a lot of errors in the log, try to re-run the script by modifying the following line from:
 
 ```language=python
@@ -29,7 +32,7 @@ eps.dispatch(split_lists, skip_if_no_new_data=False, target_fn=None)
 
 This will trigger the intake pipeline for the current db and add the inferred section.
 
-- Note 2: The script above did not work for the All CEO data for me. Therefore, I obtained the section durations using the `get_section_durations` method I've written in `scaffolding.py` (you do not have to call this method, it is already handled in the notebooks). Please note that running this script takes a long time and it is advised to cache the generated output.
+- Note 2: The script above did not work for the All CEO data for me. Therefore, I obtained the section durations using the `get_section_durations` method I've written in the first notebook. Please note that running this script takes a long time and it is advised to cache the generated output.
 
 ## Running the experiments
 The order in which the experiments are to be run are denoted by the preceding number. The following is a brief summary about each notebook:
