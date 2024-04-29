@@ -10,6 +10,7 @@ import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
 import emission.storage.decorations.trip_queries as esdt
 from pandarallel import pandarallel
+from multiprocessing import cpu_count
 
 
 # Module for pretty-printing outputs (e.g. head) to help users
@@ -145,34 +146,11 @@ def get_section_durations(confirmed_trips: pd.DataFrame):
         return []
 
     confirmed_trips['section_durations'] = confirmed_trips.parallel_apply(
-        lambda x: get_durations(x.original_user_id, x.cleaned_trip), axis=1
+        lambda x: get_durations(x.user_id, x.cleaned_trip), axis=1
     )
 
     return confirmed_trips
 
-
-def get_section_coordinates(confirmed_trips: pd.DataFrame):
-    # Initialize pandarallel
-    pandarallel.initialize(progress_bar=False)
-
-    key = 'analysis/inferred_section'
-
-    def get_coordinates(user_id, trip_id, distances):
-        sections = esdt.get_sections_for_trip(key = key,
-            user_id = user_id, trip_id = trip_id)
-
-        if sections and len(sections) > 0 and len(distances) == len(sections):
-            argmax = np.argmax(distances)
-            section = sections[argmax]
-            return section.data.start_loc['coordinates'], section.data.end_loc['coordinates']
-
-        return []
-
-    confirmed_trips['section_locations_argmax'] = confirmed_trips.parallel_apply(
-        lambda x: get_coordinates(x.original_user_id, x.cleaned_trip, x.section_distances), axis=1
-    )
-
-    return confirmed_trips
 
 
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
@@ -185,6 +163,9 @@ def load_viz_notebook_data(year, month, program, study_type, dic_re, dic_pur=Non
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
     
     Pipeline to load and process the data before use in visualization notebooks.
+    
+    year = None, month = None, program='prepilot', study_type='program', dict(), dict()
+    
     """
     # Access database
     tq = get_time_query(year, month)

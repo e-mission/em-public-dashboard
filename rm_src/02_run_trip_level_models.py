@@ -464,7 +464,7 @@ if __name__ == "__main__":
         # args = parse_args()
         sweep_number = 1
 
-        root = Path('../benchmark_results')
+        root = Path('../outputs/benchmark_results')
         if not root.exists():
             root.mkdir()
 
