@@ -409,20 +409,6 @@ def store_alt_text_bar(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-# Appends bar information into the alt_text file
-def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
-    """ Inputs:
-    df = dataframe combining columns as Trip Type, Label, Value, Proportion
-    chart_name = name of the chart
-    """
-    # Generate alt text file
-    alt_text = f"\nStacked Bar of: {var_name}\n"
-    for i in range(len(df)):
-        alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
-    alt_text = access_alt_text(alt_text, chart_name, 'a')
-
-    return alt_text
-
 def store_alt_text_timeseries(df, chart_name, var_name):
     """ Inputs:
     df = dataframe with first col of dates, second column is values
@@ -450,11 +436,17 @@ def access_alt_html(html_content, chart_name, write_permission):
     return html_content
 
 # Appends bar information into into the alt_html
-def store_alt_html_stacked_bar_chart(df, chart_name,var_name):
+def store_alt_text_and_html_stacked_bar_chart(df, chart_name, var_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
     """
+    # Generate alt text file
+    alt_text = f"\nStacked Bar of: {var_name}\n"
+    for i in range(len(df)):
+        alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
+    alt_text = access_alt_text(alt_text, chart_name, 'a')
+
     # Generate html table
     alt_html = "\n"
     for i in range(len(df)):
@@ -477,16 +469,16 @@ def store_alt_html_stacked_bar_chart(df, chart_name,var_name):
     """
     alt_html = access_alt_html(html_content, chart_name, 'a')
 
-    return alt_html
+    return alt_text, alt_html
 
 # Creates the html file, and appends plot_title
-def create_alt_html_title(plot_title, chart_name, missing_text=""):
+def create_alt_text_and_html_title(plot_title, chart_name):
     """ Inputs:
     plot_title = Overall plot title
     chart_name = name of the chart
-    missing_text = Text to indicate missing data
     """
-    plot_title += f"\n {missing_text}"
+    alt_text = access_alt_text(plot_title, chart_name, 'w')
+
     alt_html = f"""
     <!DOCTYPE html>
     <html>
@@ -497,20 +489,7 @@ def create_alt_html_title(plot_title, chart_name, missing_text=""):
     """
     alt_html = access_alt_html(alt_html, chart_name, 'w')
 
-    return alt_html
-
-# Creates the alt text file, and appends the plot_title
-def create_alt_text_title(plot_title, chart_name, missing_text=""):
-    """ Inputs:
-    plot_title = Overall plot title
-    chart_name = name of the chart
-    missing_text = Text to indicate missing data
-    """
-    # if not missing_text:
-    plot_title += f"\n {missing_text}"
-    alt_text = access_alt_text(plot_title, chart_name, 'w')
-
-    return alt_text
+    return alt_text, alt_html
 
 def generate_missing_plot(plot_title,debug_df,file_name):
     f, ax = plt.subplots(figsize=(10,10))
