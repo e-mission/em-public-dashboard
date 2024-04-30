@@ -112,7 +112,7 @@ def process_data_for_cutoff(df, df_col, distance_col, trip_type):
 
     return processed_data_expanded, processed_data, cutoff, dist_threshold
 
-# Create dataframes with cols: 'Mode' 'Count' and 'Proportion'
+# Create dataframes with cols: 'Label' 'Value' and 'Proportion'
 def process_trip_data(labels, values, trip_type):
     """ Inputs:
     labels = Displayed labels (e.g. "Gas car, drove alone")
@@ -123,12 +123,12 @@ def process_trip_data(labels, values, trip_type):
     df_total_trip = Data frame with consolidation of Others, used to represent the Bar Charts.
     """
     m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
-    data_trip_expanded = {'Mode': m_labels_expanded, 'Count': m_values_expanded, 'Proportion': m_pct_expanded}
+    data_trip_expanded = {'Label': m_labels_expanded, 'Value': m_values_expanded, 'Proportion': m_pct_expanded}
     df_total_trip_expanded = pd.DataFrame(data_trip_expanded)
     df_total_trip_expanded['Trip Type'] = trip_type
 
     m_labels, m_values, m_pct = merge_small_entries(labels, values)
-    data_trip = {'Mode': m_labels, 'Count': m_values, 'Proportion': m_pct}
+    data_trip = {'Label': m_labels, 'Value': m_values, 'Proportion': m_pct}
     df_total_trip = pd.DataFrame(data_trip)
     df_total_trip['Trip Type'] = trip_type
     return df_total_trip_expanded, df_total_trip
@@ -148,14 +148,14 @@ def plot_stacked_bar_chart(df, bar_name, ax, colors_combined):
         ax.text(x = 0.5, y = 0.5, s = f"No data available for {bar_name}", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
         ax.yaxis.set_visible(False)
     else:
-        for mode in pd.unique(df['Mode']):
-            long = df[df['Mode'] == mode]
+        for label in pd.unique(df['Label']):
+            long = df[df['Label'] == label]
             if not long.empty:
                 mode_label = long['Trip Type']
                 mode_prop = long['Proportion']
-                mode_count = long['Count']
+                mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=mode_label, width=mode_prop, height=bar_height, left=bar_width, label=mode, color=colors_combined[mode])
+                bar = ax.barh(y=mode_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -392,13 +392,13 @@ def store_alt_text_bar(df, chart_name, var_name):
 # Appends bar information into the alt_text file
 def store_alt_text_stacked_bar_chart(df, chart_name):
     """ Inputs:
-    df = dataframe combining columns as Trip Type, Mode, Count, Proportion
+    df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
     """
     # Generate alt text file
     alt_text = f"\n Trip Type: {df['Trip Type'][0]}"
     for i in range(len(df)):
-        alt_text += f"Mode: {df['Mode'].iloc[i]} - Count: {df['Count'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
+        alt_text += f"{df['Label'].iloc[i]} - Value: {df['Value'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
     alt_text = access_alt_text(alt_text, chart_name, 'a')
 
     return alt_text
@@ -417,7 +417,7 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-# Creating html table with col as Trip Type, Mode, Count, and Proportion
+# Creating html table with col as Trip Type, Label, Value, and Proportion
 def access_alt_html(html_content, chart_name, write_permission):
     """ Inputs:
     html_body = the text describing the chart
@@ -432,13 +432,13 @@ def access_alt_html(html_content, chart_name, write_permission):
 # Appends bar information into into the alt_html
 def store_alt_html_stacked_bar_chart(df, chart_name):
     """ Inputs:
-    df = dataframe combining columns as Trip Type, Mode, Count, Proportion
+    df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
     """
     # Generate html table
     alt_html = "\n"
     for i in range(len(df)):
-        alt_html += f"<tr><td>{df['Mode'].iloc[i]}</td><td>{df['Count'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
+        alt_html += f"<tr><td>{df['Label'].iloc[i]}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -446,8 +446,8 @@ def store_alt_html_stacked_bar_chart(df, chart_name):
         <p>Trip Type: {df['Trip Type'][0]}</p>
         <table border="1" style="background-color: white;">
             <tr>
-                <th>Mode</th>
-                <th>Count</th>
+                <th>Label</th>
+                <th>Value</th>
                 <th>Proportion</th>
             </tr>
             {alt_html}
