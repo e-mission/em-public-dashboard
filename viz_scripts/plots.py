@@ -396,9 +396,9 @@ def store_alt_text_stacked_bar_chart(df, chart_name):
     chart_name = name of the chart
     """
     # Generate alt text file
-    alt_text = f"\n Trip Type: {df['Trip Type'][0]}"
+    alt_text = f"\nStacked Bar of: {df['Trip Type'][0]}\n"
     for i in range(len(df)):
-        alt_text += f"{df['Label'].iloc[i]} - Value: {df['Value'].iloc[i]} - Proportion: {df['Proportion'].iloc[i]}%\n"
+        alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
     alt_text = access_alt_text(alt_text, chart_name, 'a')
 
     return alt_text
