@@ -64,10 +64,16 @@ def process_data_frame(df, df_col):
     df_col = Column from the above df, likely Mode_confirm, primary_mode
     trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
     """
-    labels = df[df_col].value_counts(dropna=True).keys().tolist()
-    values = df[df_col].value_counts(dropna=True).tolist()
-
-    return process_trip_data(labels, values)
+    try:
+        labels = df[df_col].value_counts(dropna=True).keys().tolist()
+        values = df[df_col].value_counts(dropna=True).tolist()
+        return process_trip_data(labels, values)
+    except KeyError:
+        print(f"Column '{df_col}' not found in the data frame.")
+        return pd.DataFrame(), pd.DataFrame()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return pd.DataFrame(), pd.DataFrame()
 
 def process_distance_data(df, df_col, distance_col, label_units_lower):
     """ Inputs:
@@ -77,20 +83,27 @@ def process_distance_data(df, df_col, distance_col, label_units_lower):
     label_units_lower = lbs/kg
     trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
     """
-    dist = df.groupby(df_col).agg({distance_col: ['sum', 'count', 'mean']})
-    dist.columns = ['Total (' + label_units_lower + ')', 'Count', 'Average (' + label_units_lower + ')']
-    dist = dist.reset_index()
-    dist = dist.sort_values(by=['Total (' + label_units_lower + ')'], ascending=False)
+    try:
+        dist = df.groupby(df_col).agg({distance_col: ['sum', 'count', 'mean']})
+        dist.columns = ['Total (' + label_units_lower + ')', 'Count', 'Average (' + label_units_lower + ')']
+        dist = dist.reset_index()
+        dist = dist.sort_values(by=['Total (' + label_units_lower + ')'], ascending=False)
 
-    dist_dict = dict(zip(dist[df_col], dist['Total (' + label_units_lower + ')']))
-    labels_dist = []
-    values_dist = []
+        dist_dict = dict(zip(dist[df_col], dist['Total (' + label_units_lower + ')']))
+        labels_dist = []
+        values_dist = []
 
-    for x, y in dist_dict.items():
-        labels_dist.append(x)
-        values_dist.append(y)
+        for x, y in dist_dict.items():
+            labels_dist.append(x)
+            values_dist.append(y)
 
-    return process_trip_data(labels_dist, values_dist)
+        return process_trip_data(labels_dist, values_dist)
+    except KeyError:
+        print(f"Column '{df_col}' not found in the data frame.")
+        return pd.DataFrame(), pd.DataFrame()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return pd.DataFrame(), pd.DataFrame()
 
 def process_data_for_cutoff(df, df_col, distance_col):
     """ Inputs:
@@ -99,18 +112,25 @@ def process_data_for_cutoff(df, df_col, distance_col):
     distance_col = Column associated with distance from above data frame
     trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
     """
-    cutoff = df.distance.quantile(0.8)
-    if pd.isna(cutoff):
-        cutoff = 0
+    try:
+        cutoff = df.distance.quantile(0.8)
+        if pd.isna(cutoff):
+            cutoff = 0
 
-    dist_threshold = df[distance_col].quantile(0.8).round(1)
-    dist_threshold = str(dist_threshold)
+        dist_threshold = df[distance_col].quantile(0.8).round(1)
+        dist_threshold = str(dist_threshold)
 
-    labels = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).keys().tolist()
-    values = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).tolist()
-    processed_data_expanded, processed_data = process_trip_data(labels, values)
+        labels = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).keys().tolist()
+        values = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).tolist()
+        processed_data_expanded, processed_data = process_trip_data(labels, values)
 
-    return processed_data_expanded, processed_data, cutoff, dist_threshold
+        return processed_data_expanded, processed_data, cutoff, dist_threshold
+    except KeyError:
+        print(f"Column '{df_col}' not found in the data frame.")
+        return pd.DataFrame(), pd.DataFrame()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return pd.DataFrame(), pd.DataFrame(), None, None
 
 # Create dataframes with cols: 'Label' 'Value' and 'Proportion'
 def process_trip_data(labels, values):
@@ -122,6 +142,8 @@ def process_trip_data(labels, values):
     df_total_trip_expanded = Data frame without consolidation of Others, used to create the alt_html table
     df_total_trip = Data frame with consolidation of Others, used to represent the Bar Charts.
     """
+    if len(labels) == 0 and len(values) == 0:
+        return pd.DataFrame(), pd.DataFrame()
     m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
     data_trip_expanded = {'Label': m_labels_expanded, 'Value': m_values_expanded, 'Proportion': m_pct_expanded}
     df_total_trip_expanded = pd.DataFrame(data_trip_expanded)
