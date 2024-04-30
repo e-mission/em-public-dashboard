@@ -58,7 +58,7 @@ def merge_small_entries(labels, values):
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
-def process_data_frame(df, df_col, trip_type):
+def process_data_frame(df, df_col):
     """ Inputs:
     df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
     df_col = Column from the above df, likely Mode_confirm, primary_mode
@@ -67,9 +67,9 @@ def process_data_frame(df, df_col, trip_type):
     labels = df[df_col].value_counts(dropna=True).keys().tolist()
     values = df[df_col].value_counts(dropna=True).tolist()
 
-    return process_trip_data(labels, values, trip_type)
+    return process_trip_data(labels, values)
 
-def process_distance_data(df, df_col, distance_col, label_units_lower, trip_type):
+def process_distance_data(df, df_col, distance_col, label_units_lower):
     """ Inputs:
     df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
     df_col = Column from the above df, likely Mode_confirm, primary_mode
@@ -90,9 +90,9 @@ def process_distance_data(df, df_col, distance_col, label_units_lower, trip_type
         labels_dist.append(x)
         values_dist.append(y)
 
-    return process_trip_data(labels_dist, values_dist, trip_type)
+    return process_trip_data(labels_dist, values_dist)
 
-def process_data_for_cutoff(df, df_col, distance_col, trip_type):
+def process_data_for_cutoff(df, df_col, distance_col):
     """ Inputs:
     df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
     df_col = E.g. Column from the above df, likely Mode_confirm, primary_mode
@@ -108,12 +108,12 @@ def process_data_for_cutoff(df, df_col, distance_col, trip_type):
 
     labels = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).keys().tolist()
     values = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).tolist()
-    processed_data_expanded, processed_data = process_trip_data(labels, values, trip_type)
+    processed_data_expanded, processed_data = process_trip_data(labels, values)
 
     return processed_data_expanded, processed_data, cutoff, dist_threshold
 
 # Create dataframes with cols: 'Label' 'Value' and 'Proportion'
-def process_trip_data(labels, values, trip_type):
+def process_trip_data(labels, values):
     """ Inputs:
     labels = Displayed labels (e.g. "Gas car, drove alone")
     values = Corresponding vlaues of these labels
@@ -125,19 +125,18 @@ def process_trip_data(labels, values, trip_type):
     m_labels_expanded, m_values_expanded, m_pct_expanded = calculate_pct(labels, values)
     data_trip_expanded = {'Label': m_labels_expanded, 'Value': m_values_expanded, 'Proportion': m_pct_expanded}
     df_total_trip_expanded = pd.DataFrame(data_trip_expanded)
-    df_total_trip_expanded['Trip Type'] = trip_type
 
     m_labels, m_values, m_pct = merge_small_entries(labels, values)
     data_trip = {'Label': m_labels, 'Value': m_values, 'Proportion': m_pct}
     df_total_trip = pd.DataFrame(data_trip)
-    df_total_trip['Trip Type'] = trip_type
     return df_total_trip_expanded, df_total_trip
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_stacked_bar_chart(df, bar_name, ax, colors_combined):
+def plot_stacked_bar_chart(df, bar_name, bar_lab, ax, colors_combined):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart
     bar_name = Text to represent in case data frame is empty (e.g. "Sensed Trip")
+    bar_lab = Text to represent the Bar (e.g. Labeled by user\n (Confirmed trips))
     ax = axis information
     colors_combined = color mapping dictionary
     """
@@ -151,11 +150,10 @@ def plot_stacked_bar_chart(df, bar_name, ax, colors_combined):
         for label in pd.unique(df['Label']):
             long = df[df['Label'] == label]
             if not long.empty:
-                mode_label = long['Trip Type']
                 mode_prop = long['Proportion']
                 mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=mode_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
+                bar = ax.barh(y=bar_lab, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -390,13 +388,13 @@ def store_alt_text_bar(df, chart_name, var_name):
     return alt_text
 
 # Appends bar information into the alt_text file
-def store_alt_text_stacked_bar_chart(df, chart_name):
+def store_alt_text_stacked_bar_chart(df, chart_name, var_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
     """
     # Generate alt text file
-    alt_text = f"\nStacked Bar of: {df['Trip Type'][0]}\n"
+    alt_text = f"\nStacked Bar of: {var_name}\n"
     for i in range(len(df)):
         alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
     alt_text = access_alt_text(alt_text, chart_name, 'a')
@@ -430,7 +428,7 @@ def access_alt_html(html_content, chart_name, write_permission):
     return html_content
 
 # Appends bar information into into the alt_html
-def store_alt_html_stacked_bar_chart(df, chart_name):
+def store_alt_html_stacked_bar_chart(df, chart_name,var_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
@@ -443,7 +441,7 @@ def store_alt_html_stacked_bar_chart(df, chart_name):
     <!DOCTYPE html>
     <html>
     <body>
-        <p>Trip Type: {df['Trip Type'][0]}</p>
+        <p>Trip Type: {var_name}</p>
         <table border="1" style="background-color: white;">
             <tr>
                 <th>Label</th>
