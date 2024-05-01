@@ -89,33 +89,6 @@ def process_distance_data(df, df_col, distance_col, label_units_lower):
         print(f"An error occurred: {e}")
         return pd.DataFrame(), pd.DataFrame()
 
-def process_data_for_cutoff(df, df_col, distance_col):
-    """ Inputs:
-    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
-    df_col = E.g. Column from the above df, likely Mode_confirm, primary_mode
-    distance_col = Column associated with distance from above data frame
-    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
-    """
-    try:
-        cutoff = df.distance.quantile(0.8)
-        if pd.isna(cutoff):
-            cutoff = 0
-
-        dist_threshold = df[distance_col].quantile(0.8).round(1)
-        dist_threshold = str(dist_threshold)
-
-        labels = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).keys().tolist()
-        values = df.loc[(df['distance'] <= cutoff)][df_col].value_counts(dropna=True).tolist()
-        processed_data_expanded, processed_data = process_trip_data(labels, values)
-
-        return processed_data_expanded, processed_data, cutoff, dist_threshold
-    except KeyError:
-        print(f"Column '{df_col}' not found in the data frame.")
-        return pd.DataFrame(), pd.DataFrame()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return pd.DataFrame(), pd.DataFrame(), None, None
-
 # Create dataframes with cols: 'Label' 'Value' and 'Proportion'
 def process_trip_data(labels, values):
     """ Inputs:
