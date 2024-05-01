@@ -116,22 +116,6 @@ def process_data_for_cutoff(df, df_col, distance_col):
         print(f"An error occurred: {e}")
         return pd.DataFrame(), pd.DataFrame(), None, None
 
-def process_commute_data_frame(df, df_col):
-    """ Inputs:
-    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
-    df_col = E.g. Column from the above df, likely Mode_confirm, primary_mode
-    """
-    try:
-        labels = df.query(df_col).Mode_confirm.value_counts(dropna=True).keys().tolist()
-        values = df.query(df_col).Mode_confirm.value_counts(dropna=True).tolist()
-        return process_trip_data(labels, values)
-    except KeyError:
-        print(f"Column '{df_col}' not found in the data frame.")
-        return pd.DataFrame(), pd.DataFrame()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return pd.DataFrame(), pd.DataFrame()
-
 # Create dataframes with cols: 'Label' 'Value' and 'Proportion'
 def process_trip_data(labels, values):
     """ Inputs:
