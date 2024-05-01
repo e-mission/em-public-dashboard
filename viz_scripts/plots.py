@@ -145,7 +145,7 @@ def plot_and_text_error(e, ax, file_name):
     alt_text += stringified_exception
     alt_text = access_alt_text(alt_text, file_name)
     # TODO: Format the error as HTML instead of plain text
-    alt_html = access_alt_html(alt_text, file_name, "w")
+    alt_html = access_alt_html(alt_text, file_name)
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
@@ -212,7 +212,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     # TODO: Consider using a dictionary or a data object instead of an array of arrays
     # for greater clarity
     concat_alt_text = plot_title + text_results[0][0] + text_results[1][0]
-    alt_text = access_alt_text(concat_alt_text, file_name, 'w')
+    alt_text = access_alt_text(concat_alt_text, file_name)
 
     concat_alt_html = f"""
     <!DOCTYPE html>
@@ -224,7 +224,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     </body>
     </html>
     """
-    alt_html = access_alt_html(concat_alt_html, file_name, 'w')
+    alt_html = access_alt_html(concat_alt_html, file_name)
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
 
@@ -406,12 +406,12 @@ def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
     plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
     ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def access_alt_text(alt_text, chart_name, write_permission='w'):
+def access_alt_text(alt_text, chart_name):
     """ Inputs:
     alt_text = the text describing the chart
     chart_name = the alt text file to save or update
     """
-    f = open(SAVE_DIR+chart_name+".txt", write_permission)
+    f = open(SAVE_DIR+chart_name+".txt", "w")
     f.write(alt_text)
     f.close()
     return alt_text
@@ -455,13 +455,13 @@ def store_alt_text_timeseries(df, chart_name, var_name):
     return alt_text
 
 # Creating html table with col as Trip Type, Label, Value, and Proportion
-def access_alt_html(html_content, chart_name, write_permission):
+def access_alt_html(html_content, chart_name):
     """ Inputs:
     html_body = the text describing the chart
     chart_name = the alt text file to save or update
     var_name = the variable being analyzed across bars
     """
-    with open(SAVE_DIR + chart_name + ".html", f'{write_permission}') as f:
+    with open(SAVE_DIR + chart_name + ".html", "w") as f:
         f.write(html_content)
 
     return html_content
