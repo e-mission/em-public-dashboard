@@ -186,6 +186,10 @@ def get_duration_estimate(df: pd.DataFrame, dset: SPLIT, model_dict: dict):
             X = section_data[X_features]
             Y = section_data[['section_duration_argmax']]
             
+            if section_mode not in model_dict.keys():
+                print(f"Inference for section={section_mode} could not be done due to lack of samples. Skipping...")
+                continue
+                
             y_pred = model_dict[section_mode]['model'].predict(X)
             r2 = r2_score(y_pred=y_pred, y_true=Y.values.ravel())
             print(f"\t-> Test R2 for {section_mode}: {r2}")
@@ -196,6 +200,12 @@ def get_duration_estimate(df: pd.DataFrame, dset: SPLIT, model_dict: dict):
     df['temp'] = 0
     
     for section in df.section_mode_argmax.unique():
+        
+        # Cannot predict because the mode is present in test but not in train.
+        if section not in model_dict.keys():
+            df.loc[df.section_mode_argmax == section, 'temp'] = 0.
+            continue
+        
         X_section = df.loc[df.section_mode_argmax == section, X_features]
         
         # broadcast to all columns.
@@ -436,8 +446,8 @@ def save_metadata(dir_name: Path, **kwargs):
 
             
 if __name__ == "__main__":
-    
-    datasets = sorted(list(Path('./data/filtered_data').glob('preprocessed_data_*.csv')))
+  
+    datasets = sorted(list(Path('../data/filtered_data').glob('preprocessed_data_*.csv')))
     
     start = perf_counter()
     
@@ -447,28 +457,35 @@ if __name__ == "__main__":
         print(f"Starting modeling for dataset = {name}")
         
         data = pd.read_csv(dataset)
-        data.drop_duplicates(inplace=True)
-        data.dropna(inplace=True)
         
         if 'deprecatedID' in data.columns:
             data.drop(columns=['deprecatedID'], inplace=True)
         if 'data.key' in data.columns:
             data.drop(columns=['data.key'], inplace=True)
     
-        # These two lines make all the difference.
-        data.sort_values(by=['user_id'], ascending=True, inplace=True)
-        data = data[sorted(data.columns.tolist())]
+        print(f"# Samples found: {len(data)}, # unique users: {len(data.user_id.unique())}")
 
         print("Beginning sweeps.")
 
         # args = parse_args()
         sweep_number = 1
 
-        root = Path('./outputs/benchmark_results')
+        root = Path('../outputs/benchmark_results')
         if not root.exists():
             root.mkdir()
+            
+
+        if 'section_mode_argmax' in data.columns and (data.section_mode_argmax.value_counts() < 2).any():
+            # Find which mode.
+            counts = data.section_mode_argmax.value_counts()
+            modes = counts[counts < 2].index.tolist()
+            print(f"Dropping {modes} because of sparsity (<2 samples)")
+            
+            data = data.loc[~data.section_mode_argmax.isin(modes), :].reset_index(drop=True)
+            
 
         for split in [SPLIT_TYPE.INTER_USER, SPLIT_TYPE.INTRA_USER, SPLIT_TYPE.TARGET, SPLIT_TYPE.MODE, SPLIT_TYPE.HIDE_USER]:
+            
             kwargs = {
                 'dataset': name,
                 'split': split
