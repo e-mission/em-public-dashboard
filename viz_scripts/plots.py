@@ -411,7 +411,7 @@ def access_alt_text(alt_text, chart_name):
     alt_text = the text describing the chart
     chart_name = the alt text file to save or update
     """
-    f = open(SAVE_DIR+chart_name+".txt", "w")
+    f = open(SAVE_DIR+chart_name+".txt",'w')
     f.write(alt_text)
     f.close()
     return alt_text
