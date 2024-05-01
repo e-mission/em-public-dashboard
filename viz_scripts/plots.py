@@ -4,6 +4,7 @@ import arrow
 import itertools
 import matplotlib.pyplot as plt
 import seaborn as sns
+import traceback as tb
 from matplotlib.patches import Patch
 
 sns.set_style("whitegrid")
@@ -57,23 +58,6 @@ def merge_small_entries(labels, values):
     disp.display(v2l_df)
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
-
-def process_data_frame(df, df_col):
-    """ Inputs:
-    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
-    df_col = Column from the above df, likely Mode_confirm, primary_mode
-    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
-    """
-    try:
-        labels = df[df_col].value_counts(dropna=True).keys().tolist()
-        values = df[df_col].value_counts(dropna=True).tolist()
-        return process_trip_data(labels, values)
-    except KeyError:
-        print(f"Column '{df_col}' not found in the data frame.")
-        return pd.DataFrame(), pd.DataFrame()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return pd.DataFrame(), pd.DataFrame()
 
 def process_distance_data(df, df_col, distance_col, label_units_lower):
     """ Inputs:
@@ -169,29 +153,46 @@ def process_trip_data(labels, values):
     df_total_trip = pd.DataFrame(data_trip)
     return df_total_trip_expanded, df_total_trip
 
+def plot_and_text_error(e, ax, file_name):
+    stringified_exception = "".join(tb.format_exception(type(e), e, e.__traceback__))
+    ax.text(0,0,s=stringified_exception)
+    plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
+    alt_text = f"Error while generating chart:"
+    alt_text += stringified_exception
+    alt_text = access_alt_text(alt_text, file_name)
+    # TODO: Format the error as HTML instead of plain text
+    alt_html = access_alt_html(alt_text, file_name, "w")
+    return alt_text, alt_html
+
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_stacked_bar_chart(df, bar_name, bar_lab, ax, colors_combined):
+def plot_and_text_stacked_bar_chart(df, df_col, bar_label, ax, text_result, colors, debug_df):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart
     bar_name = Text to represent in case data frame is empty (e.g. "Sensed Trip")
-    bar_lab = Text to represent the Bar (e.g. Labeled by user\n (Confirmed trips))
+    bar_label = Text to represent the Bar (e.g. Labeled by user\n (Confirmed trips))
     ax = axis information
     colors_combined = color mapping dictionary
     """
     sns.set(font_scale=1.5)
     bar_height = 0.2
     bar_width = [0]
-    if df.empty:
-        ax.text(x = 0.5, y = 0.5, s = f"No data available for {bar_name}", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
-        ax.yaxis.set_visible(False)
-    else:
-        for label in pd.unique(df['Label']):
+    try:
+        # TODO: Put this into a dataframe to begin with so that we can use it directly instead of having multiple variables
+        labels = df[df_col].value_counts(dropna=True).keys().tolist()
+        values = df[df_col].value_counts(dropna=True).tolist()
+
+        # TODO: Do we need this as a separate function?
+        df_all_entries, df_only_small = process_trip_data(labels, values)
+
+        # TODO: Fix this to be more pandas-like and change the "long" variable name
+        for label in pd.unique(df_only_small['Label']):
             long = df[df['Label'] == label]
+            # TODO: Remove if/else; if we only consider unique values, then long can never be empty
             if not long.empty:
                 mode_prop = long['Proportion']
                 mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=bar_lab, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
+                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -201,15 +202,45 @@ def plot_stacked_bar_chart(df, bar_name, bar_lab, ax, colors_combined):
         ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15)
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
+        text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
+        print("After populating, %s" % text_result)
+    except:
+        # ax.set_title("Insufficient data", loc="center")
+        ax.text(x = 0.5, y = 0.9, s = "Insufficient data", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
+        # TODO: consider switching to a two column table
+        ax.text(x = 0.5, y = 0.8, s = debug_df.to_string(), horizontalalignment='center', verticalalignment='top', transform=ax.transAxes, fontsize=10)
+        text_result[0] = store_alt_text_missing(debug_df, None, bar_label)
+        text_result[1] = store_alt_html_missing(debug_df, None, bar_label)
+        # ax.yaxis.set_visible(False)
 
 # Adds chart title, x and y axis label to the 100% Stacked Bar Chart
-def add_stacked_bar_chart_title(fig, ax, plot_title, file_name):
+def set_title_and_save(fig, text_results, plot_title, file_name):
     # Setup label and title for the figure since these would be common for all sub-plots
+    # We only need the axis to tweak the position (WHY!) so we do so by getting the first ax object
+    ax = fig.get_axes()[0]
     fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
     fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
     plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
+
+    # Set up title and concatenate the text results
+    # TODO: Consider using a dictionary or a data object instead of an array of arrays
+    # for greater clarity
+    concat_alt_text = plot_title + text_results[0][0] + text_results[1][0]
+    alt_text = access_alt_text(concat_alt_text, file_name, 'w')
+
+    concat_alt_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <body>
+        <p>{plot_title}</p>
+        <p>{text_results[0][1]}</p>
+        <p>{text_results[1][0]}</p>
+    </body>
+    </html>
+    """
+    alt_html = access_alt_html(concat_alt_html, file_name, 'w')
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
 
@@ -452,7 +483,7 @@ def access_alt_html(html_content, chart_name, write_permission):
     return html_content
 
 # Appends bar information into into the alt_html
-def store_alt_text_and_html_stacked_bar_chart(df, chart_name, var_name):
+def store_alt_text_and_html_stacked_bar_chart(df, var_name):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
@@ -461,16 +492,12 @@ def store_alt_text_and_html_stacked_bar_chart(df, chart_name, var_name):
     alt_text = f"\nStacked Bar of: {var_name}\n"
     for i in range(len(df)):
         alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
-    alt_text = access_alt_text(alt_text, chart_name, 'a')
 
     # Generate html table
     alt_html = "\n"
     for i in range(len(df)):
         alt_html += f"<tr><td>{df['Label'].iloc[i]}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <body>
         <p>Trip Type: {var_name}</p>
         <table border="1" style="background-color: white;">
             <tr>
@@ -480,31 +507,7 @@ def store_alt_text_and_html_stacked_bar_chart(df, chart_name, var_name):
             </tr>
             {alt_html}
         </table>
-    </body>
-    </html>
     """
-    alt_html = access_alt_html(html_content, chart_name, 'a')
-
-    return alt_text, alt_html
-
-# Creates the html file, and appends plot_title
-def create_alt_text_and_html_title(plot_title, chart_name):
-    """ Inputs:
-    plot_title = Overall plot title
-    chart_name = name of the chart
-    """
-    alt_text = access_alt_text(plot_title, chart_name, 'w')
-
-    alt_html = f"""
-    <!DOCTYPE html>
-    <html>
-    <body>
-        <p>{plot_title}</p>
-    </body>
-    </html>
-    """
-    alt_html = access_alt_html(alt_html, chart_name, 'w')
-
     return alt_text, alt_html
 
 def generate_missing_plot(plot_title,debug_df,file_name):
@@ -546,5 +549,27 @@ def store_alt_text_missing(df, chart_name, var_name):
     alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
     for i in range(0,len(df)):
         alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
-    alt_text = access_alt_text(alt_text, chart_name)
+
+    # For the bar charts, there is no longer a 1:1 mapping between missing alt
+    # text and a file. So we want to collect all the alt_text as strings and
+    # then save it. We cannot just remove the call to `access_alt_text`, since
+    # it will break other uses. So let's pass in None for the chart_name if we
+    # don't want to save it.
+    if chart_name is not None:
+        alt_text = access_alt_text(alt_text, chart_name)
+    return alt_text
+
+# TODO Change this to HTML output instead of alt-text
+def store_alt_html_missing(df, chart_name, var_name):
+    """ Inputs:
+    df = dataframe with index of debug information, first column is counts
+    chart_name = what to label chart by in the dictionary
+    var_name = the variable being analyzed across pie slices
+    """
+    # Fill out the alt text based on components of the chart and passed data
+    alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
+    for i in range(0,len(df)):
+        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
+    if chart_name is not None:
+        alt_text = access_alt_html(alt_text, chart_name)
     return alt_text
