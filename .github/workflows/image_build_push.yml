@@ -134,12 +134,15 @@ jobs:
     - name: build docker image
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_2 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} .
+          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_2 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./frontend
+          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_2 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./viz_scripts
         else
-          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_1 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} .
+          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_1 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./frontend
+          docker build --build-arg DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG_1 -t $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} ./viz_scripts
         fi
         docker images
 
     - name: push docker image
       run: |
         docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
