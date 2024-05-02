@@ -3,6 +3,8 @@ services:
   dashboard:
     image: em-pub-dash-prod/frontend
     build: frontend
+    args:
+      DOCKER_IMAGE_TAG: ''
     depends_on:
       - db
     ports:

@@ -5,6 +5,8 @@ services:
     build:
         context: frontend
         dockerfile: docker/Dockerfile.dev
+    args:
+      DOCKER_IMAGE_TAG: ''
     depends_on:
       - db
     ports:
