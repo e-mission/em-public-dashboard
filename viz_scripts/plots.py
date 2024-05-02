@@ -59,36 +59,6 @@ def merge_small_entries(labels, values):
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
 
-def process_distance_data(df, df_col, distance_col, label_units_lower):
-    """ Inputs:
-    df = Likely expanded_ct, data_eb or expanded_ct_sensed data frame
-    df_col = Column from the above df, likely Mode_confirm, primary_mode
-    distance_col = Column associated with distance from above data frame
-    label_units_lower = lbs/kg
-    trip_type = Bar labels (e.g. Labeled by user (Confirmed trips))
-    """
-    try:
-        dist = df.groupby(df_col).agg({distance_col: ['sum', 'count', 'mean']})
-        dist.columns = ['Total (' + label_units_lower + ')', 'Count', 'Average (' + label_units_lower + ')']
-        dist = dist.reset_index()
-        dist = dist.sort_values(by=['Total (' + label_units_lower + ')'], ascending=False)
-
-        dist_dict = dict(zip(dist[df_col], dist['Total (' + label_units_lower + ')']))
-        labels_dist = []
-        values_dist = []
-
-        for x, y in dist_dict.items():
-            labels_dist.append(x)
-            values_dist.append(y)
-
-        return process_trip_data(labels_dist, values_dist)
-    except KeyError:
-        print(f"Column '{df_col}' not found in the data frame.")
-        return pd.DataFrame(), pd.DataFrame()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return pd.DataFrame(), pd.DataFrame()
-
 # Create dataframes with cols: 'Label' 'Value' and 'Proportion'
 def process_trip_data(labels, values):
     """ Inputs:
@@ -122,7 +92,7 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, df_col, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, df_col, agg_query, bar_label, ax, text_result, colors, debug_df):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart
     bar_name = Text to represent in case data frame is empty (e.g. "Sensed Trip")
@@ -134,12 +104,10 @@ def plot_and_text_stacked_bar_chart(df, df_col, bar_label, ax, text_result, colo
     bar_height = 0.2
     bar_width = [0]
     try:
-        # TODO: Put this into a dataframe to begin with so that we can use it directly instead of having multiple variables
-        labels = df[df_col].value_counts(dropna=True).keys().tolist()
-        values = df[df_col].value_counts(dropna=True).tolist()
+        grouped_df = df.groupby(df_col).agg(agg_query).reset_index().set_axis(['label', 'vals'], axis='columns').sort_values(by='vals', ascending=False)
 
         # TODO: Do we need this as a separate function?
-        df_all_entries, df_only_small = process_trip_data(labels, values)
+        df_all_entries, df_only_small = process_trip_data(grouped_df.label.tolist(), grouped_df.vals.tolist())
 
         # TODO: Fix this to be more pandas-like and change the "long" variable name
         for label in pd.unique(df_only_small['Label']):
