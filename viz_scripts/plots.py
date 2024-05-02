@@ -143,13 +143,13 @@ def plot_and_text_stacked_bar_chart(df, df_col, bar_label, ax, text_result, colo
 
         # TODO: Fix this to be more pandas-like and change the "long" variable name
         for label in pd.unique(df_only_small['Label']):
-            long = df[df['Label'] == label]
+            long = df_only_small[df_only_small['Label'] == label]
             # TODO: Remove if/else; if we only consider unique values, then long can never be empty
             if not long.empty:
                 mode_prop = long['Proportion']
                 mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors_combined[label])
+                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -161,7 +161,8 @@ def plot_and_text_stacked_bar_chart(df, df_col, bar_label, ax, text_result, colo
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
         text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
         print("After populating, %s" % text_result)
-    except:
+    except Exception as e:
+        # tb.print_exception(type(e), e, e.__traceback__)
         # ax.set_title("Insufficient data", loc="center")
         ax.text(x = 0.5, y = 0.9, s = "Insufficient data", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
         # TODO: consider switching to a two column table
