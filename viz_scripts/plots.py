@@ -166,12 +166,14 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     <html>
     <body>
         <p>{plot_title}</p>
+        <table border=1>
     """
     for i in range(0, len(fig.get_axes())):
         concat_alt_text += text_results[i][0]
         concat_alt_html += f"<p>{text_results[i][1]}</p>"
 
     concat_alt_html += f"""
+        </table>
     </body>
     </html>
     """
