@@ -1,7 +1,6 @@
 # python 3
-# Please change once all PR changes are final, so it reads from shankari/e-mission-server
-# FROM shankari/e-mission-server:master_2024-02-10--19-38
-FROM mukuflash03/e-mission-server:image-push-merge_2024-04-30--59-58
+
+FROM shankari/e-mission-server:master_2024-04-15--53-23
 
 VOLUME /plots
 
