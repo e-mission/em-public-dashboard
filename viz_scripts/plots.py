@@ -150,22 +150,36 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
 
-    # Set up title and concatenate the text results
-    # TODO: Consider using a dictionary or a data object instead of an array of arrays
-    # for greater clarity
-    concat_alt_text = plot_title + text_results[0][0] + text_results[1][0]
-    alt_text = access_alt_text(concat_alt_text, file_name)
+    # if nRows == 1, then plt.subplots returns a single axis object instead of an array
+    # similarly we have text_result be a single list if nRows == 1 and a list of lists if nRows > 1
+    # but then we want to wrap it so that it is a list of lists with a single top level element
+    # so that the iteration logic below works
+    if len(fig.get_axes()) == 1:
+        text_results = [text_results]
 
+
+    # The number of plots is not fixed. Let's iterate over the array that is passed in to handle the text results.
+    # The number of axes in the figure is the number of plots
+    concat_alt_text = plot_title
     concat_alt_html = f"""
     <!DOCTYPE html>
     <html>
     <body>
         <p>{plot_title}</p>
-        <p>{text_results[0][1]}</p>
-        <p>{text_results[1][0]}</p>
+    """
+    for i in range(0, len(fig.get_axes())):
+        concat_alt_text += text_results[i][0]
+        concat_alt_html += f"<p>{text_results[i][1]}</p>"
+
+    concat_alt_html += f"""
     </body>
     </html>
     """
+
+    # Set up title and concatenate the text results
+    # TODO: Consider using a dictionary or a data object instead of an array of arrays
+    # for greater clarity
+    alt_text = access_alt_text(concat_alt_text, file_name)
     alt_html = access_alt_html(concat_alt_html, file_name)
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
