@@ -20,7 +20,7 @@ services:
       context: viz_scripts
       dockerfile: Dockerfile
       args:
-        DOCKER_IMAGE_TAG: ''
+        DOCKER_IMAGE_TAG: ${DOCKER_IMAGE_TAG}
     depends_on:
       - db
     environment:
