@@ -213,22 +213,23 @@ def mapping_labels(dynamic_labels, label_type):
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
-# Output: Map for color with mode and purpose
+# Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
+    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
         purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
         combined_mode_values = mode_values + replaced_mode_values
     else:
-        # Addition of 'Other' is required to the list since it's missing from auxillary_files/mode_labels.csv and auxillary_files/purpose_labels.csv
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
-        purpose_values = (list(OrderedDict.fromkeys(dic_pur.values())) + ['Other'])
+        purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
 
     colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
+    colors_sensed = dict(zip(sensed_values, plt.cm.tab20.colors[:len(sensed_values)]))
 
-    return colors_mode, colors_purpose
+    return colors_mode, colors_purpose, colors_sensed
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
@@ -325,10 +326,10 @@ def get_quality_text(before_df, after_df, mode_of_interest=None, include_test_us
     print(quality_text)
     return quality_text
 
-def get_quality_text_sensed(df, include_test_users=False):
+def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
-    quality_text = f"Based on %s trips from %d {user_str}" % cq
+    quality_text = f"Based on %s trips ({cutoff_text}) from %d {user_str}" % cq if cutoff_text else f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 
