@@ -129,7 +129,9 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
                 print(f"{long} is empty")
         ax.tick_params(axis='y', labelsize=18)
         ax.tick_params(axis='x', labelsize=18, rotation=90)
-        ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15)
+        ncols = len(df_only_small)//5 if len(df_only_small) % 5 == 0 else len(df_only_small)//5 + 1
+        ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
+        # ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
         text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
@@ -150,7 +152,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     # We only need the axis to tweak the position (WHY!) so we do so by getting the first ax object
     ax = fig.get_axes()[0]
     fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
-    fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
+    # fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
     plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
@@ -504,7 +506,6 @@ def store_alt_text_missing(df, chart_name, var_name):
         alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-# TODO Change this to HTML output instead of alt-text
 def store_alt_html_missing(df, chart_name, var_name):
     """ Inputs:
     df = dataframe with index of debug information, first column is counts
@@ -512,9 +513,16 @@ def store_alt_html_missing(df, chart_name, var_name):
     var_name = the variable being analyzed across pie slices
     """
     # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
+    alt_html = f"""
+        <html>
+        <body>
+        <h2>Unable to generate\nBar chart of {var_name}. Reason:</h2>\n
+    """
+    alt_html += df.to_html()
+    alt_html += f"""
+        </body>
+        </html>
+    """
     if chart_name is not None:
-        alt_text = access_alt_html(alt_text, chart_name)
-    return alt_text
+        alt_html = access_alt_html(alt_html, chart_name)
+    return alt_html
