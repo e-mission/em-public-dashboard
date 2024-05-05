@@ -502,7 +502,6 @@ def store_alt_text_missing(df, chart_name, var_name):
         alt_text = access_alt_text(alt_text, chart_name)
     return alt_text
 
-# TODO Change this to HTML output instead of alt-text
 def store_alt_html_missing(df, chart_name, var_name):
     """ Inputs:
     df = dataframe with index of debug information, first column is counts
@@ -510,9 +509,16 @@ def store_alt_html_missing(df, chart_name, var_name):
     var_name = the variable being analyzed across pie slices
     """
     # Fill out the alt text based on components of the chart and passed data
-    alt_text = f"Unable to generate\nBar chart of {var_name}.\nReason:"
-    for i in range(0,len(df)):
-        alt_text += f" {df.index[i]} is {np.round(df.iloc[i,0], 1)}."
+    alt_html = f"""
+        <html>
+        <body>
+        <h2>Unable to generate\nBar chart of {var_name}. Reason:</h2>\n
+    """
+    alt_html += df.to_html()
+    alt_html += f"""
+        </body>
+        </html>
+    """
     if chart_name is not None:
-        alt_text = access_alt_html(alt_text, chart_name)
-    return alt_text
+        alt_html = access_alt_html(alt_html, chart_name)
+    return alt_html
