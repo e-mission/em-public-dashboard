@@ -92,22 +92,25 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, df_col, agg_query, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debug_df):
     """ Inputs:
-    df = Data frame corresponding to the bar in a stacked bar chart
-    bar_name = Text to represent in case data frame is empty (e.g. "Sensed Trip")
+    df = Data frame corresponding to the bar in a stacked bar chart. It is
+        expected to have three columns, which represent the 'label', 'value'
     bar_label = Text to represent the Bar (e.g. Labeled by user\n (Confirmed trips))
     ax = axis information
-    colors_combined = color mapping dictionary
+    text_result = will be filled in with the alt_text and alt_html for the plot
     """
+    if len(df.columns) > 1:
+        raise ValueError("dataframe should have two columns (labels and values), found %s" % (df.columns))
+
     sns.set(font_scale=1.5)
     bar_height = 0.2
     bar_width = [0]
     try:
-        grouped_df = df.groupby(df_col).agg(agg_query).reset_index().set_axis(['label', 'vals'], axis='columns').sort_values(by='vals', ascending=False)
+        grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns').sort_values(by='value', ascending=False)
 
         # TODO: Do we need this as a separate function?
-        df_all_entries, df_only_small = process_trip_data(grouped_df.label.tolist(), grouped_df.vals.tolist())
+        df_all_entries, df_only_small = process_trip_data(grouped_df.label.tolist(), grouped_df.value.tolist())
 
         # TODO: Fix this to be more pandas-like and change the "long" variable name
         for label in pd.unique(df_only_small['Label']):
