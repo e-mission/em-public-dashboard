@@ -150,7 +150,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     # We only need the axis to tweak the position (WHY!) so we do so by getting the first ax object
     ax = fig.get_axes()[0]
     fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
-    fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
+    # fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
     plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
     plt.subplots_adjust(hspace=0.1, top= 0.95)
