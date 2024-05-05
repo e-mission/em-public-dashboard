@@ -237,7 +237,7 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
-    quality_text = get_quality_text_sensed(expanded_ct, include_test_users)
+    quality_text = get_quality_text_sensed(expanded_ct, "", include_test_users)
 
     debug_df = pd.DataFrame.from_dict({
             "year": year,
