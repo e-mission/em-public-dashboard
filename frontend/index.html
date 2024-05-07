@@ -345,11 +345,6 @@
       var current_month = start_month;
       var current_year = start_year;
 
-      //testing dfc fermata .. doesn't start until April...
-      // if ((current_month >= end_month) && (current_year >= end_year)) {
-      //   current_month = current_month - 2; //dfc has not started yet...
-      // }
-
       dates.push([current_month, current_year]);
       while (!(current_month == end_month && current_year == end_year)) {
         current_month += 1;
@@ -444,8 +439,6 @@
             sheet_list = []
             for (name in survey_list) {
               form_path = data.survey_info.surveys[survey_list[name]].formPath;
-              //hard code the old survey
-              // form_path = 'https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/survey_resources/dfc-fermata/fermata-ev-return-trip-v0.xml';
               //THIS ASSUMES THE FILENAME IS THE SAME AS THE FORM PATH BUT WITH xml FILE TYPE
               l_path = form_path.split('.')
               l_path.splice(l_path.length -1, 1, 'xml');
