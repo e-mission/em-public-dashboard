@@ -8,4 +8,4 @@ dependencies:
 - pip:
   - nbparameterise==0.6
   - devcron==0.4
-  - git+https://github.com/JGreenlee/e-mission-common@0.4.0
+  - git+https://github.com/JGreenlee/e-mission-common@0.4.3
