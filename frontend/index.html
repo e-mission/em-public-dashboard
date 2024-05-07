@@ -589,9 +589,9 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        const quest_dict = await getDictionaryList(sheet_list)
-        const stackedMetrics = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm',
-                                 'total_trip_length', 'total_trip_length_land',`ntrips_${mode_studied}_total`,
+        const quest_dict = await getDictionaryList(sheet_list);
+        const stackedMetrics = ['ntrips_total', 'ntrips_total_survey', 'ntrips_purpose', 'ntrips_under80', 'ntrips_under80_survey', 'ntrips_commute_mode_confirm',
+                                 'total_trip_length', 'total_trip_length_land', 'total_trip_length_land_survey',`ntrips_${mode_studied}_total`,
                                  `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`].concat(Object.keys(quest_dict));
         const isStackedMetric = stackedMetrics.includes(metric);
         const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
