@@ -459,7 +459,7 @@
               load_file = "metrics_study_surveys.html"
               $.get(load_file, function (file) {
                 Object.entries(quest_dict).forEach(([key, value]) => {
-                  var text = '<option ' + 'value="' + key + '" data-sizex="4" data-sizey="4">' + value + '</option>';
+                  var text = '<option ' + 'value="' + key + '" data-sizex="10" data-sizey="4">' + value + '</option>';
                   file = file.concat('\n', text);
                 });
                 console.log("configuring units");
@@ -578,7 +578,7 @@
         }
       }).data('gridster');
 
-      $('.js-add-new').on('click', function () {
+      $('.js-add-new').on('click', async function () {
         const metric = $("#metric").val();
         const dateVal = $("#date").val();
         const program = $("#program").val();
@@ -596,10 +596,11 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        const isStackedMetric = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm',
+        const quest_dict = await getDictionaryList(sheet_list)
+        const stackedMetrics = ['ntrips_total', 'ntrips_purpose', 'ntrips_under80', 'ntrips_commute_mode_confirm',
                                  'total_trip_length', 'total_trip_length_land',`ntrips_${mode_studied}_total`,
-                                 `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`]
-                                 .includes(metric);
+                                 `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`].concat(Object.keys(quest_dict));
+        const isStackedMetric = stackedMetrics.includes(metric);
         const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
 
         if (isStackedMetric){
