@@ -274,7 +274,10 @@ def load_viz_notebook_survey_data(year, month, program, include_test_users=False
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     
-    return participant_ct_df, labeled_ct
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    
+    return participant_ct_df, labeled_ct, file_suffix
 
 def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     """ Inputs:
