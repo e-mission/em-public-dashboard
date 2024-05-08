@@ -69,6 +69,16 @@ def load_all_participant_trips(program, tq, load_test_users):
     disp.display(participant_ct_df.head())
     return participant_ct_df
 
+def filter_composite_trips(all_comp_trips, program, load_test_users):
+    participant_list = get_participant_uuids(program, load_test_users)
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(all_comp_trips) == 0:
+        return all_comp_trips
+    participant_ct_df = all_comp_trips[all_comp_trips.user_id.isin(participant_list)]
+    print("After filtering, found %s participant trips " % len(participant_ct_df))
+    disp.display(participant_ct_df.head())
+    return participant_ct_df
+
 def filter_labeled_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
@@ -213,6 +223,20 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     colors_sensed = dict(zip(sensed_values, plt.cm.tab20.colors[:len(sensed_values)]))
 
     return colors_mode, colors_purpose, colors_sensed
+
+# Function: Maps survey answers to colors.
+# Input: dictionary of raw and translated survey answers
+# Output: Map for color with survey answers
+def mapping_color_surveys(dic_options):
+    dictionary_values = (list(OrderedDict.fromkeys(dic_options.values())))
+    
+    colors = {}
+    for i in range(len(dictionary_values)):
+        colors[dictionary_values[i]] = plt.cm.tab10.colors[i%10]
+    
+    colors['Other'] = plt.cm.tab10.colors[(i+1)%10]
+
+    return colors
 
 def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
