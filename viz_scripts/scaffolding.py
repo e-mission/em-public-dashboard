@@ -69,16 +69,6 @@ def load_all_participant_trips(program, tq, load_test_users):
     disp.display(participant_ct_df.head())
     return participant_ct_df
 
-def filter_composite_trips(all_comp_trips, program, load_test_users):
-    participant_list = get_participant_uuids(program, load_test_users)
-    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if len(all_comp_trips) == 0:
-        return all_comp_trips
-    participant_ct_df = all_comp_trips[all_comp_trips.user_id.isin(participant_list)]
-    print("After filtering, found %s participant trips " % len(participant_ct_df))
-    disp.display(participant_ct_df.head())
-    return participant_ct_df
-
 def filter_labeled_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
@@ -273,6 +263,18 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
         orient='index', columns=["value"])
 
     return expanded_ct, file_suffix, quality_text, debug_df
+
+def load_viz_notebook_survey_data(year, month, program, include_test_users=False):
+    """ Inputs:
+    year/month/program/test users = parameters from the visualization notebook
+
+    Returns: df of all trips taken by participants, df of all trips with user_input
+    """
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    labeled_ct = filter_labeled_trips(participant_ct_df)
+    
+    return participant_ct_df, labeled_ct
 
 def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     """ Inputs:
