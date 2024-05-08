@@ -48,13 +48,15 @@ def merge_small_entries(labels, values):
     # We could have already had a non-zero other, and it could be small or large
     if "Other" not in v2l_df.index:
         # zero other will end up with misc_count
-        v2l_df.loc["Other"] = misc_count
+        if misc_count.vals > 0:
+            v2l_df.loc["Other"] = misc_count
     elif "Other" in small_chunk.index:
         # non-zero small other will already be in misc_count
         v2l_df.loc["Other"] = misc_count
     else:
         # non-zero large other, will not already be in misc_count
         v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
+    
     disp.display(v2l_df)
 
     return (v2l_df.index.to_list(),v2l_df.vals.to_list(), v2l_df.pct.to_list())
@@ -128,8 +130,13 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
         ax.tick_params(axis='y', labelsize=18)
         ax.tick_params(axis='x', labelsize=18, rotation=90)
         ncols = len(df_only_small)//5 if len(df_only_small) % 5 == 0 else len(df_only_small)//5 + 1
-        ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
-        # ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
+        
+        if len(pd.unique(df_only_small['Label'])[0]) > 15:
+            ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15)
+        else:
+            ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
+            # ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
+            
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
         text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
