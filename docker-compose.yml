@@ -2,7 +2,9 @@ version: "3"
 services:
   dashboard:
     image: em-pub-dash-prod/frontend
-    build: frontend
+    build: 
+      context: frontend
+      dockerfile: Dockerfile
     depends_on:
       - db
     ports:
@@ -14,7 +16,11 @@ services:
        - emission
   notebook-server:
     image: em-pub-dash-prod/viz-scripts
-    build: viz_scripts
+    build: 
+      context: viz_scripts
+      dockerfile: Dockerfile
+      args:
+        DOCKER_IMAGE_TAG: ${DOCKER_IMAGE_TAG}
     depends_on:
       - db
     environment:

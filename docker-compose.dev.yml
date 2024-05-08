@@ -3,8 +3,8 @@ services:
   dashboard:
     image: em-pub-dash-dev/frontend
     build:
-        context: frontend
-        dockerfile: docker/Dockerfile.dev
+      context: frontend
+      dockerfile: docker/Dockerfile.dev
     depends_on:
       - db
     ports:
@@ -18,8 +18,10 @@ services:
   notebook-server:
     image: em-pub-dash-dev/viz-scripts
     build:
-        context: viz_scripts
-        dockerfile: docker/Dockerfile.dev
+      context: viz_scripts
+      dockerfile: docker/Dockerfile.dev
+      args:
+        DOCKER_IMAGE_TAG: ${DOCKER_IMAGE_TAG}
     depends_on:
       - db
     environment:
