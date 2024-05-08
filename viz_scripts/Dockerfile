@@ -1,8 +1,10 @@
 # python 3
+
 ARG DOCKER_IMAGE_TAG
 FROM shankari/e-mission-server:master_${DOCKER_IMAGE_TAG}
 
 ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/certs/
+
 
 VOLUME /plots
 
