@@ -333,6 +333,14 @@ def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     print(quality_text)
     return quality_text
 
+#once we can calculate the "denominator" for survey trips, this can be removed
+def get_quality_text_numerator(df, include_test_users=False):
+    cq = (len(df), unique_users(df))
+    user_str = 'testers and participants' if include_test_users else 'users'
+    quality_text = f"Based on %s trips from %d {user_str}" % cq
+    print(quality_text)
+    return quality_text
+
 def get_file_suffix(year, month, program):
     suffix = "_%04d" % year if year is not None else ""
     suffix = suffix + "_%02d" % month if month is not None else ""
