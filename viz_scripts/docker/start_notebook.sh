@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 #Configure web server
 
-#set database URL using environment variable
 echo "DB host = "${DB_HOST}
-if [ -z ${DB_HOST} ] ; then
-    local_host=`hostname -i`
-    export DB_HOST=$local_host
-    echo "Setting db host environment variable to localhost"
-fi
 
 ### configure the saved-notebooks directory for persistent notebooks
 
