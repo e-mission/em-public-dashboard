@@ -1,8 +1,8 @@
 # python 3
 
 ARG SERVER_IMAGE_TAG
-FROM shankari/e-mission-server:master_${SERVER_IMAGE_TAG}
-
+# FROM shankari/e-mission-server:master_${SERVER_IMAGE_TAG}
+FROM mukuflash03/e-mission-server:consolidate-differences_${SERVER_IMAGE_TAG}
 VOLUME /plots
 
 ADD docker/environment36.dashboard.additions.yml /
