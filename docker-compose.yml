@@ -1,7 +1,7 @@
 version: "3"
 services:
   dashboard:
-    image: ${FRONTEND_TAG}
+    image: em-pub-dash-prod/frontend
     build: frontend
     depends_on:
       - db
@@ -13,7 +13,7 @@ services:
     networks:
        - emission
   notebook-server:
-    image: ${VIZ_TAG}
+    image: em-pub-dash-prod/viz-scripts
     build: 
       context: viz_scripts
       dockerfile: Dockerfile

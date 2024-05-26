@@ -130,13 +130,18 @@ jobs:
     - name: build docker image
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          SERVER_IMAGE_TAG=$DOCKER_IMAGE_TAG_2 FRONTEND_TAG=$DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} VIZ_TAG=$DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=$DOCKER_IMAGE_TAG_2 docker compose -f docker-compose-dev.yml build
         else
-          SERVER_IMAGE_TAG=$DOCKER_IMAGE_TAG_1 FRONTEND_TAG=$DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} VIZ_TAG=$DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=$DOCKER_IMAGE_TAG_1 docker compose -f docker-compose-dev.yml build
         fi
         docker images
 
-    - name: push docker image
+    - name: rename docker images
+      run: |
+        docker image tag em-pub-dash-dev/frontend:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        docker image tag em-pub-dash-dev/viz-scripts:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+
+    - name: push docker images
       run: |
         docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
         docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
