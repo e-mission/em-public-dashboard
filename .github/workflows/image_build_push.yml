@@ -2,7 +2,7 @@ name: docker-image-push-public-dash
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, image-push ]
     
   workflow_dispatch:
     inputs:
