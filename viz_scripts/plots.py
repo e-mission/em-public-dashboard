@@ -109,7 +109,8 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
     bar_height = 0.2
     bar_width = [0]
     try:
-        grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns').sort_values(by='value', ascending=False)
+        #grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns').sort_values(by='value', ascending=False)
+        grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns')
 
         # TODO: Do we need this as a separate function?
         df_all_entries, df_only_small = process_trip_data(grouped_df.label.tolist(), grouped_df.value.tolist())
