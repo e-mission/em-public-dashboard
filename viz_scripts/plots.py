@@ -133,10 +133,11 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
         ncols = len(df_only_small)//5 if len(df_only_small) % 5 == 0 else len(df_only_small)//5 + 1
         
         if len(pd.unique(df_only_small['Label'])[0]) > 15:
-            ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15)
+            #ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15)
+            ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
         else:
-            ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
-            # ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
+            #ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
+            ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
             
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
