@@ -132,7 +132,7 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
         ax.tick_params(axis='x', labelsize=18, rotation=90)
         ncols = len(df_only_small)//5 if len(df_only_small) % 5 == 0 else len(df_only_small)//5 + 1
         
-        if len(pd.unique(df_only_small['Label'])[0]) > 15:
+        if len(pd.unique(df_only_small['Label'])[0]) > 20:
             #ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15)
             ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
         else:
