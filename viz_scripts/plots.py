@@ -94,7 +94,7 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart. It is
         expected to have three columns, which represent the 'label', 'value'
@@ -102,14 +102,19 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
     ax = axis information
     text_result = will be filled in with the alt_text and alt_html for the plot
     """
-    if len(df.columns) > 1:
-        raise ValueError("dataframe should have two columns (labels and values), found %s" % (df.columns))
+
+    
 
     sns.set(font_scale=1.5)
     bar_height = 0.2
     bar_width = [0]
     try:
-        #grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns').sort_values(by='value', ascending=False)
+        #aggregate/filter the data in the function so only one bar fails
+        df = agg_fcn(df)
+        
+        if len(df.columns) > 1:
+            raise ValueError("dataframe should have two columns (labels and values), found %s" % (df.columns))
+
         grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns')
 
         # TODO: Do we need this as a separate function?
