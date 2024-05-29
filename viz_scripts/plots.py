@@ -188,7 +188,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     """
     for i in range(0, len(fig.get_axes())):
         concat_alt_text += text_results[i][0]
-        concat_alt_html += f"<p>{text_results[i][1]}</p>"
+        concat_alt_html += f"<div style='float: left; padding-left: 20px'>{text_results[i][1]}</div>"
 
     concat_alt_html += f"""
     </body>
