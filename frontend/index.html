@@ -417,7 +417,7 @@
             load_file = "metrics_study_surveys.html"
             $.get(load_file, function (file) {
               survey_list.forEach((name) => {
-                var text = '<option ' + 'value="' + name + '" data-sizex="10" data-sizey="6">' + name + '</option>';
+                var text = '<option ' + 'value="' + name + '" data-sizex="10" data-sizey="8">' + name + '</option>';
                 file = file.concat('\n', text);
               });
               console.log("configuring units");
