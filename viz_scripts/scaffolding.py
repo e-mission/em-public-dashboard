@@ -202,8 +202,8 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
-        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
-        combined_mode_values = mode_values + replaced_mode_values
+        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
+        combined_mode_values = mode_values + replaced_mode_values + ['Other']
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
