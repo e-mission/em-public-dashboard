@@ -150,7 +150,9 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
         print("After populating, %s" % text_result)
     except Exception as e:
         # tb.print_exception(type(e), e, e.__traceback__)
-        # ax.set_title("Insufficient data", loc="center")
+        #ax.set_title("Insufficient data", loc="center")
+        ax.set_ylabel(bar_label)
+        ax.yaxis.label.set(rotation='horizontal', ha='right', va='center', fontsize=18)
         ax.text(x = 0.5, y = 0.9, s = "Insufficient data", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
         # TODO: consider switching to a two column table
         ax.text(x = 0.5, y = 0.8, s = debug_df.to_string(), horizontalalignment='center', verticalalignment='top', transform=ax.transAxes, fontsize=10)
