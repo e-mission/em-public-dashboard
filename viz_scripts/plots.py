@@ -94,7 +94,7 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart. It is
         expected to have three columns, which represent the 'label', 'value'
@@ -102,14 +102,20 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
     ax = axis information
     text_result = will be filled in with the alt_text and alt_html for the plot
     """
-    if len(df.columns) > 1:
-        raise ValueError("dataframe should have two columns (labels and values), found %s" % (df.columns))
+
+    
 
     sns.set(font_scale=1.5)
     bar_height = 0.2
     bar_width = [0]
     try:
-        grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns').sort_values(by='value', ascending=False)
+        #aggregate/filter the data in the function so only one bar fails
+        df = agg_fcn(df)
+        
+        if len(df.columns) > 1:
+            raise ValueError("dataframe should have two columns (labels and values), found %s" % (df.columns))
+
+        grouped_df = df.reset_index().set_axis(['label', 'value'], axis='columns')
 
         # TODO: Do we need this as a separate function?
         df_all_entries, df_only_small = process_trip_data(grouped_df.label.tolist(), grouped_df.value.tolist())
@@ -131,11 +137,7 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
         ax.tick_params(axis='x', labelsize=18, rotation=90)
         ncols = len(df_only_small)//5 if len(df_only_small) % 5 == 0 else len(df_only_small)//5 + 1
         
-        if len(pd.unique(df_only_small['Label'])[0]) > 15:
-            ax.legend(bbox_to_anchor=(0.5, -0.5), loc='upper center', fancybox=True, shadow=True, fontsize=15)
-        else:
-            ax.legend(bbox_to_anchor=(1, 0), loc='lower left', fancybox=True, shadow=True, fontsize=15)
-            # ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
+        ax.legend(bbox_to_anchor=(1, 1), loc='upper left', fancybox=True, shadow=True, fontsize=15, ncols=ncols)
             
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
@@ -143,7 +145,9 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
         print("After populating, %s" % text_result)
     except Exception as e:
         # tb.print_exception(type(e), e, e.__traceback__)
-        # ax.set_title("Insufficient data", loc="center")
+        #ax.set_title("Insufficient data", loc="center")
+        ax.set_ylabel(bar_label)
+        ax.yaxis.label.set(rotation='horizontal', ha='right', va='center', fontsize=18)
         ax.text(x = 0.5, y = 0.9, s = "Insufficient data", horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=20)
         # TODO: consider switching to a two column table
         ax.text(x = 0.5, y = 0.8, s = debug_df.to_string(), horizontalalignment='center', verticalalignment='top', transform=ax.transAxes, fontsize=10)
@@ -155,8 +159,8 @@ def plot_and_text_stacked_bar_chart(df, bar_label, ax, text_result, colors, debu
 def set_title_and_save(fig, text_results, plot_title, file_name):
     # Setup label and title for the figure since these would be common for all sub-plots
     # We only need the axis to tweak the position (WHY!) so we do so by getting the first ax object
-    ax = fig.get_axes()[0]
-    fig.supxlabel('Proportion (Count)', fontsize=20, x=0.5, y= ax.xaxis.get_label().get_position()[0] - 0.62, va='top')
+    ax = fig.get_axes()[-1]
+    ax.set_xlabel('Proportion (Count)', fontsize=20)
     # fig.supylabel('Trip Types', fontsize=20, x=-0.12, y=0.5, rotation='vertical')
     fig.suptitle(plot_title, fontsize=25,va = 'bottom')
     plt.text(x=0, y=ax.xaxis.get_label().get_position()[0] - 0.62, s=f"Last updated {arrow.get()}", fontsize=12)
@@ -181,7 +185,7 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     """
     for i in range(0, len(fig.get_axes())):
         concat_alt_text += text_results[i][0]
-        concat_alt_html += f"<p>{text_results[i][1]}</p>"
+        concat_alt_html += f"<div style='float: left; padding-left: 20px, position: relative; width: 45%'>{text_results[i][1]}</div>"
 
     concat_alt_html += f"""
     </body>
