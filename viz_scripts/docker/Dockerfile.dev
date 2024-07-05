@@ -1,5 +1,7 @@
 # python 3
-FROM shankari/e-mission-server:master_2024-05-06--36-33
+
+ARG SERVER_IMAGE_TAG
+FROM shankari/e-mission-server:master_${SERVER_IMAGE_TAG}
 
 VOLUME /plots
 
