@@ -408,10 +408,10 @@
           mode_studied = data.intro.mode_studied
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
-          surveys = data.survey_info.surveys 
           survey_list = []
-          console.log(data.survey_info['trip-labels'])
-          if (data.survey_info['trip-labels'] === 'ENKETO') { //CASE: SURVEYS
+          console.log(data.survey_info?.['trip-labels'])
+          if (data.survey_info?.['trip-labels'] === 'ENKETO') { //CASE: SURVEYS
+            surveys = data.survey_info.surveys
             survey_list = Object.keys(surveys)
             survey_list = survey_list.filter(name => name !== 'UserProfileSurvey')    
             load_file = "metrics_study_surveys.html"
