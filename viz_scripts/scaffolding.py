@@ -202,8 +202,8 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
-        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
-        combined_mode_values = mode_values + replaced_mode_values
+        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
+        combined_mode_values = mode_values + replaced_mode_values + ['Other']
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
@@ -330,6 +330,14 @@ def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
     quality_text = f"Based on %s trips ({cutoff_text}) from %d {user_str}" % cq if cutoff_text else f"Based on %s trips from %d {user_str}" % cq
+    print(quality_text)
+    return quality_text
+
+#once we can calculate the "denominator" for survey trips, this can be removed
+def get_quality_text_numerator(df, include_test_users=False):
+    cq = (len(df), unique_users(df))
+    user_str = 'testers and participants' if include_test_users else 'users'
+    quality_text = f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 
