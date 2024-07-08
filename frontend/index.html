@@ -412,8 +412,7 @@
           console.log(data.survey_info?.['trip-labels'])
           if (data.survey_info?.['trip-labels'] === 'ENKETO') { //CASE: SURVEYS
             surveys = data.survey_info.surveys
-            survey_list = Object.keys(surveys)
-            survey_list = survey_list.filter(name => name !== 'UserProfileSurvey')    
+            survey_list = Object.keys(surveys).filter(name => name !== 'UserProfileSurvey')    
             load_file = "metrics_study_surveys.html"
             $.get(load_file, function (file) {
               survey_list.forEach((name) => {
