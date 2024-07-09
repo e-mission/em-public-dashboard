@@ -1,5 +1,5 @@
 # python 3
-FROM shankari/e-mission-server:master_2024-05-06--36-33
+FROM shankari/e-mission-server:master_2024-06-25--47-25
 
 VOLUME /plots
 
