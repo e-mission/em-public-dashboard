@@ -4,10 +4,13 @@ import matplotlib.pyplot as plt
 import sys
 from collections import defaultdict
 from collections import OrderedDict
+import difflib
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
+import emcommon.diary.base_modes as base_modes
+
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -193,6 +196,14 @@ def mapping_labels(dynamic_labels, label_type):
             return defaultdict(lambda: 'Other', translation_mapping)
         dic_mapping = translate_labels(dynamic_labels[label_type])
         return dic_mapping
+    
+def find_closest_key(input_key, dictionary):
+    input_key = input_key.split(",")[0].split("/")[0].replace("share","").upper()
+    keys = list(dictionary.keys())
+    closest_matches = difflib.get_close_matches(input_key, keys, n=1)
+    if closest_matches:
+        return closest_matches[0]
+    return "OTHER"
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
@@ -208,9 +219,9 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
 
-    colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
+    colors_mode = {x: base_modes.BASE_MODES[find_closest_key(x, base_modes.BASE_MODES)]["color"] for x in combined_mode_values}
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
-    colors_sensed = dict(zip(sensed_values, plt.cm.tab20.colors[:len(sensed_values)]))
+    colors_sensed = dict(zip(sensed_values, [base_modes.BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
     return colors_mode, colors_purpose, colors_sensed
 
