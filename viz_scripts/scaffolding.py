@@ -198,6 +198,9 @@ def mapping_labels(dynamic_labels, label_type):
         return dic_mapping
     
 def find_closest_key(input_key, dictionary):
+    # Edge case
+    if " bike" in input_key.lower():
+        return "BICYCLING"
     input_key = input_key.split(",")[0].split("/")[0].replace("share","").upper()
     keys = list(dictionary.keys())
     closest_matches = difflib.get_close_matches(input_key, keys, n=1)
