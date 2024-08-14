@@ -18,8 +18,10 @@ services:
   notebook-server:
     image: em-pub-dash-dev/viz-scripts
     build:
-        context: viz_scripts
-        dockerfile: docker/Dockerfile.dev
+      context: viz_scripts
+      dockerfile: docker/Dockerfile.dev
+      args:
+        SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
     depends_on:
       - db
     environment:

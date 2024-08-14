@@ -1,5 +1,8 @@
 # python 3
-FROM shankari/e-mission-server:master_2024-07-19--34-43
+ARG SERVER_IMAGE_TAG
+FROM shankari/e-mission-server:master_${SERVER_IMAGE_TAG}
+
+ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/certs/
 
 VOLUME /plots
 
