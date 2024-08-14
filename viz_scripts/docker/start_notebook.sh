@@ -30,7 +30,7 @@ cd saved-notebooks
 # tail -f /dev/null
 if [ -z ${CRON_MODE} ] ; then
     echo "Running notebook in docker, change host:port to localhost:47962 in the URL below"
-    PYTHONPATH=/usr/src/app jupyter notebook --no-browser --ip=${WEB_SERVER_HOST} --allow-root
+    PYTHONPATH=/usr/src/app jupyter notebook --no-browser --ip=0.0.0.0 --allow-root
 else
     echo "Running crontab without user interaction, setting python path"
     export PYTHONPATH=/usr/src/app
