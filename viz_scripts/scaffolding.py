@@ -69,16 +69,6 @@ def load_all_participant_trips(program, tq, load_test_users):
     disp.display(participant_ct_df.head())
     return participant_ct_df
 
-def filter_composite_trips(all_comp_trips, program, load_test_users):
-    participant_list = get_participant_uuids(program, load_test_users)
-    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if len(all_comp_trips) == 0:
-        return all_comp_trips
-    participant_ct_df = all_comp_trips[all_comp_trips.user_id.isin(participant_list)]
-    print("After filtering, found %s participant trips " % len(participant_ct_df))
-    disp.display(participant_ct_df.head())
-    return participant_ct_df
-
 def filter_labeled_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
@@ -212,8 +202,8 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
-        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) if "PURPOSE" in dynamic_labels else []
-        combined_mode_values = mode_values + replaced_mode_values
+        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
+        combined_mode_values = mode_values + replaced_mode_values + ['Other']
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
@@ -274,6 +264,21 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
+def load_viz_notebook_survey_data(year, month, program, include_test_users=False):
+    """ Inputs:
+    year/month/program/test users = parameters from the visualization notebook
+
+    Returns: df of all trips taken by participants, df of all trips with user_input
+    """
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    labeled_ct = filter_labeled_trips(participant_ct_df)
+    
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    
+    return participant_ct_df, labeled_ct, file_suffix
+
 def add_energy_labels(expanded_ct, df_ei, dic_fuel, dynamic_labels):
     """ Inputs:
     expanded_ct = dataframe of trips that has had Mode_confirm and Replaced_mode added
@@ -325,6 +330,14 @@ def get_quality_text_sensed(df, cutoff_text="", include_test_users=False):
     cq = (len(df), unique_users(df))
     user_str = 'testers and participants' if include_test_users else 'users'
     quality_text = f"Based on %s trips ({cutoff_text}) from %d {user_str}" % cq if cutoff_text else f"Based on %s trips from %d {user_str}" % cq
+    print(quality_text)
+    return quality_text
+
+#once we can calculate the "denominator" for survey trips, this can be removed
+def get_quality_text_numerator(df, include_test_users=False):
+    cq = (len(df), unique_users(df))
+    user_str = 'testers and participants' if include_test_users else 'users'
+    quality_text = f"Based on %s trips from %d {user_str}" % cq
     print(quality_text)
     return quality_text
 

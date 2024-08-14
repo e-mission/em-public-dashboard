@@ -357,28 +357,6 @@
       };
       return dates;
     };
-
-    function getDictionaryList(form_list) {
-      var quest_dict = {};
-        return new Promise(async (resolve) => {
-          for (i in form_list) {
-            response = await fetch(form_list[i]);
-            text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, "text/xml");
-            labels = doc.getElementsByTagName("label");
-              for (i in labels) {
-                try {
-                  if ((labels[i].parentNode.getAttribute("appearance") !== "label" && labels[i].parentNode.nodeName != "input")) //label type questions don't ever have answers
-                  {
-                    quest_dict[labels[i].parentNode.getAttribute("ref").split('/').slice(-1)] = labels[i].firstChild.data;
-                  }
-                } catch (e) { }
-              } 
-            }
-          resolve(quest_dict);
-        })
-    };
   </script>
 
   <script type="text/javascript">
@@ -430,38 +408,22 @@
           mode_studied = data.intro.mode_studied
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
-          surveys = data.survey_info.surveys 
-          console.log(data.survey_info['trip-labels'])
-          if (data.survey_info['trip-labels'] === 'ENKETO') { //CASE: SURVEYS
-            survey_list = Object.keys(surveys)
-            survey_list = survey_list.filter(name => name !== 'UserProfileSurvey')
-
-            sheet_list = []
-            for (name in survey_list) {
-              form_path = data.survey_info.surveys[survey_list[name]].formPath;
-              //THIS ASSUMES THE FILENAME IS THE SAME AS THE FORM PATH BUT WITH xml FILE TYPE
-              l_path = form_path.split('.')
-              l_path.splice(l_path.length -1, 1, 'xml');
-              console.log(l_path);
-              sheet_path = l_path.join('.')
-              sheet_list.push(sheet_path)
-            }
-
-            getDictionaryList(sheet_list).then((quest_dict) => {
-              console.log(quest_dict);
-              load_file = "metrics_study_surveys.html"
-              $.get(load_file, function (file) {
-                Object.entries(quest_dict).forEach(([key, value]) => {
-                  var text = '<option ' + 'value="' + key + '" data-sizex="10" data-sizey="4">' + value + '</option>';
-                  file = file.concat('\n', text);
-                });
-                console.log("configuring units");
-                const unitConfigured = file.replaceAll("${data.display_config.use_imperial}", dist_units);
-                $('#metric').append(unitConfigured);
-                addPreconfiguredMetrics(Object.keys(quest_dict).slice(0, 5)); //only adding the first 6 elements
+          survey_list = []
+          console.log(data.survey_info?.['trip-labels'])
+          if (data.survey_info?.['trip-labels'] === 'ENKETO') { //CASE: SURVEYS
+            surveys = data.survey_info.surveys
+            survey_list = Object.keys(surveys).filter(name => name !== 'UserProfileSurvey')    
+            load_file = "metrics_study_surveys.html"
+            $.get(load_file, function (file) {
+              survey_list.forEach((name) => {
+                var text = '<option ' + 'value="' + name + '" data-sizex="10" data-sizey="8">' + name + '</option>';
+                file = file.concat('\n', text);
               });
-            });         
-          
+              console.log("configuring units");
+              const unitConfigured = file.replaceAll("${data.display_config.use_imperial}", dist_units);
+              $('#metric').append(unitConfigured);
+              addPreconfiguredMetrics(survey_list); //only adding the first 6 elements
+            });        
           }
           else if (data.intro.program_or_study == 'program') { //CASE: PROGRAM
             // Note: We're disabling energy metrics on public dashboard when dynamic labels are available.
@@ -589,10 +551,9 @@
         const htmlFile = "plots/" + metric + "_" + dateVal + program + ".html";
         const altTextFile = "plots/" + metric + "_" + dateVal + program + ".txt";
         const altText = loadFile(altTextFile);
-        const quest_dict = await getDictionaryList(sheet_list);
         const stackedMetrics = ['ntrips_total', 'ntrips_total_survey', 'ntrips_purpose', 'ntrips_under80', 'ntrips_under80_survey', 'ntrips_commute_mode_confirm',
                                  'total_trip_length', 'total_trip_length_land', 'total_trip_length_land_survey',`ntrips_${mode_studied}_total`,
-                                 `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`].concat(Object.keys(quest_dict));
+                                 `ntrips_${mode_studied}_purpose`,`total_trip_length_${mode_studied}_replaced_mode`].concat(survey_list);
         const isStackedMetric = stackedMetrics.includes(metric);
         const jsonData = { metric, dateVal, program, metricLabel, dateLabel, programLabel, sizex, sizey };
 
