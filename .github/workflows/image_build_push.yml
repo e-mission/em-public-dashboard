@@ -79,14 +79,14 @@ jobs:
     - name: rename docker images
       run: |
         if [ "${{ github.event_name }}" == "push" ]; then
-          docker image tag em-pub-dash/frontend:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+          docker image tag em-pub-dash/frontend:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
         fi
         docker image tag em-pub-dash/viz-scripts:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
 
     - name: push docker images
       run: |
         if [ "${{ github.event_name }}" == "push" ]; then
-          docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+          docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
         fi
         docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
    
