@@ -78,6 +78,15 @@ def filter_labeled_trips(mixed_trip_df):
     disp.display(labeled_ct.head())
     return labeled_ct
 
+def filter_inferred_trips(mixed_trip_df):
+    # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if len(mixed_trip_df) == 0:
+        return mixed_trip_df
+    inferred_ct = mixed_trip_df[mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))]
+    print("After filtering, found %s inferred trips" % len(inferred_ct))
+    disp.display(inferred_ct.head())
+    return inferred_ct
+
 def expand_userinputs(labeled_ct):
     '''
     param: labeled_ct: a dataframe of confirmed trips, some of which have labels
@@ -104,6 +113,27 @@ def expand_userinputs(labeled_ct):
             (len(expanded_ct.columns), len(labeled_ct.columns)))
     disp.display(expanded_ct.head())
     return expanded_ct
+
+def expand_inferredlabels(inferred_ct):
+    if len(inferred_ct) == 0:
+        return inferred_ct
+
+    max_labels_list = []
+    max_p_list = []
+
+    for item in inferred_ct.inferred_labels:
+        max_entry = max(item, key=lambda x: x['p'])
+        max_labels_list.append(max_entry['labels'])
+        max_p_list.append(max_entry['p'])
+
+    inferred_only_labels = pd.DataFrame(max_labels_list, index=inferred_ct.index)
+    disp.display(inferred_only_labels)
+    inferred_only_p = pd.DataFrame(max_p_list, index=inferred_ct.index, columns=['p'])
+    disp.display(inferred_only_p)
+    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels, inferred_only_p], axis=1)
+    expanded_inferred_ct.reset_index(drop=True, inplace=True)
+    disp.display(expanded_inferred_ct.head())
+    return expanded_inferred_ct
 
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
@@ -175,6 +205,75 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
         orient='index', columns=["value"])
 
     return expanded_ct, file_suffix, quality_text, debug_df
+
+def map_trip_data(df, study_type, dynamic_labels, dic_re, dic_pur):
+    # Change meters to miles
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "distance" in df.columns:
+        unit_conversions(df)
+
+    # Map new mode labels with translations dictionary from dynamic_labels
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if "mode_confirm" in df.columns:
+        if (len(dynamic_labels)):
+            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_mode_mapping)
+        else:
+            df['Mode_confirm'] = df['mode_confirm'].map(dic_re)
+    if study_type == 'program':
+        # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+        if 'replaced_mode' in df.columns:
+            if (len(dynamic_labels)):
+                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_replaced_mapping)
+            else:
+                df['Replaced_mode'] = df['replaced_mode'].map(dic_re)
+        else:
+            print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
+    else:
+            print("This is a study, not expecting any replaced modes.")
+
+    # Trip purpose mapping
+    # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
+    if dic_pur is not None and "purpose_confirm" in df.columns:
+        if (len(dynamic_labels)):
+             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
+             df['Trip_purpose'] = df['purpose_confirm'].map(dic_purpose_mapping)
+        else:
+            df['Trip_purpose'] = df['purpose_confirm'].map(dic_pur)
+    return df
+
+def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+    """ Inputs:
+    year/month/program/study_type = parameters from the visualization notebook
+    dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
+
+    Pipeline to load and process the data before use in visualization notebooks.
+    """
+    # Access database
+    tq = get_time_query(year, month)
+    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    inferred_ct = filter_inferred_trips(participant_ct_df)
+    expanded_it = expand_inferredlabels(inferred_ct)
+    expanded_it = map_trip_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
+
+    # Document data quality
+    file_suffix = get_file_suffix(year, month, program)
+    quality_text = get_quality_text(participant_ct_df, expanded_it, None, include_test_users)
+
+    debug_df = pd.DataFrame.from_dict({
+            "year": year,
+            "month": month,
+            "Registered_participants": len(get_participant_uuids(program, include_test_users)),
+            "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
+            "Participant_with_at_least_one_inferred_trip": unique_users(inferred_ct),
+            "Trips_with_at_least_one_inferred_label": len(inferred_ct),
+            "Trips_with_mode_confirm_inferred_label": trip_label_count("Mode_confirm", expanded_it),
+            "Trips_with_trip_purpose_inferred_label": trip_label_count("Trip_purpose", expanded_it)
+            },
+        orient='index', columns=["value"])
+
+    return expanded_it, file_suffix, quality_text, debug_df
 
 # Function to map the "MODE", "REPLACED_MODE", "PURPOSE" to respective en-translations
 # Input: dynamic_labels, label_type: MODE, REPLACED_MODE, PURPOSE
