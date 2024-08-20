@@ -213,16 +213,24 @@ def find_closest_key(input_key, dictionary):
 # Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+    colors_mode = {}
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
         purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
         combined_mode_values = mode_values + replaced_mode_values + ['Other']
+        # Translation to baseMode mapping so we can map directly to corresponding baseMode
+        translations_to_basemodes = {
+            dynamic_labels["translations"]["en"][key]: mode["baseMode"]
+            for key in dynamic_labels["translations"]["en"].keys() 
+            for mode in dynamic_labels["MODE"]
+            if mode["value"] == key
+        }
+        colors_mode = {mode: base_modes.BASE_MODES[translations_to_basemodes.get(mode, "UNKNOWN")]["color"] for mode in combined_mode_values}
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
-
-    colors_mode = {x: base_modes.BASE_MODES[find_closest_key(x, base_modes.BASE_MODES)]["color"] for x in combined_mode_values}
+        colors_mode = {x: base_modes.BASE_MODES[find_closest_key(x, base_modes.BASE_MODES)]["color"] for x in combined_mode_values}
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [base_modes.BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 

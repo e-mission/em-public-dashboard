@@ -9,7 +9,6 @@ WORKDIR /usr/src/app
 
 RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
 RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
-RUN /bin/bash -c "source setup/activate.sh && pip3 install 'git+https://github.com/jgreenlee/e-mission-common.git'"
 
 ADD docker/start_notebook.sh /usr/src/app/.docker/start_notebook.sh
 RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
