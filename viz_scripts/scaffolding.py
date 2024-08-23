@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections import OrderedDict
 import difflib
 import colorsys
+import math
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -229,7 +230,7 @@ def get_color(base_mode, base_mode_count):
     if base_mode_count[base_mode] <= 1:
         return base_modes.BASE_MODES[base_mode]["color"]
     else:
-        return lighten_color(base_modes.BASE_MODES[base_mode]["color"], (1 + base_mode_count[base_mode] * 0.2))
+        return lighten_color(base_modes.BASE_MODES[base_mode]["color"], (2 - 1 / math.exp(0.1 * base_mode_count[base_mode])))
 
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
