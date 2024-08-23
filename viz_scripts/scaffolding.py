@@ -5,6 +5,7 @@ import sys
 from collections import defaultdict
 from collections import OrderedDict
 import difflib
+import colorsys
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -208,12 +209,36 @@ def find_closest_key(input_key, dictionary):
         return closest_matches[0]
     return "OTHER"
 
+def lighten_color(hex_color, lightness):
+    # Cap lightness at 2 to avoid too light colors
+    lightness = min(2, lightness)
+    # Convert to RGB
+    r, g, b = int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:7], 16)
+    # Convert RGB to HLS 
+    h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
+    # Modify lightness
+    l *= lightness
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    # Convert to hex
+    return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
+
+def get_color(base_mode, base_mode_count):
+    # Keep track of how many base modes we have seen so we can lighten the color if necessary
+    base_mode_count[base_mode] += 1
+    if base_mode_count[base_mode] <= 1:
+        return base_modes.BASE_MODES[base_mode]["color"]
+    else:
+        return lighten_color(base_modes.BASE_MODES[base_mode]["color"], (1 + base_mode_count[base_mode] * 0.2))
+
+
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
     colors_mode = {}
+    base_mode_count = defaultdict(int)
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
@@ -226,11 +251,11 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
             for mode in dynamic_labels["MODE"]
             if mode["value"] == key
         }
-        colors_mode = {mode: base_modes.BASE_MODES[translations_to_basemodes.get(mode, "UNKNOWN")]["color"] for mode in combined_mode_values}
+        colors_mode = {mode: get_color(translations_to_basemodes.get(mode, "UNKNOWN"), base_mode_count) for mode in combined_mode_values}
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
-        colors_mode = {x: base_modes.BASE_MODES[find_closest_key(x, base_modes.BASE_MODES)]["color"] for x in combined_mode_values}
+        colors_mode = {mode: (get_color(find_closest_key(mode, base_modes.BASE_MODES), base_mode_count)) for mode in combined_mode_values}
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [base_modes.BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
