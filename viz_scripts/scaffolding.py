@@ -11,7 +11,7 @@ import math
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
-import emcommon.diary.base_modes as base_modes
+from emcommon.diary.base_modes import BASE_MODES, dedupe_colors
 
 
 # Module for pretty-printing outputs (e.g. head) to help users
@@ -224,22 +224,14 @@ def lighten_color(hex_color, lightness):
     # Convert to hex
     return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
 
-def get_color(base_mode, base_mode_count):
-    # Keep track of how many base modes we have seen so we can lighten the color if necessary
-    base_mode_count[base_mode] += 1
-    if base_mode_count[base_mode] <= 1:
-        return base_modes.BASE_MODES[base_mode]["color"]
-    else:
-        return lighten_color(base_modes.BASE_MODES[base_mode]["color"], (2 - 1 / math.exp(0.1 * base_mode_count[base_mode])))
-
-
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+
     colors_mode = {}
-    base_mode_count = defaultdict(int)
+
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
@@ -252,13 +244,19 @@ def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
             for mode in dynamic_labels["MODE"]
             if mode["value"] == key
         }
-        colors_mode = {mode: get_color(translations_to_basemodes.get(mode, "UNKNOWN"), base_mode_count) for mode in combined_mode_values}
+        colors_mode = dedupe_colors([
+            [mode, BASE_MODES[translations_to_basemodes.get(mode, "UNKNOWN")]['color']]
+            for mode in combined_mode_values
+        ])
     else:
         combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
         purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
-        colors_mode = {mode: (get_color(find_closest_key(mode, base_modes.BASE_MODES), base_mode_count)) for mode in combined_mode_values}
+        colors_mode = dedupe_colors([
+            [mode, BASE_MODES[find_closest_key(mode, BASE_MODES)]['color']]
+            for mode in combined_mode_values
+        ])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
-    colors_sensed = dict(zip(sensed_values, [base_modes.BASE_MODES[x.upper()]['color'] for x in sensed_values]))
+    colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
     return colors_mode, colors_purpose, colors_sensed
 
