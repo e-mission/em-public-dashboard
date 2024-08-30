@@ -94,7 +94,7 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df, values_to_translations={}):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart. It is
         expected to have three columns, which represent the 'label', 'value'
@@ -128,7 +128,7 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
                 mode_prop = long['Proportion']
                 mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors[label])
+                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=values_to_translations.get(label, label), color=colors[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -144,6 +144,7 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
         text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
         print("After populating, %s" % text_result)
     except Exception as e:
+        print(e)
         # tb.print_exception(type(e), e, e.__traceback__)
         #ax.set_title("Insufficient data", loc="center")
         ax.set_ylabel(bar_label)

@@ -212,60 +212,36 @@ def find_closest_key(input_key, dictionary):
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
-async def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
+async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
+    # Load default options from e-mission-common
+    labels = await read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+    replaced_mode_values = []
 
-    # labels = await read_json_resource("label-options.default.json")
-    # replaced_mode_values = []
-    # if len(dynamic_labels) > 0:
-    #     labels = dynamic_labels
-    #     replaced_mode_values = list(mapping_labels(labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in labels else []
-
-    # mode_values = list(mapping_labels(labels, "MODE").values()) if "MODE" in labels else []
-    # purpose_values = list(mapping_labels(labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in labels else []
-    # combined_mode_values = mode_values + replaced_mode_values + ['Other']
-
-    # # Translation to baseMode mapping so we can map directly to corresponding baseMode
-    # translations_to_basemodes = {
-    #     labels["translations"]["en"][key]: mode.get("baseMode") or mode.get("base_mode")
-    #     for key in labels["translations"]["en"].keys() 
-    #     for mode in labels["MODE"]
-    #     if mode["value"] == key
-    # }
-    # colors_mode = dedupe_colors([
-    #     [mode, BASE_MODES[translations_to_basemodes.get(mode, "UNKNOWN")]['color']]
-    #     for mode in combined_mode_values
-    # ])
-
-    colors_mode = {}
-
+    # If dynamic_labels are provided, then we will use the dynamic labels for mapping
     if len(dynamic_labels) > 0:
-        mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
-        replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
-        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
-        combined_mode_values = mode_values + replaced_mode_values + ['Other']
-        # Translation to baseMode mapping so we can map directly to corresponding baseMode
-        translations_to_basemodes = {
-            dynamic_labels["translations"]["en"][key]: mode["baseMode"]
-            for key in dynamic_labels["translations"]["en"].keys() 
-            for mode in dynamic_labels["MODE"]
-            if mode["value"] == key
-        }
-        colors_mode = dedupe_colors([
-            [mode, BASE_MODES[translations_to_basemodes.get(mode, "UNKNOWN")]['color']]
-            for mode in combined_mode_values
-        ], adjustment_range=[1,1.8])
-    else:
-        combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
-        purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
-        colors_mode = dedupe_colors([
-            [mode, BASE_MODES[find_closest_key(mode, BASE_MODES)]['color']]
-            for mode in combined_mode_values
-        ], adjustment_range=[1,1.8])
+        labels = dynamic_labels
+        replaced_mode_values = list(mapping_labels(labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in labels else []
+
+    # Load base mode values and purpose values 
+    mode_values =  [mode["value"] for mode in labels["MODE"]]
+    purpose_values = list(mapping_labels(labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in labels else []
+    combined_mode_values = mode_values + replaced_mode_values + ['Other']
+
+    # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
+    value_to_basemode = {mode["value"]: mode.get("base_mode", "baseMode") for mode in labels["MODE"]}
+    # Mapping between values and translations for display on plots
+    values_to_translations = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
+
+    # Assign colors to mode, purpose, and sensed values
+    colors_mode = dedupe_colors([
+        [mode, BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
+        for mode in combined_mode_values
+    ], adjustment_range=[1,1.8])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
-    return colors_mode, colors_purpose, colors_sensed
+    return colors_mode, colors_purpose, colors_sensed, values_to_translations
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
