@@ -228,7 +228,7 @@ async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
     combined_mode_values = mode_values + replaced_mode_values + ['Other']
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
-    value_to_basemode = {mode["value"]: mode.get("base_mode", "baseMode") for mode in labels["MODE"]}
+    value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "baseMode")) for mode in labels["MODE"]}
     # Mapping between values and translations for display on plots
     values_to_translations = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
 
