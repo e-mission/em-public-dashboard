@@ -224,7 +224,7 @@ async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
 
     # Load base mode values and purpose values 
     mode_values =  [mode["value"] for mode in labels["MODE"]]
-    purpose_values = list(mapping_labels(labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in labels else []
+    purpose_values = [mode["value"] for mode in labels["PURPOSE"]] + ['Other']
     combined_mode_values = mode_values + replaced_mode_values + ['Other']
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
