@@ -4,10 +4,13 @@ import matplotlib.pyplot as plt
 import sys
 from collections import defaultdict
 from collections import OrderedDict
+import difflib
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
+from emcommon.diary.base_modes import BASE_MODES, dedupe_colors
+from emcommon.util import read_json_resource
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -194,25 +197,50 @@ def mapping_labels(dynamic_labels, label_type):
         dic_mapping = translate_labels(dynamic_labels[label_type])
         return dic_mapping
 
+def find_closest_key(input_key, dictionary):
+    # Edge case
+    if " bike" in input_key.lower():
+        return "BICYCLING"
+    input_key = input_key.split(",")[0].split("/")[0].replace("share","").upper()
+    keys = list(dictionary.keys())
+    closest_matches = difflib.get_close_matches(input_key, keys, n=1)
+    if closest_matches:
+        return closest_matches[0]
+    return "OTHER"
+
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
-def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
+async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
+    # Load default options from e-mission-common
+    labels = await read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+    replaced_mode_values = []
+
+    # If dynamic_labels are provided, then we will use the dynamic labels for mapping
     if len(dynamic_labels) > 0:
-        mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
-        replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
-        purpose_values = list(mapping_labels(dynamic_labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in dynamic_labels else []
-        combined_mode_values = mode_values + replaced_mode_values + ['Other']
-    else:
-        combined_mode_values = (list(OrderedDict.fromkeys(dic_re.values())) + ['Other'])
-        purpose_values = list(OrderedDict.fromkeys(dic_pur.values()))
+        labels = dynamic_labels
+        replaced_mode_values = list(mapping_labels(labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in labels else []
 
-    colors_mode = dict(zip(combined_mode_values, plt.cm.tab20.colors[:len(combined_mode_values)]))
+    # Load base mode values and purpose values 
+    mode_values =  [mode["value"] for mode in labels["MODE"]]
+    purpose_values = list(mapping_labels(labels, "PURPOSE").values()) + ['Other'] if "PURPOSE" in labels else []
+    combined_mode_values = mode_values + replaced_mode_values + ['Other']
+
+    # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
+    value_to_basemode = {mode["value"]: mode.get("base_mode", "baseMode") for mode in labels["MODE"]}
+    # Mapping between values and translations for display on plots
+    values_to_translations = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
+
+    # Assign colors to mode, purpose, and sensed values
+    colors_mode = dedupe_colors([
+        [mode, BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
+        for mode in combined_mode_values
+    ], adjustment_range=[1,1.8])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
-    colors_sensed = dict(zip(sensed_values, plt.cm.tab20.colors[:len(sensed_values)]))
+    colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
-    return colors_mode, colors_purpose, colors_sensed
+    return colors_mode, colors_purpose, colors_sensed, values_to_translations
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
