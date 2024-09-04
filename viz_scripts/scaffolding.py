@@ -200,7 +200,7 @@ def mapping_labels(dynamic_labels, label_type):
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
-async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
+async def mapping_color_labels(dynamic_labels, language="en"):
     # Load default options from e-mission-common
     labels = await read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
@@ -218,8 +218,10 @@ async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "baseMode")) for mode in labels["MODE"]}
-    # Mapping between values and translations for display on plots
-    values_to_translations = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
+    # Mapping between values and translations for display on plots (for Mode)
+    values_to_translations_mode = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
+    # Mapping between values and translations for display on plots (for Purpose)
+    values_to_translations_purpose = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["PURPOSE"]}
 
     # Assign colors to mode, purpose, and sensed values
     colors_mode = dedupe_colors([
@@ -229,7 +231,7 @@ async def mapping_color_labels(dynamic_labels, dic_re, dic_pur, language="en"):
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
-    return colors_mode, colors_purpose, colors_sensed, values_to_translations
+    return colors_mode, colors_purpose, colors_sensed, values_to_translations_mode, values_to_translations_purpose
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
