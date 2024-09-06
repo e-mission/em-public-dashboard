@@ -239,7 +239,7 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
     expanded_ct = participant_ct_df
     print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
     if len(expanded_ct) > 0:
-        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get))
+        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get) if not isinstance(md, float) else "UNKNOWN")
         expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
         valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
         expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
