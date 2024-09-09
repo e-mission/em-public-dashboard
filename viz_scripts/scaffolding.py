@@ -238,8 +238,26 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     expanded_ct = participant_ct_df
     print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
+    
+    #TODO-this is also in the admin dash, can we unify?
+    get_max_mode_from_summary = lambda md: (
+            "UNKNOWN"
+            if not isinstance(md, dict)
+            or "distance" not in md
+            or not isinstance(md["distance"], dict)
+            # If 'md' is a dictionary and 'distance' is a valid key pointing to a dictionary:
+            else (
+                # Get the maximum value from 'md["distance"]' using the values of 'md["distance"].get' as the key for 'max'.
+                # This operation only happens if the length of 'md["distance"]' is greater than 0.
+                # Otherwise, return "INVALID".
+                max(md["distance"], key=md["distance"].get)
+                if len(md["distance"]) > 0
+                else "UNKNOWN"
+            )
+        )
+    
     if len(expanded_ct) > 0:
-        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get) if not isinstance(md, float) else "UNKNOWN")
+        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(get_max_mode_from_summary)
         expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
         valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
         expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
