@@ -1,4 +1,4 @@
-# A simple and stupid dashboard for e-mission
+# A simple dashboard for e-mission
 
 Issues: Since this repository is part of a larger project, all issues are tracked in the central docs repository. If you have a question, as suggested by the open source guide, please file an issue instead of sending an email. Since issues are public, other contributors can try to answer the question and benefit from the answer.
 
@@ -139,7 +139,6 @@ You may need to increase the resources avaliable to Docker if:
 - you believe you've loaded the data but there is none when running the notebooks
 - the notebook can't connect to the database
 - when you try and start the container for the database it exits with code 14
-- 
 
 ## Large Dataset Workaround
 
