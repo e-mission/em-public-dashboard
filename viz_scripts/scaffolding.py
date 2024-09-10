@@ -198,7 +198,7 @@ def mapping_labels(dynamic_labels, label_type):
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
-    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "INVALID"]
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
@@ -241,7 +241,7 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
     
     #TODO-this is also in the admin dash, can we unify?
     get_max_mode_from_summary = lambda md: (
-            "UNKNOWN"
+            "INVALID"
             if not isinstance(md, dict)
             or "distance" not in md
             or not isinstance(md["distance"], dict)
@@ -252,14 +252,14 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
                 # Otherwise, return "INVALID".
                 max(md["distance"], key=md["distance"].get)
                 if len(md["distance"]) > 0
-                else "UNKNOWN"
+                else "INVALID"
             )
         )
     
     if len(expanded_ct) > 0:
         expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(get_max_mode_from_summary)
         expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
-        valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
+        valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "INVALID"]
         expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
 
     # Change meters to miles
