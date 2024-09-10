@@ -74,18 +74,18 @@ Note that this expects a standard setup with:
 
 ### Using `docker compose`
 
-When working with `docker compose`, it's generally recommended to avoid committing changes to the `docker-compose-dev.yml` file, especially if you're running the `./load_mongodump <dump tar>` script. This file is typically configured to work in a specific way for your development environment, and changes might not be applicable or useful for others working on the same project.
+When working with `docker compose`, it's generally recommended to avoid committing changes to the `docker-compose.dev.yml` file, especially if you're running the `./load_mongodump <dump tar>` script. This file is typically configured to work in a specific way for your development environment, and changes might not be applicable or useful for others working on the same project.
 
 ### `.gitignore` Configuration
 
-To streamline your workflow, we have added the `docker-compose-dev.yml` file to the `.gitignore` file. This means that by default, changes to `docker-compose-dev.yml` will not be tracked by Git. This setup helps to avoid unnecessary commits and ensures that your `docker-compose-dev.yml` remains consistent with the intended configuration for the project.
+To streamline your workflow, we have added the `docker-compose.dev.yml` file to the `.gitignore` file. This means that by default, changes to `docker-compose.dev.yml` will not be tracked by Git. This setup helps to avoid unnecessary commits and ensures that your `docker-compose.dev.yml` remains consistent with the intended configuration for the project.
 
-### Committing Changes to `docker-compose-dev.yml`
+### Committing Changes to `docker-compose.dev.yml`
 
-If you do need to make changes to `docker-compose-dev.yml` and want to commit those changes, you can override the ignore settings by using the following Git command:
+If you do need to make changes to `docker-compose.dev.yml` and want to commit those changes, you can override the ignore settings by using the following Git command:
 
 ```bash
-git add -f docker-compose-dev.yml
+git add -f docker-compose.dev.yml
 ```
 
 **If you have a non-standard setup, please use your expertise to change the script appropriately.**
