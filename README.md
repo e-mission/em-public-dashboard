@@ -70,6 +70,24 @@ Note that this expects a standard setup with:
 - this repository checked out under the `em-public-dashboard` directory, which makes the database name `em-public-dashboard_db_1`
 - the incoming mongodump is in tar gz format. This should be true of all canbikeco dumps, you may need to change the `tar xvf` to `unzip` otherwise.  The mongo container typically doesn't have zip installed, so using tar is more portable.
 
+## Working with `docker compose` and `.gitignore`
+
+### Using `docker compose`
+
+When working with `docker compose`, it's generally recommended to avoid committing changes to the `docker-compose-dev.yml` file, especially if you're running the `./load_mongodump <dump tar>` script. This file is typically configured to work in a specific way for your development environment, and changes might not be applicable or useful for others working on the same project.
+
+### `.gitignore` Configuration
+
+To streamline your workflow, we have added the `docker-compose-dev.yml` file to the `.gitignore` file. This means that by default, changes to `docker-compose-dev.yml` will not be tracked by Git. This setup helps to avoid unnecessary commits and ensures that your `docker-compose-dev.yml` remains consistent with the intended configuration for the project.
+
+### Committing Changes to `docker-compose-dev.yml`
+
+If you do need to make changes to `docker-compose-dev.yml` and want to commit those changes, you can override the ignore settings by using the following Git command:
+
+```bash
+git add -f docker-compose-dev.yml
+```
+
 **If you have a non-standard setup, please use your expertise to change the script appropriately.**
 
 #### Happy visualizations!
