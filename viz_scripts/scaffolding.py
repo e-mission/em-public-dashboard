@@ -112,7 +112,7 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -137,16 +137,25 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
         if (len(dynamic_labels)):
             dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
+            labels = dynamic_labels
         else:
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
+            labels = await read_json_resource("label-options.default.json")
+        # If the 'mode_confirm' is not available as the list of keys in the dynamic_labels or label_options.default.json, then, we should transform it as 'other'
+        mode_values = [item['value'] for item in labels['MODE']]
+        expanded_ct['merge_mode_confirm'] = expanded_ct['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
             if (len(dynamic_labels)):
                 dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
+                labels = dynamic_labels
             else:
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
+                labels = await read_json_resource("label-options.default.json")
+            replaced_modes = [item['value'] for item in labels['REPLACED_MODE']]
+            expanded_ct['merge_replaced_mode'] = expanded_ct['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
         else:
             print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
     else:
@@ -156,10 +165,14 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if dic_pur is not None and "purpose_confirm" in expanded_ct.columns:
         if (len(dynamic_labels)):
-             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
-             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
+            dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
+            expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
+            labels = dynamic_labels
         else:
             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
+            labels = await read_json_resource("label-options.default.json")
+        purpose_values = [item['value'] for item in labels['PURPOSE']]
+        expanded_ct['merge_purpose_confirm'] = expanded_ct['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -196,7 +209,7 @@ def mapping_labels(dynamic_labels, label_type):
             return defaultdict(lambda: 'Other', translation_mapping)
         dic_mapping = translate_labels(dynamic_labels[label_type])
         return dic_mapping
-    
+
 def find_closest_key(input_key, dictionary):
     # Edge case
     if " bike" in input_key.lower():
@@ -214,35 +227,39 @@ def find_closest_key(input_key, dictionary):
 async def mapping_color_labels(dynamic_labels, language="en"):
     # Load default options from e-mission-common
     labels = await read_json_resource("label-options.default.json")
-    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
-    replaced_mode_values = []
+    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "other"]
 
     # If dynamic_labels are provided, then we will use the dynamic labels for mapping
     if len(dynamic_labels) > 0:
         labels = dynamic_labels
-        replaced_mode_values = list(mapping_labels(labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in labels else []
 
     # Load base mode values and purpose values 
     mode_values =  [mode["value"] for mode in labels["MODE"]]
-    purpose_values = [mode["value"] for mode in labels["PURPOSE"]] + ['Other']
-    combined_mode_values = mode_values + replaced_mode_values + ['Other']
+    purpose_values = [mode["value"] for mode in labels["PURPOSE"]]
+    replaced_values = [mode["value"] for mode in labels["REPLACED_MODE"]]
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
-    value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "baseMode")) for mode in labels["MODE"]}
+    value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     # Mapping between values and translations for display on plots (for Mode)
-    values_to_translations_mode = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["MODE"]}
+    values_to_translations_mode = dict(mapping_labels(labels, "MODE"))
     # Mapping between values and translations for display on plots (for Purpose)
-    values_to_translations_purpose = {mode["value"]: labels["translations"][language][mode["value"]] for mode in labels["PURPOSE"]}
+    values_to_translations_purpose = dict(mapping_labels(labels, "PURPOSE"))
+    # Mapping between values and translations for display on plots (for Replaced mode)
+    values_to_translations_replaced = dict(mapping_labels(labels, "REPLACED_MODE"))
 
-    # Assign colors to mode, purpose, and sensed values
+    # Assign colors to mode, replaced, purpose, and sensed values
     colors_mode = dedupe_colors([
         [mode, BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
-        for mode in combined_mode_values
+        for mode in set(mode_values)
+    ], adjustment_range=[1,1.8])
+    colors_replaced = dedupe_colors([
+        [mode, BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
+        for mode in set(replaced_values)
     ], adjustment_range=[1,1.8])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
-    return colors_mode, colors_purpose, colors_sensed, values_to_translations_mode, values_to_translations_purpose
+    return colors_mode, colors_replaced, colors_purpose, colors_sensed, values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
