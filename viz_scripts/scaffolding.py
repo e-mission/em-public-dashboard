@@ -207,7 +207,7 @@ def mapping_labels(dynamic_labels, label_type):
                 translation = translations.get(value)
                 translation_mapping[value] = translation
             return defaultdict(lambda: 'Other', translation_mapping)
-        dic_mapping = translate_labels(dynamic_labels[label_type])
+        dic_mapping = translate_labels(dynamic_labels.get(label_type, ''))
         return dic_mapping
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
@@ -222,10 +222,10 @@ async def mapping_color_labels(dynamic_labels, language="en"):
     if len(dynamic_labels) > 0:
         labels = dynamic_labels
 
-    # Load base mode values and purpose values 
-    mode_values =  [mode["value"] for mode in labels["MODE"]]
-    purpose_values = [mode["value"] for mode in labels["PURPOSE"]]
-    replaced_values = [mode["value"] for mode in labels["REPLACED_MODE"]]
+    # Load base mode values and purpose values
+    mode_values =  [mode["value"] for mode in labels["MODE"]] if "MODE" in labels else []
+    purpose_values = [mode["value"] for mode in labels["PURPOSE"]] if "PURPOSE" in labels else []
+    replaced_values = [mode["value"] for mode in labels["REPLACED_MODE"]] if "REPLACED_MODE" in labels else []
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
