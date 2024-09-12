@@ -141,7 +141,7 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
             
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
-        text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
+        text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label, values_to_translations)
         print("After populating, %s" % text_result)
     except Exception as e:
         print(e)
@@ -440,7 +440,7 @@ def access_alt_html(html_content, chart_name):
     return html_content
 
 # Appends bar information into into the alt_html
-def store_alt_text_and_html_stacked_bar_chart(df, var_name):
+def store_alt_text_and_html_stacked_bar_chart(df, var_name, values_to_translations):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
@@ -448,12 +448,12 @@ def store_alt_text_and_html_stacked_bar_chart(df, var_name):
     # Generate alt text file
     alt_text = f"\nStacked Bar of: {var_name}\n"
     for i in range(len(df)):
-        alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
+        alt_text += f"{values_to_translations.get(df['Label'].iloc[i], df['Label'].iloc[i])} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
 
     # Generate html table
     alt_html = "\n"
     for i in range(len(df)):
-        alt_html += f"<tr><td>{df['Label'].iloc[i]}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
+        alt_html += f"<tr><td>{values_to_translations.get(df['Label'].iloc[i], df['Label'].iloc[i])}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     html_content = f"""
         <p>Trip Type: {var_name}</p>
         <table border="1" style="background-color: white;">
