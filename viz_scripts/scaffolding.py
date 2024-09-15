@@ -211,9 +211,9 @@ def mapping_labels(dynamic_labels, label_type):
         return dic_mapping
 
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
-# Input: dynamic_labels, dic_re, and dic_pur
+# Input: dynamic_labels
 # Output: Dictionary mapping between color with mode/purpose/sensed
-async def mapping_color_labels(dynamic_labels, language="en"):
+async def mapping_color_labels(dynamic_labels):
     # Load default options from e-mission-common
     labels = await read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "other"]
@@ -229,12 +229,6 @@ async def mapping_color_labels(dynamic_labels, language="en"):
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
-    # Mapping between values and translations for display on plots (for Mode)
-    values_to_translations_mode = dict(mapping_labels(labels, "MODE"))
-    # Mapping between values and translations for display on plots (for Purpose)
-    values_to_translations_purpose = dict(mapping_labels(labels, "PURPOSE"))
-    # Mapping between values and translations for display on plots (for Replaced mode)
-    values_to_translations_replaced = dict(mapping_labels(labels, "REPLACED_MODE"))
 
     # Assign colors to mode, replaced, purpose, and sensed values
     colors_mode = dedupe_colors([
@@ -248,7 +242,23 @@ async def mapping_color_labels(dynamic_labels, language="en"):
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
     colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
 
-    return colors_mode, colors_replaced, colors_purpose, colors_sensed, values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
+    return colors_mode, colors_replaced, colors_purpose, colors_sensed
+
+async def translate_values_to_labels(dynamic_labels, language="en"):
+    # Load default options from e-mission-common
+    labels = await read_json_resource("label-options.default.json")
+
+    # If dynamic_labels are provided, then we will use the dynamic labels for mapping
+    if len(dynamic_labels) > 0:
+        labels = dynamic_labels
+    # Mapping between values and translations for display on plots (for Mode)
+    values_to_translations_mode = dict(mapping_labels(labels, "MODE"))
+    # Mapping between values and translations for display on plots (for Purpose)
+    values_to_translations_purpose = dict(mapping_labels(labels, "PURPOSE"))
+    # Mapping between values and translations for display on plots (for Replaced mode)
+    values_to_translations_replaced = dict(mapping_labels(labels, "REPLACED_MODE"))
+
+    return values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
 
 # Function: Maps survey answers to colors.
 # Input: dictionary of raw and translated survey answers
