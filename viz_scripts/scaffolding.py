@@ -198,7 +198,7 @@ def mapping_labels(dynamic_labels, label_type):
 # Input: dynamic_labels, dic_re, and dic_pur
 # Output: Dictionary mapping between color with mode/purpose/sensed
 def mapping_color_labels(dynamic_labels, dic_re, dic_pur):
-    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "Other"]
+    sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "INVALID"]
     if len(dynamic_labels) > 0:
         mode_values = list(mapping_labels(dynamic_labels, "MODE").values()) if "MODE" in dynamic_labels else []
         replaced_mode_values = list(mapping_labels(dynamic_labels, "REPLACED_MODE").values()) if "REPLACED_MODE" in dynamic_labels else []
@@ -238,10 +238,28 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     expanded_ct = participant_ct_df
     print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
+    
+    #TODO-this is also in the admin dash, can we unify?
+    get_max_mode_from_summary = lambda md: (
+            "INVALID"
+            if not isinstance(md, dict)
+            or "distance" not in md
+            or not isinstance(md["distance"], dict)
+            # If 'md' is a dictionary and 'distance' is a valid key pointing to a dictionary:
+            else (
+                # Get the maximum value from 'md["distance"]' using the values of 'md["distance"].get' as the key for 'max'.
+                # This operation only happens if the length of 'md["distance"]' is greater than 0.
+                # Otherwise, return "INVALID".
+                max(md["distance"], key=md["distance"].get)
+                if len(md["distance"]) > 0
+                else "INVALID"
+            )
+        )
+    
     if len(expanded_ct) > 0:
-        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(lambda md: max(md["distance"], key=md["distance"].get))
+        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(get_max_mode_from_summary)
         expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
-        valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN"]
+        valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "INVALID"]
         expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
 
     # Change meters to miles
