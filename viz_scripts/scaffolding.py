@@ -240,8 +240,10 @@ async def mapping_color_labels(dynamic_labels):
         for mode in set(replaced_values)
     ], adjustment_range=[1,1.8])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
-    colors_sensed = dict(zip(sensed_values, [BASE_MODES[x.upper()]['color'] for x in sensed_values]))
-
+    colors_sensed = dedupe_colors([
+        [label, BASE_MODES[label.upper()]['color'] if label.upper() != 'INVALID' else BASE_MODES['UNKNOWN']['color']]
+        for label in sensed_values
+    ], adjustment_range=[1,1.8])
     return colors_mode, colors_replaced, colors_purpose, colors_sensed
 
 async def translate_values_to_labels(dynamic_labels, language="en"):
