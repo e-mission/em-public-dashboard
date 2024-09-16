@@ -54,6 +54,7 @@ def get_participant_uuids(program, load_test_users):
     return participant_uuid_str
 
 async def add_base_mode_footprint(trip_list):
+    #TODO filter ahead of this so only labeled trips get a footprint OR display uncertainties
     labels = await read_json_resource("label-options.default.json")
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
 
@@ -82,7 +83,6 @@ async def load_all_confirmed_trips(tq):
     result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
     processed_list = await add_base_mode_footprint(list(result_it))
     all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
-    # all_ct = agg.get_data_df("analysis/confirmed_trip", tq)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
     disp.display(all_ct.head())
     return all_ct
@@ -429,6 +429,7 @@ def CO2_impact(df):
 # Used this function specifically to test with label_options: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-program-label-options.json
 # Config: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/configs/dev-emulator-program.nrel-op.json
 def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
+    #TODO update this function with new columns after switching to emcommon emissions
     filtered_taxi_data = data_eb[data_eb['Replaced_mode'] == "Taxi/Uber/Lyft"]
     filtered_bus_data = data_eb[data_eb['Replaced_mode'] == "Bus"]
     filtered_freeshuttle_data = data_eb[data_eb['Replaced_mode'] == "Free Shuttle"]
