@@ -60,13 +60,21 @@ async def add_base_mode_footprint(trip_list):
     for trip in trip_list:
         try:
             trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input']['mode_confirm'], "UNKNOWN")
-            footprint = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['base_mode']}) 
-            print(footprint)
-            trip['data']['footprint'] = footprint
+            trip['data']['mode_confirm_footprint'] = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['base_mode']}) 
+            
+            if 'replaced_mode' in trip['data']['user_input'].keys():
+                trip['data']['replaced_base_mode'] = value_to_basemode.get(trip['data']['user_input']['replaced_mode'], "UNKNOWN")
+                trip['data']['replaced_mode_footprint'] = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['replaced_base_mode']}) 
+            else:
+                trip['data']['replaced_base_mode'] = "UNKNOWN"
+                trip['data']['replaced_mode_footprint'] = {}
+                
         except:
             trip['data']['base_mode'] = "UNKNOWN"
-            trip['data']['footprint'] = {}
-
+            trip['data']['replaced_base_mode'] = "UNKNOWN"
+            trip['data']['mode_confirm_footprint'] = {}
+            trip['data']['replaced_mode_footprint'] = {}
+            
     return trip_list
 
 async def load_all_confirmed_trips(tq):
