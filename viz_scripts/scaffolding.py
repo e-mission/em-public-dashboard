@@ -9,6 +9,8 @@ import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
 
+from emcommon.util import read_json_resource
+import emcommon.metrics.footprint.footprint_calculations as emffc
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
 # However, this means that this module can only be used in an ipython notebook
@@ -51,16 +53,35 @@ def get_participant_uuids(program, load_test_users):
     disp.display(participant_list.user_email)
     return participant_uuid_str
 
-def load_all_confirmed_trips(tq):
+async def add_base_mode_footprint(trip_list):
+    labels = await read_json_resource("label-options.default.json")
+    value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
+
+    for trip in trip_list:
+        try:
+            trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input']['mode_confirm'], "UNKNOWN")
+            footprint = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['base_mode']}) 
+            print(footprint)
+            trip['data']['footprint'] = footprint
+        except:
+            trip['data']['base_mode'] = "UNKNOWN"
+            trip['data']['footprint'] = {}
+
+    return trip_list
+
+async def load_all_confirmed_trips(tq):
     agg = esta.TimeSeries.get_aggregate_time_series()
-    all_ct = agg.get_data_df("analysis/confirmed_trip", tq)
+    result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
+    processed_list = await add_base_mode_footprint(result_it)
+    all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
+    # all_ct = agg.get_data_df("analysis/confirmed_trip", tq)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
     disp.display(all_ct.head())
     return all_ct
 
-def load_all_participant_trips(program, tq, load_test_users):
+async def load_all_participant_trips(program, tq, load_test_users):
     participant_list = get_participant_uuids(program, load_test_users)
-    all_ct = load_all_confirmed_trips(tq)
+    all_ct = await load_all_confirmed_trips(tq)
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_ct) == 0:
         return all_ct
@@ -109,7 +130,8 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+    #TODO - see how slow the loading the footprint is compared to just the baseMode, and evaluate if passing param around is needed
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -118,7 +140,7 @@ def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
