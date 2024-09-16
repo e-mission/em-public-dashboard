@@ -213,7 +213,7 @@ def mapping_labels(dynamic_labels, label_type):
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels
 # Output: Dictionary mapping between color with mode/purpose/sensed
-async def mapping_color_labels(dynamic_labels):
+async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
     # Load default options from e-mission-common
     labels = await read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "INVALID"]
@@ -229,7 +229,6 @@ async def mapping_color_labels(dynamic_labels):
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
-
     # Assign colors to mode, replaced, purpose, and sensed values
     colors_mode = dedupe_colors([
         [mode, BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
@@ -244,7 +243,11 @@ async def mapping_color_labels(dynamic_labels):
         [label, BASE_MODES[label.upper()]['color'] if label.upper() != 'INVALID' else BASE_MODES['UNKNOWN']['color']]
         for label in sensed_values
     ], adjustment_range=[1,1.8])
-    return colors_mode, colors_replaced, colors_purpose, colors_sensed
+    colors_ble = dedupe_colors([
+        [label, BASE_MODES[label]['color']]
+        for label in set(unique_keys)
+    ], adjustment_range=[1,1.8])
+    return colors_mode, colors_replaced, colors_purpose, colors_sensed, colors_ble
 
 async def translate_values_to_labels(dynamic_labels, language="en"):
     # Load default options from e-mission-common
