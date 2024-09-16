@@ -72,7 +72,7 @@ async def add_base_mode_footprint(trip_list):
 async def load_all_confirmed_trips(tq):
     agg = esta.TimeSeries.get_aggregate_time_series()
     result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
-    processed_list = await add_base_mode_footprint(result_it)
+    processed_list = await add_base_mode_footprint(list(result_it))
     all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
     # all_ct = agg.get_data_df("analysis/confirmed_trip", tq)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
