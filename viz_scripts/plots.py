@@ -44,18 +44,35 @@ def merge_small_entries(labels, values):
     v2l_df = v2l_df.drop(small_chunk.index)
     disp.display(v2l_df)
 
-    # This part if a bit tricky
-    # We could have already had a non-zero other, and it could be small or large
-    if "other" not in v2l_df.index:
-        # zero other will end up with misc_count
-        if misc_count.vals > 0:
+    # we need to let the sensed be "OTHER" and labeled or inferred be "Other"
+    # going to use capitalization as a flag
+    if v2l_df.index[0][-1].isupper():
+        print("Found uppercase last letter")
+        # This part if a bit tricky
+        # We could have already had a non-zero other, and it could be small or large
+        if "OTHER" not in v2l_df.index:
+            # zero other will end up with misc_count
+            if misc_count.vals > 0:
+                v2l_df.loc["OTHER"] = misc_count
+        elif "OTHER" in small_chunk.index:
+            # non-zero small other will already be in misc_count
+            v2l_df.loc["OTHER"] = misc_count
+        else:
+            # non-zero large other, will not already be in misc_count
+            v2l_df.loc["OTHER"] = v2l_df.loc["OTHER"] + misc_count
+    else: #assuming labeled or inferred
+        # This part if a bit tricky
+        # We could have already had a non-zero other, and it could be small or large
+        if "other" not in v2l_df.index:
+            # zero other will end up with misc_count
+            if misc_count.vals > 0:
+                v2l_df.loc["other"] = misc_count
+        elif "other" in small_chunk.index:
+            # non-zero small other will already be in misc_count
             v2l_df.loc["other"] = misc_count
-    elif "other" in small_chunk.index:
-        # non-zero small other will already be in misc_count
-        v2l_df.loc["other"] = misc_count
-    else:
-        # non-zero large other, will not already be in misc_count
-        v2l_df.loc["other"] = v2l_df.loc["other"] + misc_count
+        else:
+            # non-zero large other, will not already be in misc_count
+            v2l_df.loc["other"] = v2l_df.loc["other"] + misc_count
     
     disp.display(v2l_df)
 
