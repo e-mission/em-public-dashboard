@@ -82,8 +82,8 @@ def filter_inferred_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
         return mixed_trip_df
-    # Identify which trips contains inferred_labels
-    inferred_ct = mixed_trip_df[mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))]
+    # Identify trips which has either inferred_labels or has user_input
+    inferred_ct = mixed_trip_df[(mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))) | (mixed_trip_df.user_input != {})]
     print("After filtering, found %s inferred trips" % len(inferred_ct))
     disp.display(inferred_ct.head())
     return inferred_ct
