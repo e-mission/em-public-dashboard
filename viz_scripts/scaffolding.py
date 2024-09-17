@@ -406,26 +406,26 @@ def extract_co2(footprint_dict):
         return np.nan
 
 def unpack_energy_emissions(expanded_ct):
-    expanded_ct['mode_comfirm_footprint_kg_co2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
-    expanded_ct['mode_comfirm_footprint_kwh'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
-    expanded_ct['replaced_mode_footprint_kg_co2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
-    expanded_ct['replaced_mode_footprint_kwh'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
-
-    energy_impact(expanded_ct)
+    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
+    expanded_ct['Mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['Mode_confirm_kg_CO2'])
+    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
+    expanded_ct['Replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['Replaced_mode_kg_CO2'])
     CO2_impact(expanded_ct)
-    expanded_ct['energy_savings'] = expanded_ct['replaced_mode_footprint_kg_co2'] - expanded_ct['mode_comfirm_footprint_kg_co2']
-    expanded_ct['emissions_savings'] = expanded_ct['replaced_mode_footprint_kwh'] - expanded_ct['mode_comfirm_footprint_kwh']
+
+    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
+    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
+    energy_impact(expanded_ct)
 
     return expanded_ct
 
 def energy_impact(df):
-    df['Energy_Impact(kWH)']  = round((df['replaced_mode_footprint_kwh'] - df['mode_comfirm_footprint_kwh']),3)
+    df['Energy_Impact(kWH)']  = round((df['Replaced_mode_EI(kWH)'] - df['Mode_confirm_EI(kWH)']),3)
 
 def kg_to_lb(kg):
     return kg * 2.20462
 
 def CO2_impact(df):
-    df['CO2_Impact(kg)']  = round((df['replaced_mode_footprint_kg_co2'] - df['mode_comfirm_footprint_kg_co2']), 3)
+    df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 3)
     df['CO2_Impact(lb)'] = round(kg_to_lb(df['CO2_Impact(kg)']), 3)
     
     return df
@@ -452,7 +452,7 @@ def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels)
         print("With Default mapping:")
         print("\n")
 
-    selected_columns = ['distance','distance_miles', 'Replaced_mode_kg_CO2', 'Replaced_mode_lb_CO2', 'Mode_confirm_kg_CO2','Mode_confirm_lb_CO2', "replaced_mode", "mode_confirm"]
+    selected_columns = ['distance','distance_miles', 'replaced_mode_footprint_kg_co2', 'mode_comfirm_footprint_kg_co2', "replaced_mode", "mode_confirm"]
 
     print("Walk Data:")
     print(str(filtered_walk_data[selected_columns].head()))
