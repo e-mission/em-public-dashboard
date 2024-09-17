@@ -82,6 +82,7 @@ def filter_inferred_trips(mixed_trip_df):
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(mixed_trip_df) == 0:
         return mixed_trip_df
+    # Identify which trips contains inferred_labels
     inferred_ct = mixed_trip_df[mixed_trip_df['inferred_labels'].apply(lambda x: bool(x))]
     print("After filtering, found %s inferred trips" % len(inferred_ct))
     disp.display(inferred_ct.head())
@@ -119,18 +120,18 @@ def expand_inferredlabels(inferred_ct):
         return inferred_ct
 
     max_labels_list = []
-    max_p_list = []
-
-    for item in inferred_ct.inferred_labels:
-        max_entry = max(item, key=lambda x: x['p'])
-        max_labels_list.append(max_entry['labels'])
-        max_p_list.append(max_entry['p'])
+    for _, row in inferred_ct.iterrows():
+        # In the trip, prioritize availabilty of user_input over inferred_labels for label selection
+        if row.user_input == {}:
+            # Extract the label which has highest "p" value
+            max_entry = max(row.inferred_labels, key=lambda x: x['p'])
+            max_labels_list.append(max_entry['labels'])
+        else:
+            max_labels_list.append(row.user_input)
 
     inferred_only_labels = pd.DataFrame(max_labels_list, index=inferred_ct.index)
-    disp.display(inferred_only_labels)
-    inferred_only_p = pd.DataFrame(max_p_list, index=inferred_ct.index, columns=['p'])
-    disp.display(inferred_only_p)
-    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels, inferred_only_p], axis=1)
+    disp.display(inferred_only_labels.head())
+    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels], axis=1)
     expanded_inferred_ct.reset_index(drop=True, inplace=True)
     disp.display(expanded_inferred_ct.head())
     return expanded_inferred_ct
