@@ -78,18 +78,23 @@ async def add_base_mode_footprint(trip_list):
             
     return trip_list
 
-async def load_all_confirmed_trips(tq):
+async def load_all_confirmed_trips(tq, add_footprint):
     agg = esta.TimeSeries.get_aggregate_time_series()
     result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
-    processed_list = await add_base_mode_footprint(list(result_it))
-    all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
+    print(result_it)
+    if add_footprint:
+        processed_list = await add_base_mode_footprint(list(result_it))
+        all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
+    else:
+        all_ct = agg.to_data_df("analysis/confirmed_trip", result_it)
+    print(all_ct)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
     disp.display(all_ct.head())
     return all_ct
 
-async def load_all_participant_trips(program, tq, load_test_users):
+async def load_all_participant_trips(program, tq, load_test_users, add_footprint=False):
     participant_list = get_participant_uuids(program, load_test_users)
-    all_ct = await load_all_confirmed_trips(tq)
+    all_ct = await load_all_confirmed_trips(tq, add_footprint)
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_ct) == 0:
         return all_ct
@@ -148,7 +153,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, True)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
@@ -258,14 +263,14 @@ def mapping_color_surveys(dic_options):
 
     return colors
 
-def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
+async def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
     year/month/program = parameters from the visualization notebook
 
     Pipeline to load and process the data before use in sensor-based visualization notebooks.
     """
     tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, False)
     expanded_ct = participant_ct_df
     print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
     
@@ -312,14 +317,14 @@ def load_viz_notebook_sensor_inference_data(year, month, program, include_test_u
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-def load_viz_notebook_survey_data(year, month, program, include_test_users=False):
+async def load_viz_notebook_survey_data(year, month, program, include_test_users=False):
     """ Inputs:
     year/month/program/test users = parameters from the visualization notebook
 
     Returns: df of all trips taken by participants, df of all trips with user_input
     """
     tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, False)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     
     # Document data quality
