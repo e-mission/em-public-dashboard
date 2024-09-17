@@ -143,7 +143,7 @@ def expand_userinputs(labeled_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False, add_footprint=False):
     #TODO - see how slow the loading the footprint is compared to just the baseMode, and evaluate if passing param around is needed
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -153,7 +153,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, True)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, add_footprint)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
