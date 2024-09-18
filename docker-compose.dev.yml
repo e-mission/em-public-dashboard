@@ -25,7 +25,7 @@ services:
     depends_on:
       - db
     environment:
-      - DB_HOST=mongodb://db/DB_NAME
+      - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
       - CRON_MODE=
       - STUDY_CONFIG=stage-program
