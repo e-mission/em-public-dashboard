@@ -57,37 +57,40 @@ async def add_base_mode_footprint(trip_list):
     #TODO filter ahead of this so only labeled trips get a footprint OR display uncertainties
     labels = await read_json_resource("label-options.default.json")
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
-
+    
     for trip in trip_list:
-        try:
-            trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input']['mode_confirm'], "UNKNOWN")
-            trip['data']['mode_confirm_footprint'], trip['data']['mode_confirm_footprint_metadata'] = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['base_mode']}) 
-            
-            if 'replaced_mode' in trip['data']['user_input'].keys():
-                trip['data']['replaced_base_mode'] = value_to_basemode.get(trip['data']['user_input']['replaced_mode'], "UNKNOWN")
-                trip['data']['replaced_mode_footprint'],  trip['data']['replaced_mode_footprint_metadata'] = await emffc.calc_footprint_for_trip(trip['data'], {'base_mode' :trip['data']['replaced_base_mode']}) 
-            else:
-                trip['data']['replaced_base_mode'] = "UNKNOWN"
-                trip['data']['replaced_mode_footprint'] = {}
+        #format so emffc can get id for metadata
+        trip['data']['_id'] = trip['_id']
+        if trip['data']['user_input'] != {}:
+            try:
+                trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input']['mode_confirm'], "UNKNOWN")
+                trip['data']['mode_confirm_footprint'], trip['data']['mode_confirm_footprint_metadata'] = await emffc.calc_footprint_for_trip(trip['data'], labels, mode_key='mode')
                 
-        except:
-            trip['data']['base_mode'] = "UNKNOWN"
-            trip['data']['replaced_base_mode'] = "UNKNOWN"
-            trip['data']['mode_confirm_footprint'] = {}
-            trip['data']['replaced_mode_footprint'] = {}
+                if 'replaced_mode' in trip['data']['user_input'].keys():
+                    trip['data']['user_input']['replaced_mode_confirm'] = trip['data']['user_input']['replaced_mode']
+                    trip['data']['replaced_base_mode'] = value_to_basemode.get(trip['data']['user_input']['replaced_mode'], "UNKNOWN")
+                    trip['data']['replaced_mode_footprint'],  trip['data']['replaced_mode_footprint_metadata'] = await emffc.calc_footprint_for_trip(trip['data'], labels,  mode_key='replaced_mode')
+                else:
+                    trip['data']['replaced_base_mode'] = "UNKNOWN"
+                    trip['data']['replaced_mode_footprint'] = {}
+                    
+            except:
+                print("hit exception")
+                trip['data']['base_mode'] = "UNKNOWN"
+                trip['data']['replaced_base_mode'] = "UNKNOWN"
+                trip['data']['mode_confirm_footprint'] = {}
+                trip['data']['replaced_mode_footprint'] = {}
             
     return trip_list
 
 async def load_all_confirmed_trips(tq, add_footprint):
     agg = esta.TimeSeries.get_aggregate_time_series()
     result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
-    print(result_it)
     if add_footprint:
         processed_list = await add_base_mode_footprint(list(result_it))
         all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
     else:
         all_ct = agg.to_data_df("analysis/confirmed_trip", result_it)
-    print(all_ct)
     print("Loaded all confirmed trips of length %s" % len(all_ct))
     disp.display(all_ct.head())
     return all_ct
