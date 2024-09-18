@@ -125,7 +125,10 @@ def expand_inferredlabels(inferred_ct):
         if row.user_input == {}:
             # Extract the label which has highest "p" value
             max_entry = max(row.inferred_labels, key=lambda x: x['p'])
-            max_labels_list.append(max_entry['labels'])
+            if (max_entry['p'] > row.confidence_threshold):
+                max_labels_list.append(max_entry['labels'])
+            else:
+                max_labels_list.append({})
         else:
             max_labels_list.append(row.user_input)
 
