@@ -3,7 +3,7 @@
 # Directory of the script
 SCRIPT_DIR="$(dirname "$0")"
 
-# Path to the configuration file (one level up)
+# Path to the configuration file (two levels up)
 CONFIG_FILE="$SCRIPT_DIR/../../docker-compose.dev.yml"
 
 MONGODUMP_FILE=$1
