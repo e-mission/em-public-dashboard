@@ -131,16 +131,21 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     if "distance" in expanded_ct.columns:
         unit_conversions(expanded_ct)
     
+    # Select the labels from dynamic_labels is available,
+    # else get it from emcommon/resources/label-options.default.json
+    if (len(dynamic_labels)):
+        labels = dynamic_labels
+    else:
+        labels = await read_json_resource("label-options.default.json")
+
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_ct.columns:
         if (len(dynamic_labels)):
             dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_mode_mapping)
-            labels = dynamic_labels
         else:
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
-            labels = await read_json_resource("label-options.default.json")
         # If the 'mode_confirm' is not available as the list of keys in the dynamic_labels or label_options.default.json, then, we should transform it as 'other'
         mode_values = [item['value'] for item in labels['MODE']]
         expanded_ct['merge_mode_confirm'] = expanded_ct['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
@@ -150,10 +155,8 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
             if (len(dynamic_labels)):
                 dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_replaced_mapping)
-                labels = dynamic_labels
             else:
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
-                labels = await read_json_resource("label-options.default.json")
             replaced_modes = [item['value'] for item in labels['REPLACED_MODE']]
             expanded_ct['merge_replaced_mode'] = expanded_ct['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
         else:
@@ -167,10 +170,8 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
         if (len(dynamic_labels)):
             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_purpose_mapping)
-            labels = dynamic_labels
         else:
             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
-            labels = await read_json_resource("label-options.default.json")
         purpose_values = [item['value'] for item in labels['PURPOSE']]
         expanded_ct['merge_purpose_confirm'] = expanded_ct['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
 
