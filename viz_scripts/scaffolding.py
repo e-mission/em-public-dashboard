@@ -148,7 +148,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
             expanded_ct['Mode_confirm'] = expanded_ct['mode_confirm'].map(dic_re)
         # If the 'mode_confirm' is not available as the list of keys in the dynamic_labels or label_options.default.json, then, we should transform it as 'other'
         mode_values = [item['value'] for item in labels['MODE']]
-        expanded_ct['merge_mode_confirm'] = expanded_ct['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
+        expanded_ct['mode_confirm_w_other'] = expanded_ct['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_ct.columns:
@@ -158,7 +158,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
             else:
                 expanded_ct['Replaced_mode'] = expanded_ct['replaced_mode'].map(dic_re)
             replaced_modes = [item['value'] for item in labels['REPLACED_MODE']]
-            expanded_ct['merge_replaced_mode'] = expanded_ct['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
+            expanded_ct['replaced_mode_w_other'] = expanded_ct['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
         else:
             print("This is a program, but no replaced modes found. Likely cold start case. Ignoring replaced mode mapping")
     else:
@@ -173,7 +173,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
         else:
             expanded_ct['Trip_purpose'] = expanded_ct['purpose_confirm'].map(dic_pur)
         purpose_values = [item['value'] for item in labels['PURPOSE']]
-        expanded_ct['merge_purpose_confirm'] = expanded_ct['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
+        expanded_ct['purpose_confirm_w_other'] = expanded_ct['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
