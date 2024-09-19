@@ -258,11 +258,11 @@ async def translate_values_to_labels(dynamic_labels, language="en"):
     if len(dynamic_labels) > 0:
         labels = dynamic_labels
     # Mapping between values and translations for display on plots (for Mode)
-    values_to_translations_mode = dict(mapping_labels(labels, "MODE"))
+    values_to_translations_mode = mapping_labels(labels, "MODE")
     # Mapping between values and translations for display on plots (for Purpose)
-    values_to_translations_purpose = dict(mapping_labels(labels, "PURPOSE"))
+    values_to_translations_purpose = mapping_labels(labels, "PURPOSE")
     # Mapping between values and translations for display on plots (for Replaced mode)
-    values_to_translations_replaced = dict(mapping_labels(labels, "REPLACED_MODE"))
+    values_to_translations_replaced = mapping_labels(labels, "REPLACED_MODE")
 
     return values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
 
