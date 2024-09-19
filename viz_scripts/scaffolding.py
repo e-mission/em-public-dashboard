@@ -9,8 +9,8 @@ import difflib
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
-import emcommon.diary.base_modes as edb
-import emcommon.util as eu
+import emcommon.diary.base_modes as emcdb
+import emcommon.util as emcu
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -136,7 +136,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     if (len(dynamic_labels)):
         labels = dynamic_labels
     else:
-        labels = await eu.read_json_resource("label-options.default.json")
+        labels = await emcu.read_json_resource("label-options.default.json")
 
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
@@ -216,7 +216,7 @@ def mapping_labels(dynamic_labels, label_type):
 # Output: Dictionary mapping between color with mode/purpose/sensed
 async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
     # Load default options from e-mission-common
-    labels = await eu.read_json_resource("label-options.default.json")
+    labels = await emcu.read_json_resource("label-options.default.json")
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "INVALID"]
 
     # If dynamic_labels are provided, then we will use the dynamic labels for mapping
@@ -231,28 +231,28 @@ async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     # Assign colors to mode, replaced, purpose, and sensed values
-    colors_mode = edb.dedupe_colors([
-        [mode, edb.BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
+    colors_mode = emcdb.dedupe_colors([
+        [mode, emcdb.BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
         for mode in set(mode_values)
     ], adjustment_range=[1,1.8])
-    colors_replaced = edb.dedupe_colors([
-        [mode, edb.BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
+    colors_replaced = emcdb.dedupe_colors([
+        [mode, emcdb.BASE_MODES[value_to_basemode.get(mode, "UNKNOWN")]['color']]
         for mode in set(replaced_values)
     ], adjustment_range=[1,1.8])
     colors_purpose = dict(zip(purpose_values, plt.cm.tab20.colors[:len(purpose_values)]))
-    colors_sensed = edb.dedupe_colors([
-        [label, edb.BASE_MODES[label.upper()]['color'] if label.upper() != 'INVALID' else edb.BASE_MODES['UNKNOWN']['color']]
+    colors_sensed = emcdb.dedupe_colors([
+        [label, emcdb.BASE_MODES[label.upper()]['color'] if label.upper() != 'INVALID' else emcdb.BASE_MODES['UNKNOWN']['color']]
         for label in sensed_values
     ], adjustment_range=[1,1.8])
-    colors_ble = edb.dedupe_colors([
-        [label, edb.BASE_MODES[label]['color']]
+    colors_ble = emcdb.dedupe_colors([
+        [label, emcdb.BASE_MODES[label]['color']]
         for label in set(unique_keys)
     ], adjustment_range=[1,1.8])
     return colors_mode, colors_replaced, colors_purpose, colors_sensed, colors_ble
 
 async def translate_values_to_labels(dynamic_labels, language="en"):
     # Load default options from e-mission-common
-    labels = await eu.read_json_resource("label-options.default.json")
+    labels = await emcu.read_json_resource("label-options.default.json")
 
     # If dynamic_labels are provided, then we will use the dynamic labels for mapping
     if len(dynamic_labels) > 0:
