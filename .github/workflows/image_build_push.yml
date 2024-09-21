@@ -24,24 +24,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set docker image tag from .env file
+    - name: Set docker image tags
+      id: set-tags
       run: |
         set -a; source .env; set +a
-        echo "Restoring latest server image tag from .env"
-        echo "DOCKER_TAG_FROM_PUSH=${SERVER_IMAGE_TAG}" >> $GITHUB_ENV
+        echo "DOCKER_TAG_FROM_PUSH=${SERVER_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+        echo "DOCKER_TAG_FROM_WORKFLOW_DISPATCH=${{ github.event.inputs.docker_image_tag }}" >> "$GITHUB_OUTPUT"
 
     - name: Set docker image tag from .env.repoTags file
+      id: set-frontend-tag
       run: |
         set -a; source .env.repoTags; set +a
-        echo "Restoring latest frontend image tag from .env.repoTags"
-        echo "FRONTEND_IMAGE_TAG=${FRONTEND_IMAGE_TAG}" >> $GITHUB_ENV
+        echo "FRONTEND_IMAGE_TAG=${FRONTEND_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
 
     - name: Print input docker image tag
       run: |
         echo "Event name: ${{ github.event_name }}"
-        echo "Latest docker image tag (push): ${{ env.DOCKER_TAG_FROM_PUSH }}"
-        echo "Latest docker image tag (workflow_dispatch): ${{ env.DOCKER_TAG_FROM_WORKFLOW_DISPATCH }}"
-        echo "Current frontend image tag (push): ${{ env.FRONTEND_IMAGE_TAG }}"
+        echo "Latest docker image tag (push): ${{ steps.set-tags.outputs.DOCKER_TAG_FROM_PUSH }}"
+        echo "Latest docker image tag (workflow_dispatch): ${{ steps.set-tags.outputs.DOCKER_TAG_FROM_WORKFLOW_DISPATCH }}"
+        echo "Current frontend image tag (push): ${{ steps.set-frontend-tag.outputs.FRONTEND_IMAGE_TAG }}"
 
     - name: docker login
       run: | # log into docker hub account
@@ -49,7 +50,7 @@ jobs:
 
     - name: Get current date # get the date of the build
       id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+      run: echo "date=$(date +'%Y-%m-%d--%M-%S')" >> "$GITHUB_OUTPUT"
 
     - name: Run a one-line script
       run: echo running in repo ${GITHUB_REPOSITORY#*/} branch ${GITHUB_REF##*/} on ${{ steps.date.outputs.date }}
@@ -57,9 +58,9 @@ jobs:
     - name: build docker image
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_WORKFLOW_DISPATCH docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=${{ steps.set-tags.outputs.DOCKER_TAG_FROM_WORKFLOW_DISPATCH }} docker compose -f docker-compose.yml build
         else
-          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_PUSH docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=${{ steps.set-tags.outputs.DOCKER_TAG_FROM_PUSH }} docker compose -f docker-compose.yml build
         fi
         docker images
 
@@ -83,7 +84,7 @@ jobs:
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           echo "Workflow_dispatch: New server image built and pushed, Updating image tag in .env"
-          echo "SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_WORKFLOW_DISPATCH" > .env
+          echo "SERVER_IMAGE_TAG=${{ steps.set-tags.outputs.DOCKER_TAG_FROM_WORKFLOW_DISPATCH }}" > .env
         else
           echo "Push event: New frontend image built and pushed, Updating image tag in .env.repoTags"
           echo "FRONTEND_IMAGE_TAG=${{ steps.date.outputs.date }}" > .env.repoTags
@@ -103,8 +104,12 @@ jobs:
    
     - name: Create tag files
       run: |
-        echo ${{ env.FRONTEND_IMAGE_TAG }} > frontend_tag_file.txt
-        echo ${{ env.NOTEBOOK_IMAGE_TAG }} > notebook_tag_file.txt
+        if [ "${{ github.event_name }}" == "push" ]; then
+          echo ${{ steps.date.outputs.date }} > frontend_tag_file.txt
+        else
+          echo ${{ steps.set-frontend-tag.outputs.FRONTEND_IMAGE_TAG }} > frontend_tag_file.txt
+        fi
+        echo ${{ steps.date.outputs.date }} > notebook_tag_file.txt
         echo "Created tag text files"
 
     - name: Upload Frontend Tag Artifact
