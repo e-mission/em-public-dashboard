@@ -128,7 +128,7 @@ def expand_inferredlabels(inferred_ct):
             if (max_entry['p'] > row.confidence_threshold):
                 max_labels_list.append(max_entry['labels'])
             else:
-                max_labels_list.append({})
+                max_labels_list.append({'mode_confirm':'uncertain', 'purpose_confirm':'uncertain', 'replaced_mode':'uncertain'})
         else:
             max_labels_list.append(row.user_input)
 
@@ -136,6 +136,8 @@ def expand_inferredlabels(inferred_ct):
     disp.display(inferred_only_labels.head())
     expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels], axis=1)
     expanded_inferred_ct.reset_index(drop=True, inplace=True)
+    # Filter out the dataframe in which mode_confirm, purpose_confirm and replaced_mode is uncertain
+    expanded_inferred_ct = expanded_inferred_ct[(expanded_inferred_ct['mode_confirm'] != 'uncertain') & (expanded_inferred_ct['purpose_confirm'] != 'uncertain') & (expanded_inferred_ct['replaced_mode'] != 'uncertain')]
     disp.display(expanded_inferred_ct.head())
     return expanded_inferred_ct
 
