@@ -6,6 +6,13 @@ SCRIPT_DIR="$(dirname "$0")"
 # Path to the configuration file (two levels up)
 CONFIG_FILE="$SCRIPT_DIR/../../docker-compose.dev.yml"
 
+# Check if the correct number of arguments is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <mongodump-file>"
+    echo "  <mongodump-file> : The path to the MongoDB dump file to be restored."
+    exit 1
+fi
+
 MONGODUMP_FILE=$1
 
 # Print debug information
