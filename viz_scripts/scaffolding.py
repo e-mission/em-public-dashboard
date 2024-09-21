@@ -115,9 +115,9 @@ def expand_userinputs(labeled_ct):
     disp.display(expanded_ct.head())
     return expanded_ct
 
-def expand_inferredlabels(inferred_ct):
-    if len(inferred_ct) == 0:
-        return inferred_ct
+def expand_inferredlabels(labeled_inferred_ct):
+    if len(labeled_inferred_ct) == 0:
+        return labeled_inferred_ct
 
     def _select_max_label(row):
         if row['user_input']:
@@ -129,13 +129,13 @@ def expand_inferredlabels(inferred_ct):
             'replaced_mode': 'uncertain'
         }
 
-    inferred_only_labels = inferred_ct.apply(_select_max_label, axis=1).apply(pd.Series)
-    disp.display(inferred_only_labels.head())
-    expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels], axis=1)
+    labeled_inferred_labels = labeled_inferred_ct.apply(_select_max_label, axis=1).apply(pd.Series)
+    disp.display(labeled_inferred_labels.head())
+    expanded_labeled_inferred_ct = pd.concat([labeled_inferred_ct, labeled_inferred_labels], axis=1)
     # Filter out the dataframe in which mode_confirm, purpose_confirm and replaced_mode is uncertain
-    expanded_inferred_ct = expanded_inferred_ct[(expanded_inferred_ct['mode_confirm'] != 'uncertain') & (expanded_inferred_ct['purpose_confirm'] != 'uncertain') & (expanded_inferred_ct['replaced_mode'] != 'uncertain')]
-    disp.display(expanded_inferred_ct.head())
-    return expanded_inferred_ct
+    expanded_labeled_inferred_ct = expanded_labeled_inferred_ct[(expanded_labeled_inferred_ct['mode_confirm'] != 'uncertain') & (expanded_labeled_inferred_ct['purpose_confirm'] != 'uncertain') & (expanded_labeled_inferred_ct['replaced_mode'] != 'uncertain')]
+    disp.display(expanded_labeled_inferred_ct.head())
+    return expanded_labeled_inferred_ct
 
 # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
