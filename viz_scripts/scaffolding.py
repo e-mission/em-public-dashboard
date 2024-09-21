@@ -157,7 +157,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
-    expanded_ct = map_trip_data(expanded_ct, study_type, dynamic_labels, dic_re, dic_pur)
+    expanded_ct = await map_trip_data(expanded_ct, study_type, dynamic_labels, dic_re, dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -177,7 +177,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, dic_pur):
+async def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, dic_pur):
     # Change meters to miles
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "distance" in expanded_trip_df.columns:
@@ -229,7 +229,7 @@ def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, dic_pur)
 
     return expanded_trip_df
 
-def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -241,7 +241,7 @@ def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_la
     participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
     inferred_ct = filter_inferred_trips(participant_ct_df)
     expanded_it = expand_inferredlabels(inferred_ct)
-    expanded_it = map_trip_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
+    expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
