@@ -51,7 +51,7 @@ echo "Database Name: $DB_NAME"
 
 # Update the docker-compose configuration file with the actual DB_HOST
 DB_HOST="mongodb://db/$DB_NAME"
-sed -i.bak "s|DB_HOST:.*|DB_HOST: $DB_HOST|" "$CONFIG_FILE"
+sed -i.bak "s|DB_HOST=.*|DB_HOST=$DB_HOST|" "$CONFIG_FILE"
 
 echo "Updated docker-compose file:"
 cat "$CONFIG_FILE"
