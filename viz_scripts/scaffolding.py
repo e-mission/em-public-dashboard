@@ -119,23 +119,19 @@ def expand_inferredlabels(inferred_ct):
     if len(inferred_ct) == 0:
         return inferred_ct
 
-    max_labels_list = []
-    for _, row in inferred_ct.iterrows():
-        # In the trip, prioritize availabilty of user_input over inferred_labels for label selection
-        if row.user_input == {}:
-            # Extract the label which has highest "p" value
-            max_entry = max(row.inferred_labels, key=lambda x: x['p'])
-            if (max_entry['p'] > row.confidence_threshold):
-                max_labels_list.append(max_entry['labels'])
-            else:
-                max_labels_list.append({'mode_confirm':'uncertain', 'purpose_confirm':'uncertain', 'replaced_mode':'uncertain'})
-        else:
-            max_labels_list.append(row.user_input)
+    def _select_max_label(row):
+        if row['user_input']:
+            return row['user_input']
+        max_entry = max(row['inferred_labels'], key=lambda x: x['p'])
+        return max_entry['labels'] if max_entry['p'] > row['confidence_threshold'] else {
+            'mode_confirm': 'uncertain',
+            'purpose_confirm': 'uncertain',
+            'replaced_mode': 'uncertain'
+        }
 
-    inferred_only_labels = pd.DataFrame(max_labels_list, index=inferred_ct.index)
+    inferred_only_labels = inferred_ct.apply(_select_max_label, axis=1).apply(pd.Series)
     disp.display(inferred_only_labels.head())
     expanded_inferred_ct = pd.concat([inferred_ct, inferred_only_labels], axis=1)
-    expanded_inferred_ct.reset_index(drop=True, inplace=True)
     # Filter out the dataframe in which mode_confirm, purpose_confirm and replaced_mode is uncertain
     expanded_inferred_ct = expanded_inferred_ct[(expanded_inferred_ct['mode_confirm'] != 'uncertain') & (expanded_inferred_ct['purpose_confirm'] != 'uncertain') & (expanded_inferred_ct['replaced_mode'] != 'uncertain')]
     disp.display(expanded_inferred_ct.head())
