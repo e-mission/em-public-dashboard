@@ -181,7 +181,7 @@ def expand_inferredlabels(labeled_inferred_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False, add_footprint=False):
+async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, include_test_users=False, add_footprint=False):
     #TODO - see how slow the loading the footprint is compared to just the baseMode, and evaluate if passing param around is needed
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -195,7 +195,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
-    expanded_ct = await map_trip_data(expanded_ct, study_type, dynamic_labels, dic_re, dic_pur)
+    expanded_ct = await map_trip_data(expanded_ct, study_type, dynamic_labels)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -215,7 +215,7 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-async def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, dic_pur):
+async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
     # Change meters to miles
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "distance" in expanded_trip_df.columns:
@@ -231,22 +231,16 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, di
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_trip_df.columns:
-        if (len(dynamic_labels)):
-            dic_mode_mapping = mapping_labels(dynamic_labels, "MODE")
-            expanded_trip_df['Mode_confirm'] = expanded_trip_df['mode_confirm'].map(dic_mode_mapping)
-        else:
-            expanded_trip_df['Mode_confirm'] = expanded_trip_df['mode_confirm'].map(dic_re)
+        dic_mode_mapping = mapping_labels(labels, "MODE")
+        expanded_trip_df['Mode_confirm'] = expanded_trip_df['mode_confirm'].map(dic_mode_mapping)
         # If the 'mode_confirm' is not available as the list of keys in the dynamic_labels or label_options.default.json, then, we should transform it as 'other'
         mode_values = [item['value'] for item in labels['MODE']]
         expanded_trip_df['mode_confirm_w_other'] = expanded_trip_df['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_trip_df.columns:
-            if (len(dynamic_labels)):
-                dic_replaced_mapping = mapping_labels(dynamic_labels, "REPLACED_MODE")
-                expanded_trip_df['Replaced_mode'] = expanded_trip_df['replaced_mode'].map(dic_replaced_mapping)
-            else:
-                expanded_trip_df['Replaced_mode'] = expanded_trip_df['replaced_mode'].map(dic_re)
+            dic_replaced_mapping = mapping_labels(labels, "REPLACED_MODE")
+            expanded_trip_df['Replaced_mode'] = expanded_trip_df['replaced_mode'].map(dic_replaced_mapping)
             replaced_modes = [item['value'] for item in labels['REPLACED_MODE']]
             expanded_trip_df['replaced_mode_w_other'] = expanded_trip_df['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
         else:
@@ -256,18 +250,15 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels, dic_re, di
 
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
-    if dic_pur is not None and "purpose_confirm" in expanded_trip_df.columns:
-        if (len(dynamic_labels)):
-             dic_purpose_mapping = mapping_labels(dynamic_labels, "PURPOSE")
-             expanded_trip_df['Trip_purpose'] = expanded_trip_df['purpose_confirm'].map(dic_purpose_mapping)
-        else:
-            expanded_trip_df['Trip_purpose'] = expanded_trip_df['purpose_confirm'].map(dic_pur)
+    if "purpose_confirm" in expanded_trip_df.columns:
+        dic_purpose_mapping = mapping_labels(labels, "PURPOSE")
+        expanded_trip_df['Trip_purpose'] = expanded_trip_df['purpose_confirm'].map(dic_purpose_mapping)
         purpose_values = [item['value'] for item in labels['PURPOSE']]
         expanded_trip_df['purpose_confirm_w_other'] = expanded_trip_df['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
 
     return expanded_trip_df
 
-async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, dic_re, dic_pur=None, include_test_users=False):
+async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -276,10 +267,10 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, dyna
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
     inferred_ct = filter_inferred_trips(participant_ct_df)
     expanded_it = expand_inferredlabels(inferred_ct)
-    expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels, dic_re, dic_pur)
+    expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
