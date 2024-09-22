@@ -63,16 +63,16 @@ def merge_small_entries(labels, values):
     else: #assuming labeled or inferred
         # This part if a bit tricky
         # We could have already had a non-zero other, and it could be small or large
-        if "Other" not in v2l_df.index:
+        if "other" not in v2l_df.index:
             # zero other will end up with misc_count
             if misc_count.vals > 0:
-                v2l_df.loc["Other"] = misc_count
-        elif "Other" in small_chunk.index:
+                v2l_df.loc["other"] = misc_count
+        elif "other" in small_chunk.index:
             # non-zero small other will already be in misc_count
-            v2l_df.loc["Other"] = misc_count
+            v2l_df.loc["other"] = misc_count
         else:
             # non-zero large other, will not already be in misc_count
-            v2l_df.loc["Other"] = v2l_df.loc["Other"] + misc_count
+            v2l_df.loc["other"] = v2l_df.loc["other"] + misc_count
     
     disp.display(v2l_df)
 
@@ -111,7 +111,7 @@ def plot_and_text_error(e, ax, file_name):
     return alt_text, alt_html
 
 # Creates/ Appends single bar to the 100% Stacked Bar Chart
-def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df):
+def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, colors, debug_df, values_to_translations={}):
     """ Inputs:
     df = Data frame corresponding to the bar in a stacked bar chart. It is
         expected to have three columns, which represent the 'label', 'value'
@@ -145,7 +145,7 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
                 mode_prop = long['Proportion']
                 mode_count = long['Value']
                 vals_str = [f'{y:.1f} %\n({x:.0f})' if y > 4 else '' for x, y in zip(mode_count, mode_prop)]
-                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=label, color=colors[label])
+                bar = ax.barh(y=bar_label, width=mode_prop, height=bar_height, left=bar_width, label=values_to_translations.get(label, label), color=colors[label])
                 ax.bar_label(bar, label_type='center', labels=vals_str, rotation=90, fontsize=16)
                 bar_width = [total + val for total, val in zip(bar_width, mode_prop)]
             else:
@@ -158,9 +158,10 @@ def plot_and_text_stacked_bar_chart(df, agg_fcn, bar_label, ax, text_result, col
             
         # Fix for the error: RuntimeError("Unknown return type"), adding the below line to address as mentioned here https://github.com/matplotlib/matplotlib/issues/25625/
         ax.set_xlim(right=ax.get_xlim()[1] + 1.0, auto=True)
-        text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label)
+        text_result[0], text_result[1] = store_alt_text_and_html_stacked_bar_chart(df_all_entries, bar_label, values_to_translations)
         print("After populating, %s" % text_result)
     except Exception as e:
+        print(e)
         # tb.print_exception(type(e), e, e.__traceback__)
         #ax.set_title("Insufficient data", loc="center")
         ax.set_ylabel(bar_label)
@@ -456,7 +457,7 @@ def access_alt_html(html_content, chart_name):
     return html_content
 
 # Appends bar information into into the alt_html
-def store_alt_text_and_html_stacked_bar_chart(df, var_name):
+def store_alt_text_and_html_stacked_bar_chart(df, var_name, values_to_translations):
     """ Inputs:
     df = dataframe combining columns as Trip Type, Label, Value, Proportion
     chart_name = name of the chart
@@ -464,12 +465,12 @@ def store_alt_text_and_html_stacked_bar_chart(df, var_name):
     # Generate alt text file
     alt_text = f"\nStacked Bar of: {var_name}\n"
     for i in range(len(df)):
-        alt_text += f"{df['Label'].iloc[i]} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
+        alt_text += f"{values_to_translations.get(df['Label'].iloc[i], df['Label'].iloc[i])} is {df['Value'].iloc[i]}({df['Proportion'].iloc[i]}%).\n"
 
     # Generate html table
     alt_html = "\n"
     for i in range(len(df)):
-        alt_html += f"<tr><td>{df['Label'].iloc[i]}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
+        alt_html += f"<tr><td>{values_to_translations.get(df['Label'].iloc[i], df['Label'].iloc[i])}</td><td>{df['Value'].iloc[i]}</td><td>{df['Proportion'].iloc[i]}%</td></tr>"
     html_content = f"""
         <p>Trip Type: {var_name}</p>
         <table border="1" style="background-color: white;">
