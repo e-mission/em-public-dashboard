@@ -133,4 +133,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+docker-compose.dev.yml
+
 .DS_Store
