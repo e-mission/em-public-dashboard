@@ -91,27 +91,3 @@ jobs:
           git commit -m "Updated docker image tags in .env file to the latest timestamp"
           git push origin 
         fi
-   
-    - name: Create artifact text files
-      run: |
-        if [ "${{ github.event_name }}" == "push" ]; then
-          echo ${{ steps.date.outputs.date }} > frontend_tag_file.txt
-        else
-          echo ${{ steps.set-tags.outputs.PUBLIC_DASH_FRONTEND_IMAGE_TAG }} | cut -d'_' -f2 > frontend_tag_file.txt
-        fi
-        echo ${{ steps.date.outputs.date }} > notebook_tag_file.txt
-        echo "Created tag text files"
-
-    - name: Upload Frontend Tag Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-image-tag
-        path: frontend_tag_file.txt
-        overwrite: true
-  
-    - name: Upload Notebook Tag Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: notebook-image-tag
-        path: notebook_tag_file.txt
-        overwrite: true
