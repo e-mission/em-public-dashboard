@@ -5,6 +5,5 @@ channels:
 dependencies:
 - seaborn=0.11.1
 - pip:
-  - git+https://github.com/JGreenlee/e-mission-common@0.6.1
   - nbparameterise==0.6
   - devcron==0.4
