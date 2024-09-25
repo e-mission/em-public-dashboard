@@ -296,6 +296,11 @@ async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
     purpose_values = [mode["value"] for mode in labels["PURPOSE"]] if "PURPOSE" in labels else []
     replaced_values = [mode["value"] for mode in labels["REPLACED_MODE"]] if "REPLACED_MODE" in labels else []
 
+    # Append 'other' to the list if not present
+    for values in [mode_values, purpose_values, replaced_values]:
+        if "other" not in values:
+            values.append("other")
+
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     # Assign colors to mode, replaced, purpose, and sensed values
