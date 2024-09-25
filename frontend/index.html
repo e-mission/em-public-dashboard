@@ -426,16 +426,13 @@
             });        
           }
           else if (data.intro.program_or_study == 'program') { //CASE: PROGRAM
-            // Note: We're disabling energy metrics on public dashboard when dynamic labels are available.
-            // TODO: Remove the if (data.label_options) in future when energy computation is handled properly.
             if (dynamic_labels) {
-              load_file = "metrics_program_withoutEnergyMetrics.html"
               console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
             }
             else {
-              load_file = "metrics_program.html"
               console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
             }
+            load_file = "metrics_program.html"
             $.get(load_file, function (response) {
               const configuredResponse = response.replaceAll("${data.intro.mode_studied}", mode_studied);
               console.log("configuring units");
@@ -454,15 +451,13 @@
           else  // CASE: STUDY
           {
             if (dynamic_labels) {
-              console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
-              load_file = 'metrics_study_withoutEnergyMetrics.html'
-              // $('#metric').load('metrics_study_withoutEnergyMetrics.html');
+             console.log("Dynamic Labels are available for: " + STUDY_CONFIG)
             }
             else {
               console.log("Dynamic Labels are unavailable for: " + STUDY_CONFIG)
-              load_file = 'metrics_study.html'
-              // $('#metric').load('metrics_study.html');
-            };
+            }
+            load_file = 'metrics_study.html'
+            // $('#metric').load('metrics_study.html');
             console.log("loading study, replacing units")
             $.get(load_file, function (response) {
               console.log("configuring units");
