@@ -11,8 +11,6 @@ import emission.storage.timeseries.tcquery as esttc
 import emission.core.wrapper.localdate as ecwl
 import emcommon.diary.base_modes as emcdb
 import emcommon.util as emcu
-
-from emcommon.util import read_json_resource
 import emcommon.metrics.footprint.footprint_calculations as emffc
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
@@ -58,7 +56,7 @@ def get_participant_uuids(program, load_test_users):
 
 async def add_base_mode_footprint(trip_list):
     #TODO filter ahead of this so only labeled trips get a footprint OR display uncertainties
-    labels = await read_json_resource("label-options.default.json")
+    labels = await emcu.read_json_resource("label-options.default.json")
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     
     for trip in trip_list:
