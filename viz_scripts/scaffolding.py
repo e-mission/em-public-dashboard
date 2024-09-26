@@ -337,6 +337,10 @@ async def translate_values_to_labels(dynamic_labels, language="en"):
     # Mapping between values and translations for display on plots (for Replaced mode)
     values_to_translations_replaced = mapping_labels(labels, "REPLACED_MODE")
 
+    # Add "other": "Other" to the values_to_translations_* dictionary if "other" key is unavailable
+    for dict_update in [values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced]:
+        dict_update.setdefault("other", "Other")
+
     return values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
 
 # Function: Maps survey answers to colors.
