@@ -16,7 +16,6 @@ RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission -
 RUN mkdir -p /usr/src/app/saved-notebooks
 WORKDIR /usr/src/app/saved-notebooks
 
-COPY auxiliary_files ./auxiliary_files
 COPY bin ./bin
 COPY *.ipynb .
 COPY *.py .
