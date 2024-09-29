@@ -161,15 +161,14 @@ def expand_inferredlabels(labeled_inferred_ct):
         if row['user_input']:
             return row['user_input']
         max_entry = max(row['inferred_labels'], key=lambda x: x['p'])
-        return max_entry['labels'] if max_entry['p'] > row['confidence_threshold'] else {
-            'mode_confirm': 'uncertain'
-        }
+        # Look up for the 'p' value > 90%
+        return max_entry['labels'] if (max_entry['p'] > .90) else {}
 
     labeled_inferred_labels = labeled_inferred_ct.apply(_select_max_label, axis=1).apply(pd.Series)
     disp.display(labeled_inferred_labels.head())
     expanded_labeled_inferred_ct = pd.concat([labeled_inferred_ct, labeled_inferred_labels], axis=1)
-    # Filter out the dataframe in which mode_confirm is uncertain
-    expanded_labeled_inferred_ct = expanded_labeled_inferred_ct[(expanded_labeled_inferred_ct['mode_confirm'] != 'uncertain')]
+    # Filter out the dataframe
+    expanded_labeled_inferred_ct.dropna('index', how='all', inplace=True)
     disp.display(expanded_labeled_inferred_ct.head())
     return expanded_labeled_inferred_ct
 
