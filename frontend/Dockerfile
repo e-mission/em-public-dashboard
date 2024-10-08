@@ -1,4 +1,6 @@
 FROM node:21.7.2-alpine
+LABEL org.opencontainers.image.source=https://github.com/e-mission/em-public-dashboard
+
 VOLUME /public/plots
 
 RUN mkdir -p /public
