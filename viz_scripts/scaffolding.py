@@ -510,26 +510,26 @@ def extract_co2(footprint_dict):
         return np.nan
 
 def unpack_energy_emissions(expanded_ct):
-    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
-    expanded_ct['Mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['Mode_confirm_kg_CO2'])
-    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
-    expanded_ct['Replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['Replaced_mode_kg_CO2'])
+    expanded_ct['mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
+    expanded_ct['mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['mode_confirm_kg_CO2'])
+    expanded_ct['replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
+    expanded_ct['replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['replaced_mode_kg_CO2'])
     CO2_impact(expanded_ct)
 
-    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
-    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
+    expanded_ct['replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
+    expanded_ct['mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
     energy_impact(expanded_ct)
 
     return expanded_ct
 
 def energy_impact(df):
-    df['Energy_Impact(kWH)']  = round((df['Replaced_mode_EI(kWH)'] - df['Mode_confirm_EI(kWH)']),3)
+    df['Energy_Impact(kWH)']  = round((df['replaced_mode_EI(kWH)'] - df['mode_confirm_EI(kWH)']),3)
 
 def kg_to_lb(kg):
     return kg * 2.20462
 
 def CO2_impact(df):
-    df['CO2_Impact(kg)']  = round((df['Replaced_mode_kg_CO2'] - df['Mode_confirm_kg_CO2']), 3)
+    df['CO2_Impact(kg)']  = round((df['replaced_mode_kg_CO2'] - df['mode_confirm_kg_CO2']), 3)
     df['CO2_Impact(lb)'] = round(kg_to_lb(df['CO2_Impact(kg)']), 3)
     
     return df
