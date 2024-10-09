@@ -227,16 +227,12 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "mode_confirm" in expanded_trip_df.columns:
-        dic_mode_mapping = mapping_labels(labels, "MODE")
-        expanded_trip_df['Mode_confirm'] = expanded_trip_df['mode_confirm'].map(dic_mode_mapping)
         # If the 'mode_confirm' is not available as the list of keys in the dynamic_labels or label_options.default.json, then, we should transform it as 'other'
         mode_values = [item['value'] for item in labels['MODE']]
         expanded_trip_df['mode_confirm_w_other'] = expanded_trip_df['mode_confirm'].apply(lambda mode: 'other' if mode not in mode_values else mode)
     if study_type == 'program':
         # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
         if 'replaced_mode' in expanded_trip_df.columns:
-            dic_replaced_mapping = mapping_labels(labels, "REPLACED_MODE")
-            expanded_trip_df['Replaced_mode'] = expanded_trip_df['replaced_mode'].map(dic_replaced_mapping)
             replaced_modes = [item['value'] for item in labels['REPLACED_MODE']]
             expanded_trip_df['replaced_mode_w_other'] = expanded_trip_df['replaced_mode'].apply(lambda mode: 'other' if mode not in replaced_modes else mode)
         else:
@@ -247,8 +243,6 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
     # Trip purpose mapping
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "purpose_confirm" in expanded_trip_df.columns:
-        dic_purpose_mapping = mapping_labels(labels, "PURPOSE")
-        expanded_trip_df['Trip_purpose'] = expanded_trip_df['purpose_confirm'].map(dic_purpose_mapping)
         purpose_values = [item['value'] for item in labels['PURPOSE']]
         expanded_trip_df['purpose_confirm_w_other'] = expanded_trip_df['purpose_confirm'].apply(lambda value: 'other' if value not in purpose_values else value)
 
