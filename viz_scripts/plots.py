@@ -264,7 +264,7 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_mode(data,x,y,plot_title, labels, file_name):
+def barplot_mode(data,x,y,plot_title, labels, file_name, values_to_translations={}):
     colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
@@ -273,9 +273,16 @@ def barplot_mode(data,x,y,plot_title, labels, file_name):
     plt.xlabel(x, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
+
+    if values_to_translations:
+        x_ticks = ax.get_xticklabels()
+        translated_labels = [values_to_translations.get(label.get_text(), label.get_text()) for label in x_ticks]
+        ax.set_xticklabels(translated_labels)
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
     # y should be based on the max range + the biggest label ("Gas Car, with others")
     plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
