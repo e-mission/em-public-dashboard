@@ -270,7 +270,7 @@ def barplot_mode(data,x,y,x_label,plot_title, labels, file_name, values_to_trans
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
     ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
-    plt.xlabel(x, fontsize=23)
+    plt.xlabel(x_label, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
 
