@@ -264,7 +264,7 @@ def energy_impact(x,y,color,plot_title,file_name, values_to_translations={}):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_mode(data,x,y,plot_title, labels, file_name, values_to_translations={}):
+def barplot_mode(data,x,y,x_label,plot_title, labels, file_name, values_to_translations={}):
     colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
