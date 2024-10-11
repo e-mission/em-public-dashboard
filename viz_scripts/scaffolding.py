@@ -5,6 +5,7 @@ import sys
 from collections import defaultdict
 from collections import OrderedDict
 import difflib
+import logging
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -76,12 +77,14 @@ async def add_base_mode_footprint(trip_list):
                     trip['data']['replaced_base_mode'] = "UNKNOWN"
                     trip['data']['replaced_mode_footprint'] = {}
                     
-            except:
-                print("hit exception")
+            except Exception as e:
+                counter_trip_error = counter_trip_error + 1
+                logging.debug(f"The exception is : {e} for the trip - {trip['data']['_id']}")
                 trip['data']['base_mode'] = "UNKNOWN"
                 trip['data']['replaced_base_mode'] = "UNKNOWN"
                 trip['data']['mode_confirm_footprint'] = {}
                 trip['data']['replaced_mode_footprint'] = {}
+    logging.debug(f"There are {counter_trip_error} trip errors")
     return trip_list
 
 async def load_all_confirmed_trips(tq, add_footprint):
