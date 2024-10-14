@@ -1,8 +1,0 @@
-Remove call to read_json_resource("label-options.default.json") from e-mission-common in scaffolding.py
-
-Replace dynamic_labels with "labels"
-    - labels could be either default labels or dynamic labels (provided for program/study) depending on availability in config file
-    - Use labels passed from notebook instead of calling read_json_resource("label-options.default.json") from e-mission-common
-Remove async and await for mapping_color_labels() and translate_values_to_labels()
-    Remove filtering for dynamic_labels availability, as we will only have either labels or dynamic_labels.
-Update load_viz_notebook_* functions to use labels instead of dynamic_labels
