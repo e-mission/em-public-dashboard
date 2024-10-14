@@ -1,0 +1,6 @@
+Load read_json_resource() from e-mission-common
+
+- Pass labels instead of dynamic_labels to the notebooks
+- labels can either be:
+      - Custom labels from the program deployment config, from nrel-openpath-deploy-configs
+      - In case, we do not have custom labels for the program/study, load default labels from e-mission-common with read_json_resource
