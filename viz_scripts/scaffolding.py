@@ -257,7 +257,7 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
 
     return expanded_trip_df
 
-async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False):
+async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False, add_footprint=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -266,7 +266,7 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, dyna
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, add_footprint)
     inferred_ct = filter_inferred_trips(participant_ct_df)
     expanded_it = expand_inferredlabels(inferred_ct)
     expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels)
