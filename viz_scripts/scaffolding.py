@@ -79,7 +79,7 @@ async def add_base_mode_footprint(trip_list):
                     
             except Exception as e:
                 counter_trip_error = counter_trip_error + 1
-                logging.debug(f"The exception is : {e} for the trip - {trip['data']['_id']}")
+                logging.exception(f"Exception in add_base_mode_footprint for trip - {trip['data']['_id']}")
                 trip['data']['base_mode'] = "UNKNOWN"
                 trip['data']['replaced_base_mode'] = "UNKNOWN"
                 trip['data']['mode_confirm_footprint'] = {}
