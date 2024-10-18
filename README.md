@@ -11,7 +11,8 @@ So the steps are:
 #### Launch dev environment
 
 ```
-$ docker-compose -f docker-compose.dev.yml  up
+$ docker-compose -f docker-compose.dev.yml build
+$ docker-compose -f docker-compose.dev.yml up
 Creating network "em-public-dashboard_emission" with the default driver
 Creating em-public-dashboard_db_1 ... done
 Creating em-public-dashboard_plot-gen_1  ... done
