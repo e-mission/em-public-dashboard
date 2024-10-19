@@ -70,13 +70,13 @@ Note that this expects a standard setup with:
 
 When working with `docker compose`, it's generally recommended to avoid committing changes to the `docker-compose.dev.yml` file, especially if you're running the `./load_mongodump <dump tar>` script. This file is typically configured to work in a specific way for your development environment, and changes might not be applicable or useful for others working on the same project.
 
-If you feel the need to adjust the Dockerfiles or any scripts pertaining to the containers, you must rebuild the images with:
+If you feel the need to adjust the Dockerfiles or any scripts pertaining to the production containers, you must rebuild the images with:
 
 ```bash
-docker-compose -f docker-compose.dev.yml build
+docker-compose -f docker-compose.yml build
 ```
 
-Otherwise, your edits will not have any effect.
+Otherwise, your edits will not have any effect. This is not needed for the dev version.
 
 ### `.gitignore` Configuration
 
