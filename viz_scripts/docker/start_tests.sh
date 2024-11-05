@@ -8,6 +8,6 @@ conda env list
 cd saved-notebooks/tests || exit 1
 
 echo "Starting unit tests..."
-PYTHONPATH=. coverage run -m pytest test_plots.py
+PYTHONPATH=../.. coverage run -m pytest test_plots.py -v
 
 coverage report

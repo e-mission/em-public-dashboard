@@ -1,11 +1,9 @@
 import pytest as pytest
 import pandas as pd
 import numpy as np
-import os
-import pathlib
-import sys
-sys.path.append(str(pathlib.Path(__file__).parent.parent))
-import plots as plots
+# Using import_module, as we have saved-notebooks as the directory
+import importlib
+plots = importlib.import_module('saved-notebooks.plots')
 
 # Test Data Fixtures
 @pytest.fixture
