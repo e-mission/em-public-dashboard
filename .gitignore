@@ -108,7 +108,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -133,3 +132,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+docker-compose.dev.yml
+
+.DS_Store

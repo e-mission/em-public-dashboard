@@ -90,7 +90,10 @@ def compute_for_date(month, year):
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
         dynamic_labels = dynamic_labels,
         use_imperial = dynamic_config.get('display_config', {}).get('use_imperial', True),
-        sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"))
+        sensed_algo_prefix=dynamic_config.get('metrics', {}).get('sensed_algo_prefix', "cleaned"),
+        bluetooth_only = dynamic_config.get('tracking', {}).get('bluetooth_only', False),
+        survey_info = dynamic_config.get('survey_info', {}),
+        )
 
     print(f"Running at {arrow.get()} with params {params}")
 
