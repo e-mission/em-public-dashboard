@@ -30,6 +30,7 @@ jobs:
       run: echo Smoke test
 
     - name: Run the tests using docker-compose
+      working-directory: .github/workflows
       run:  |
-        docker compose -f setup/docker-compose.tests.yml build
-        docker compose -f setup/docker-compose.tests.yml up --exit-code-from web-server
+        docker compose -f ../../docker-compose.tests.yml build
+        docker compose -f ../../docker-compose.tests.yml up --exit-code-from web-server
