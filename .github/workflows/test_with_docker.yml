@@ -6,9 +6,9 @@ name: test-with-docker
 # events but only for the master branch
 on:
   push:
-    branches: [ main ]
+    branches: [ automate_dashboard_plots_cicd_test ]
   pull_request:
-    branches: [ main ]
+    branches: [ automate_dashboard_plots_cicd_test ]
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron:  '5 4 * * 0'
