@@ -5,21 +5,29 @@ import importlib
 import pandas as pd
 import numpy as np
 import collections as colls
+import pytest
 
 # Dynamically import saved-notebooks.plots
 scaffolding = importlib.import_module('saved-notebooks.scaffolding')
 
-@mock.patch('emission.core.wrapper.localdate.LocalDate')
-@mock.patch('emission.storage.timeseries.tcquery.TimeComponentQuery')
-def test_get_time_query(mock_tcquery, mock_localdate):
-    mock_localdate.return_value = ecwl.LocalDate({"year": 2022, "month": 6})
-    mock_tcquery.return_value = esttc.TimeComponentQuery("data.start_local_dt", mock_localdate.return_value, mock_localdate.return_value)
-
+def test_get_time_query():
+    # Test with both year and month
     result = scaffolding.get_time_query(2022, 6)
+    assert result is not None
+    assert isinstance(result, esttc.TimeComponentQuery)
 
-    assert result == mock_tcquery.return_value
-    mock_localdate.assert_called_with({"year": 2022, "month": 6})
-    mock_tcquery.assert_called_with("data.start_local_dt", mock_localdate.return_value, mock_localdate.return_value)
+    # Test with year and no month
+    result = scaffolding.get_time_query(2023, None)
+    assert result is not None
+    assert isinstance(result, esttc.TimeComponentQuery)
+
+    # Test with month and no year
+    with pytest.raises(Exception) as e_info:
+        result = scaffolding.get_time_query(None, 12)
+
+    # Test with no year or month
+    result = scaffolding.get_time_query(None, None)
+    assert result is None
 
 def test_mapping_labels():
     dynamic_labels = {
