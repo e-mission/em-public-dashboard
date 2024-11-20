@@ -9,7 +9,17 @@ from matplotlib.patches import Patch
 
 sns.set_style("whitegrid")
 sns.set()
-get_ipython().run_line_magic('matplotlib', 'inline')
+
+try:
+    # Import the function
+    from IPython import get_ipython
+    # Check if running in an IPython environment (like Jupyter Notebook)
+    if get_ipython() is not None:
+        get_ipython().run_line_magic('matplotlib', 'inline')
+except ImportError:
+    # Handle the case where IPython is not installed
+    # We are running in regular Python (likely pytest), not Jupyter/IPython
+    pass
 
 # Module for pretty-printing outputs (e.g. head) to help users
 # understand what is going on
