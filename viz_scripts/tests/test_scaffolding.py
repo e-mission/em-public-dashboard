@@ -37,15 +37,17 @@ def test_mapping_labels():
             {"value":"motorcycle", "base_mode": "MOPED", "footprint": { "gasoline": { "wh_per_km": 473.17 }},
             "baseMode":"MOPED", "met_equivalent":"IN_VEHICLE", "kgCo2PerKm": 0.113143309},
             {"value":"walk", "base_mode": "WALKING",
-            "baseMode":"WALKING", "met_equivalent":"WALKING", "kgCo2PerKm": 0},
-            {"value":"e_car", "base_mode": "E_CAR",
-            "baseMode":"E_CAR", "met_equivalent":"IN_VEHICLE", "kgCo2PerKm": 0.08216},
-            {"value":"taxi", "base_mode": "TAXI",
-            "baseMode":"TAXI", "met_equivalent":"IN_VEHICLE", "kgCo2PerKm": 0.30741},
-            {"value":"bike", "base_mode": "BICYCLING",
-            "baseMode":"BICYCLING", "met_equivalent":"BICYCLING", "kgCo2PerKm": 0},
-            {"value":"air", "base_mode": "AIR",
-            "baseMode":"AIR", "met_equivalent":"IN_VEHICLE", "kgCo2PerKm": 0.09975}
+            "baseMode":"WALKING", "met_equivalent":"WALKING", "kgCo2PerKm": 0}
+        ],
+        "PURPOSE": [
+            {"value":"home"},
+            {"value":"shopping"},
+            {"value":"meal"}
+        ],
+          "REPLACED_MODE": [
+            {"value":"no_travel"},
+            {"value":"bike"},
+            {"value":"taxi"}
         ],
         "translations": {
             "en": {
@@ -53,22 +55,36 @@ def test_mapping_labels():
             "motorcycle":"Motorcycle",
             "bike": "Bicycle",
             "gas_car": "Car",
-            "e_car": "Electric Car",
             "taxi": "Taxi",
-            "air": "Airplane"
+            "no_travel": "No Travel",
+            "home": "Home",
+            "meal": "Meal",
+            "shopping": "Shopping"
             }
         }
     }
 
     result_mode = scaffolding.mapping_labels(dynamic_labels, "MODE")
+    result_purpose = scaffolding.mapping_labels(dynamic_labels, "PURPOSE")
+    result_replaced = scaffolding.mapping_labels(dynamic_labels, "REPLACED_MODE")
 
     expected_result_mode = colls.defaultdict(lambda: 'Other', {
         "gas_car": "Car",
         "motorcycle": "Motorcycle",
-        "walk": "Walk",
-        "e_car": "Electric Car",
-        "taxi": "Taxi",
+        "walk": "Walk"
+    })
+
+    expected_result_purpose = colls.defaultdict(lambda: 'Other', {
+        "home": "Home",
+        "shopping": "Shopping",
+        "meal": "Meal"
+    })
+
+    expected_result_replaced = colls.defaultdict(lambda: 'Other', {
+        "no_travel": "No Travel",
         "bike": "Bicycle",
-        "air": "Airplane"
+        "taxi": "Taxi"
     })
     assert result_mode == expected_result_mode
+    assert result_purpose == expected_result_purpose
+    assert result_replaced == expected_result_replaced
