@@ -190,3 +190,10 @@ def test_get_quality_text_numerator(sensed_df):
 def test_get_quality_text_numerator_include_test_users(sensed_df):
     result = scaffolding.get_quality_text_sensed(sensed_df, include_test_users=True)
     assert result == "Based on 8 trips from 5 testers and participants"
+
+def test_get_file_suffix():
+    year = 2024
+    month = 12
+    program = "default"
+    result = scaffolding.get_file_suffix(year, month, program)
+    assert result == "_2024_12_default"
