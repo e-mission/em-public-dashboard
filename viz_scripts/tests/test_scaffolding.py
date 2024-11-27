@@ -164,3 +164,21 @@ def test_get_quality_text_include_test_users(before_df, after_df):
 def test_get_quality_text_include_mode_of_interest(before_df, after_df):
     result = scaffolding.get_quality_text(before_df, after_df, mode_of_interest = "Motorcycle")
     assert result == "Based on 4 confirmed Motorcycle trips from 3 users\nof 8 total confirmed trips from 5 users (50.00%)"
+
+@pytest.fixture
+def sensed_df():
+    return pd.DataFrame({
+        "user_id":["user_1", "user_1", "user_1", "user_2", "user_2", "user_3", "user_4", "user_5"],
+        "primary_mode":["IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE", "IN_VEHICLE"],
+        "raw_trip":["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6", "trip_7"],
+        "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
+        "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456, 156.564]
+    })
+
+def test_get_quality_text_sensed(sensed_df):
+    result = scaffolding.get_quality_text_sensed(sensed_df)
+    assert result == "Based on 8 trips from 5 users"
+
+def test_get_quality_text_sensed(sensed_df):
+    result = scaffolding.get_quality_text_sensed(sensed_df, include_test_users=True)
+    assert result == "Based on 8 trips from 5 testers and participants"
