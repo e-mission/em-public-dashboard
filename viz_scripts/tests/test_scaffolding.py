@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import collections as colls
 import pytest
+import matplotlib.pyplot as plt
 
 # Dynamically import saved-notebooks.plots
 scaffolding = importlib.import_module('saved-notebooks.scaffolding')
@@ -88,3 +89,44 @@ def test_mapping_labels():
     assert result_mode == expected_result_mode
     assert result_purpose == expected_result_purpose
     assert result_replaced == expected_result_replaced
+
+def test_mapping_color_surveys():
+    dic_options = {
+        'yes': 'Yes',
+        'no': 'No',
+        '1': 'Disagree (1)',
+        '2': '2',
+        '3': 'Neutral (3)',
+        '4': '4',
+        '5': 'Agree (5)',
+        'unsure': 'Unsure'
+    }
+
+    result = scaffolding.mapping_color_surveys(dic_options)
+
+    # Check that result is a dictionary
+    assert isinstance(result, dict)
+
+    # Check unique values have unique colors, with an Other
+    unique_values = list(colls.OrderedDict.fromkeys(dic_options.values()))
+    assert len(result) == len(unique_values) + 1
+
+    # Check colors are from plt.cm.tab10
+    for color in result.values():
+        assert color in plt.cm.tab10.colors
+
+    # Specific checks for this example
+    assert result['Yes'] ==  plt.cm.tab10.colors[0]
+    assert result['No'] ==  plt.cm.tab10.colors[1]
+    assert result['Disagree (1)'] ==  plt.cm.tab10.colors[2]
+    assert result['2'] == plt.cm.tab10.colors[3]
+    assert result['Neutral (3)'] ==  plt.cm.tab10.colors[4]
+    assert result['4'] == plt.cm.tab10.colors[5]
+    assert result['Agree (5)'] ==  plt.cm.tab10.colors[6]
+    assert result['Unsure'] == plt.cm.tab10.colors[7]
+    assert result['Other'] ==  plt.cm.tab10.colors[8]
+
+def test_mapping_color_surveys_empty():
+    # Test with an empty dictionary
+    with pytest.raises(Exception):
+        mapping_color_surveys({})
