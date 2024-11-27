@@ -130,3 +130,37 @@ def test_mapping_color_surveys_empty():
     # Test with an empty dictionary
     with pytest.raises(Exception):
         mapping_color_surveys({})
+
+@pytest.fixture
+def before_df():
+    return pd.DataFrame({
+        "user_id":["user_1", "user_1", "user_1", "user_2", "user_2", "user_3", "user_4", "user_5"],
+        "mode_confirm":["own_car", "own_car", "walk", "bus", "walk", "car", "motorcycle", "bike"],
+        "Mode_confirm":["Other", "Other", "Walk", "Bus", "Walk", "Car", "Bike", "Bike"],
+        "raw_trip":["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6", "trip_7"],
+        "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
+        "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456, 156.564]
+    })
+
+@pytest.fixture
+def after_df():
+    return pd.DataFrame({
+        "user_id":["user_1", "user_1", "user_4", "user_5"],
+        "mode_confirm":["own_car", "own_car",  "motorcycle", "bike"],
+        "Mode_confirm":["Other", "Other",  "Bike", "Bike"],
+        "raw_trip":["trip_0", "trip_1", "trip_6", "trip_7"],
+        "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
+        "duration": [1845.26, 1200.89, 1564.456, 156.564]
+    })
+
+def test_get_quality_text(before_df, after_df):
+    result = scaffolding.get_quality_text(before_df, after_df)
+    assert result == "Based on 4 confirmed trips from 3 users\nof 8 total  trips from 5 users (50.00%)"
+
+def test_get_quality_text_include_test_users(before_df, after_df):
+    result = scaffolding.get_quality_text(before_df, after_df, include_test_users = True)
+    assert result == "Based on 4 confirmed trips from 3 testers and participants\nof 8 total  trips from 5 users (50.00%)"
+
+def test_get_quality_text_include_mode_of_interest(before_df, after_df):
+    result = scaffolding.get_quality_text(before_df, after_df, mode_of_interest = "Motorcycle")
+    assert result == "Based on 4 confirmed Motorcycle trips from 3 users\nof 8 total confirmed trips from 5 users (50.00%)"
