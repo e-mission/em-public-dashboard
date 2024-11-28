@@ -31,6 +31,6 @@ jobs:
 
     - name: Run the tests using docker-compose
       working-directory: .github/workflows
-       run:  |
+       run: |
          docker compose -f ../../docker-compose.tests.yml build
          docker compose -f ../../docker-compose.tests.yml up --exit-code-from notebook-server
