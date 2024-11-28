@@ -32,8 +32,9 @@ def test_get_time_query():
     result = scaffolding.get_time_query(None, None)
     assert result is None
 
-def test_mapping_labels():
-    dynamic_labels = {
+@pytest.fixture
+def dynamic_labels():
+    return {
         "MODE": [
             {"value":"gas_car", "base_mode": "CAR",
             "baseMode":"CAR", "met_equivalent":"IN_VEHICLE", "kgCo2PerKm": 0.22031},
@@ -54,19 +55,31 @@ def test_mapping_labels():
         ],
         "translations": {
             "en": {
-            "walk": "Walk",
-            "motorcycle":"Motorcycle",
-            "bike": "Bicycle",
-            "gas_car": "Car",
-            "taxi": "Taxi",
-            "no_travel": "No Travel",
-            "home": "Home",
-            "meal": "Meal",
-            "shopping": "Shopping"
+                "walk": "Walk",
+                "motorcycle":"Motorcycle",
+                "bike": "Bicycle",
+                "gas_car": "Car",
+                "taxi": "Taxi",
+                "no_travel": "No Travel",
+                "home": "Home",
+                "meal": "Meal",
+                "shopping": "Shopping"
+            },
+            "es": {
+                "walk": "Caminando",
+                "motorcycle":"Motocicleta",
+                "bike":"Bicicleta",
+                "gas_car":"Coche de gasolina",
+                "taxi":"Taxi",
+                "no_travel":"No viajar",
+                "home":"Casa",
+                "meal":"Comida",
+                "shopping":"Compras"
             }
         }
     }
 
+def test_mapping_labels(dynamic_labels):
     result_mode = scaffolding.mapping_labels(dynamic_labels, "MODE")
     result_purpose = scaffolding.mapping_labels(dynamic_labels, "PURPOSE")
     result_replaced = scaffolding.mapping_labels(dynamic_labels, "REPLACED_MODE")
@@ -297,3 +310,69 @@ def test_expand_userinputs(labeled_ct):
     assert 'purpose_confirm' in expanded_ct.columns
     assert expanded_ct['purpose_confirm'].fillna('NaN').tolist() == ['work', 'NaN', 'school', 'at_work', 'access_recreation', 'pick_drop_person', 'work']
     assert expanded_ct['mode_confirm'].fillna('NaN').tolist() == ['own_car', 'bus', 'NaN', 'own_car', 'car', 'bike', 'bike']
+
+# Testing with just dynamic_labels since PR#164 Unify calls to read json resource from e-mission-common in generate_plots.py would make sure we have labels passed into this file, instead of fetching the label-options.json file here
+@pytest.mark.asyncio
+async def test_translate_values_to_labels_english(dynamic_labels):
+    # Call the function with our predefined labels
+    mode_translations, purpose_translations, replaced_translations = await scaffolding.translate_values_to_labels(dynamic_labels)
+
+    expected_mode_translations = colls.defaultdict(lambda: 'Other', {
+        "gas_car": "Car",
+        "motorcycle": "Motorcycle",
+        "walk": "Walk"
+    })
+
+    expected_purpose_translations = colls.defaultdict(lambda: 'Other', {
+        "home": "Home",
+        "shopping": "Shopping",
+        "meal": "Meal"
+    })
+
+    expected_replaced_translations = colls.defaultdict(lambda: 'Other', {
+        "no_travel": "No Travel",
+        "bike": "Bicycle",
+        "taxi": "Taxi"
+    })
+    assert mode_translations == expected_mode_translations
+    assert purpose_translations == expected_purpose_translations
+    assert replaced_translations == expected_replaced_translations
+
+# TODO:: Implement language specific changes in mapping_translations
+@pytest.mark.skip(reason="Implementation limited only for english translations")
+@pytest.mark.asyncio
+async def test_translate_values_to_labels_spanish(dynamic_labels, language="es"):
+    # Call the function with our predefined labels
+    mode_translations_es, purpose_translations_es, replaced_translations_es = await scaffolding.translate_values_to_labels(dynamic_labels)
+
+    expected_mode_translations_es = colls.defaultdict(lambda: 'Other', {
+        "gas_car":"Coche de gasolina",
+        "motorcycle":"Motocicleta",
+        "walk": "Caminando"
+    })
+
+    expected_purpose_translations_es = colls.defaultdict(lambda: 'Other', {
+        "home":"Casa",
+        "shopping":"Compras",
+        "meal":"Comida"
+    })
+
+    expected_replaced_translations_es = colls.defaultdict(lambda: 'Other', {
+        "no_travel":"No viajar",
+        "bike":"Bicicleta",
+        "taxi": "Taxi"
+    })
+    assert mode_translations_es == expected_mode_translations_es
+    assert purpose_translations_es == expected_purpose_translations_es
+    assert replaced_translations_es == expected_result_replaced_translations_es
+
+@pytest.mark.asyncio
+async def test_translate_values_to_labels_empty_input():
+    # Test with empty input
+    mode_translations, purpose_translations, replaced_translations = await scaffolding.translate_values_to_labels([])
+
+    # Verify that the function can handle empty input
+    # The exact behavior depends on how your function handles this
+    assert isinstance(mode_translations, dict)
+    assert isinstance(purpose_translations, dict)
+    assert isinstance(replaced_translations, dict)
