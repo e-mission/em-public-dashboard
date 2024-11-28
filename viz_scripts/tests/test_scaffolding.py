@@ -139,7 +139,8 @@ def before_df():
         "Mode_confirm":["Other", "Other", "Walk", "Bus", "Walk", "Car", "Bike", "Bike"],
         "raw_trip":["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6", "trip_7"],
         "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
-        "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456, 156.564]
+        "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456, 156.564],
+        "distance": [100, 150, 600, 500, 300, 200, 50, 20]
     })
 
 @pytest.fixture
@@ -150,7 +151,8 @@ def after_df():
         "Mode_confirm":["Other", "Other",  "Bike", "Bike"],
         "raw_trip":["trip_0", "trip_1", "trip_6", "trip_7"],
         "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
-        "duration": [1845.26, 1200.89, 1564.456, 156.564]
+        "duration": [1845.26, 1200.89, 1564.456, 156.564],
+        "distance": [100, 150, 50, 20]
     })
 
 def test_get_quality_text(before_df, after_df):
@@ -197,3 +199,21 @@ def test_get_file_suffix():
     program = "default"
     result = scaffolding.get_file_suffix(year, month, program)
     assert result == "_2024_12_default"
+
+def test_unit_conversions(before_df):
+    test_df = before_df.copy()
+    scaffolding.unit_conversions(test_df)
+    assert 'distance_miles' in test_df.columns
+    assert 'distance_kms' in test_df.columns
+
+    np.testing.assert_almost_equal(
+        test_df['distance_miles'],
+        [0.062, 0.093, 0.373, 0.311, 0.186, 0.124, 0.031, 0.012],
+        decimal=2
+    )
+
+    np.testing.assert_almost_equal(
+        test_df['distance_kms'],
+        [0.1, 0.15, 0.6, 0.5, 0.3, 0.2, 0.05, 0.02],
+        decimal=2
+    )
