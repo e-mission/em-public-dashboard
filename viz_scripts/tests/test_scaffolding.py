@@ -217,3 +217,44 @@ def test_unit_conversions(before_df):
         [0.1, 0.15, 0.6, 0.5, 0.3, 0.2, 0.05, 0.02],
         decimal=2
     )
+
+def test_filter_labeled_trips_with_labeled_trips():
+    mixed_trip_df = pd.DataFrame({
+        'user_input':[
+            {'purpose_confirm': 'work', 'mode_confirm':'own_car'},
+            {'mode_confirm':'bus'},
+            {'purpose_confirm': 'school'},
+            {},
+            {'purpose_confirm': 'shopping', 'mode_confirm':'car'},
+            {},
+            {}
+        ],
+        "distance": [100, 150, 50, 20, 50, 10, 60]
+    })
+
+    labeled_ct = scaffolding.filter_labeled_trips(mixed_trip_df)
+
+    # Assert the length of the dataframe, which does not have user_input
+    assert len(labeled_ct) == 4
+    assert all(labeled_ct['user_input'].apply(bool))
+
+def test_filter_labeled_trips_empty_dataframe():
+    # Create an empty DataFrame
+    mixed_trip_df = pd.DataFrame(columns=['user_input'])
+
+    labeled_ct = scaffolding.filter_labeled_trips(mixed_trip_df)
+
+    # Assert the returned DataFrame is empty
+    assert len(labeled_ct) == 0
+
+def test_filter_labeled_trips_no_labeled_trips():
+    # Create a DataFrame with only unlabeled trips
+    mixed_trip_df = pd.DataFrame({
+        'user_input': [{}, {}, {}],
+        "distance": [100, 150, 50]
+    })
+
+    labeled_ct = scaffolding.filter_labeled_trips(mixed_trip_df)
+
+    # Assert the returned DataFrame is empty
+    assert len(labeled_ct) == 0
