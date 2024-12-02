@@ -7,18 +7,14 @@ services:
       - db
     ports:
       # DASH in numbers
-      - "3274:3274"
+      - "3274:6060"
     volumes:
       - ./plots:/public/plots
     networks:
        - emission
   notebook-server:
     image: em-pub-dash-prod/viz-scripts
-    build: 
-      context: viz_scripts
-      dockerfile: Dockerfile
-      args:
-        SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
+    build: viz_scripts
     depends_on:
       - db
     environment:
@@ -28,7 +24,7 @@ services:
       - STUDY_CONFIG=stage-program
     ports:
       # ipynb in numbers
-      - "47962:47962"
+      - "47962:8888"
     networks:
       - emission
     volumes:

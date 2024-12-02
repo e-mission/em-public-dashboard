@@ -1,8 +1,5 @@
 # python 3
-ARG SERVER_IMAGE_TAG
-FROM shankari/e-mission-server:master_${SERVER_IMAGE_TAG}
-
-ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/certs/
+FROM shankari/e-mission-server:master_2023-10-25--24-33
 
 VOLUME /plots
 
@@ -16,6 +13,7 @@ RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission -
 RUN mkdir -p /usr/src/app/saved-notebooks
 WORKDIR /usr/src/app/saved-notebooks
 
+COPY auxiliary_files ./auxiliary_files
 COPY bin ./bin
 COPY *.ipynb .
 COPY *.py .
@@ -35,8 +33,6 @@ RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
 ADD docker/crontab /usr/src/app/crontab
 
-# expose directive does not do anything, but for documentation purposes,
-# the port 47962 is mapped in the docker-compose.yml.
-EXPOSE 47962
+EXPOSE 8888
 
 CMD ["/bin/bash", "/usr/src/app/.docker/start_notebook.sh"]

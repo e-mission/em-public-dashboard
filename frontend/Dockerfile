@@ -1,4 +1,4 @@
-FROM node:21.7.2-alpine
+FROM node:20.7.0-alpine
 VOLUME /public/plots
 
 RUN mkdir -p /public
@@ -6,11 +6,10 @@ WORKDIR /public
 
 RUN npm i -g http-server
 
+RUN apk update && apk upgrade busybox
+
 COPY client /public/client
 COPY *.html /public/
 
-# expose directive does not do anything, but for documentation purposes,
-# the port 3274 is mapped in the docker-compose.yml.
-EXPOSE 3274
-
-CMD ["http-server", "-p", "3274"]
+EXPOSE 6060
+CMD ["http-server", "-p", "6060"]
