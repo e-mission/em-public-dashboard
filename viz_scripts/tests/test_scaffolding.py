@@ -376,3 +376,142 @@ async def test_translate_values_to_labels_empty_input():
     assert isinstance(mode_translations, dict)
     assert isinstance(purpose_translations, dict)
     assert isinstance(replaced_translations, dict)
+
+# @pytest.fixture
+# def inferred_ct():
+#     return pd.DataFrame({
+#         'user_input':[
+#             {'purpose_confirm': 'work', 'mode_confirm':'own_car'},
+#             {'mode_confirm':'bus'},
+#             {'purpose_confirm': 'school'},
+#             {'purpose_confirm': 'at_work', 'mode_confirm': 'own_car'},
+#             {'purpose_confirm': 'access_recreation', 'mode_confirm':'car'},
+#             {'mode_confirm':'bike', 'purpose_confirm':'pick_drop_person'},
+#             {'purpose_confirm':'work', 'mode_confirm':'bike'}
+#         ],
+#         "distance": [100, 150, 50, 20, 50, 10, 60],
+#         "user_id":["user_1", "user_1", "user_1", "user_2", "user_2", "user_3", "user_4"],
+#         "raw_trip":["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6"],
+#         "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
+#         "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456],
+#         "distance": [100, 150, 600, 500, 300, 200, 50],
+#         "inferred_trip":["itrip_0", "itrip_1", "itrip_2", "itrip_3", "itrip_4", "itrip_5", "itrip_6"],
+#         "confidence_threshold":[0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55],
+#         "inferred_labels" : pd.Series([
+#             [[{'labels': {'mode_confirm': 'shared_ride', 'purpose_confirm': 'school'}, 'p': 0.99}],
+#             [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'at_work'}, 'p': 0.9899999407250384}],
+#             [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'work'}, 'p': 0.9899999998030119}],
+#             [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': ''}, 'p': 0.99}],
+#             [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': 'work'}, 'p': 0.99}]],
+#             [],
+#             []
+#         ])
+#     })
+@pytest.fixture
+def inferred_ct():
+    return pd.DataFrame({
+        'user_input': [
+            {},
+            {},
+            {},
+            {},
+            {},
+            {'mode_confirm':'bike', 'purpose_confirm':'pick_drop_person'},
+            {'purpose_confirm':'work', 'mode_confirm':'bike'}
+        ],
+        "distance": [100, 150, 50, 20, 50, 10, 60],
+        "user_id": ["user_1", "user_1", "user_1", "user_2", "user_2", "user_3", "user_4"],
+        "raw_trip": ["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6"],
+        "start_ts": [1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
+        "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456],
+        "inferred_trip": ["itrip_0", "itrip_1", "itrip_2", "itrip_3", "itrip_4", "itrip_5", "itrip_6"],
+        "confidence_threshold": [0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55],
+        "inferred_labels": pd.Series([
+            [{'labels': {'mode_confirm': 'shared_ride', 'purpose_confirm': 'school'}, 'p': 0.99}],
+            [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'at_work'}, 'p': 0.9899999407250384}],
+            [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'work'}, 'p': 0.9899999998030119}],
+            [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': ''}, 'p': 0.99}],
+            [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': 'work'}, 'p': 0.99}],
+            [],
+            []
+        ])
+    })
+
+def test_expand_inferredlabels(inferred_ct):
+    expanded_ct = scaffolding.expand_inferredlabels(inferred_ct)
+
+    # Call the function to expand inferred labels
+    assert len(expanded_ct) == len(inferred_ct)
+
+    # Assert new columns have been added
+    assert 'mode_confirm' in expanded_ct.columns
+    assert 'purpose_confirm' in expanded_ct.columns
+
+    # Check the values of the new columns
+    expected_mode_confirms = [
+        'shared_ride',
+        'motorcycle',
+        'motorcycle',
+        'drove_alone',
+        'drove_alone',
+        'bike',
+        'bike'
+    ]
+
+    expected_purpose_confirms = [
+        'school',
+        'at_work',
+        'work',
+        '',
+        'work',
+        'pick_drop_person',
+        'work'
+    ]
+
+    # Compare the extracted mode and purpose confirm
+    assert expanded_ct['mode_confirm'].tolist() == expected_mode_confirms
+    assert expanded_ct['purpose_confirm'].tolist() == expected_purpose_confirms
+
+def test_filter_inferredlabels():
+    mixed_trip_df = pd.DataFrame({
+        "user_input": [
+            {},
+            {},
+            {},
+            {},
+            {},
+            {'mode_confirm':'bike', 'purpose_confirm':'pick_drop_person'},
+            {'purpose_confirm':'work', 'mode_confirm':'bike'},
+            {},
+            {}
+        ],
+        "inferred_labels": pd.Series([
+            [{'labels': {'mode_confirm': 'shared_ride', 'purpose_confirm': 'school'}, 'p': 0.99}],
+            [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'at_work'}, 'p': 0.9899999407250384}],
+            [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'work'}, 'p': 0.9899999998030119}],
+            [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': ''}, 'p': 0.99}],
+            [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': 'work'}, 'p': 0.99}],
+            [],
+            [],
+            [],
+            []
+        ])
+    })
+
+    inferred_ct = scaffolding.filter_inferred_trips(mixed_trip_df)
+    assert len(inferred_ct) == 7
+
+def test_filter_inferredlabels_emptydataframe():
+    mixed_trip_df = pd.DataFrame({
+        "user_input": [
+            {},
+            {}
+        ],
+        "inferred_labels": pd.Series([
+            [],
+            []
+        ])
+    })
+
+    inferred_ct = scaffolding.filter_inferred_trips(mixed_trip_df)
+    assert len(inferred_ct) == 0
