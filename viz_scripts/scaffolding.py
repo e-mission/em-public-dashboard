@@ -5,6 +5,7 @@ import sys
 from collections import defaultdict
 from collections import OrderedDict
 import difflib
+import logging
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -59,6 +60,7 @@ async def add_base_mode_footprint(trip_list):
     labels = await emcu.read_json_resource("label-options.default.json")
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     
+    counter_trip_error = 0
     for trip in trip_list:
         #format so emffc can get id for metadata
         trip['data']['_id'] = trip['_id']
@@ -75,13 +77,14 @@ async def add_base_mode_footprint(trip_list):
                     trip['data']['replaced_base_mode'] = "UNKNOWN"
                     trip['data']['replaced_mode_footprint'] = {}
                     
-            except:
-                print("hit exception")
+            except Exception as e:
+                counter_trip_error = counter_trip_error + 1
+                logging.exception(f"Exception in add_base_mode_footprint for trip - {trip['data']['_id']}")
                 trip['data']['base_mode'] = "UNKNOWN"
                 trip['data']['replaced_base_mode'] = "UNKNOWN"
                 trip['data']['mode_confirm_footprint'] = {}
                 trip['data']['replaced_mode_footprint'] = {}
-            
+    logging.debug(f"There are {counter_trip_error} trip errors")
     return trip_list
 
 async def load_all_confirmed_trips(tq, add_footprint):
@@ -254,7 +257,7 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
 
     return expanded_trip_df
 
-async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False):
+async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False, add_footprint=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -263,7 +266,7 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, dyna
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, add_footprint)
     inferred_ct = filter_inferred_trips(participant_ct_df)
     expanded_it = expand_inferredlabels(inferred_ct)
     expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels)
@@ -501,29 +504,21 @@ def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
     df['distance_kms'] = df["distance"] / 1000 #meters to kms
 
-def extract_kwh(footprint_dict):
-    if 'kwh' in footprint_dict.keys():
-        return footprint_dict['kwh']
+def extract_footprint(footprint_dict, footprint_key):
+    if footprint_key in footprint_dict.keys():
+        return footprint_dict[footprint_key]
     else:
-        print("missing kwh", footprint_dict)
-        return np.nan 
-
-def extract_co2(footprint_dict):
-    if 'kg_co2' in footprint_dict.keys():
-        return footprint_dict['kg_co2']
-    else:
-        print("missing co2", footprint_dict)
         return np.nan
 
 def unpack_energy_emissions(expanded_ct):
-    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
+    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kg_co2')
     expanded_ct['Mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['Mode_confirm_kg_CO2'])
-    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
+    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kg_co2')
     expanded_ct['Replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['Replaced_mode_kg_CO2'])
     CO2_impact(expanded_ct)
 
-    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
-    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
+    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kwh')
+    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kwh')
     energy_impact(expanded_ct)
 
     return expanded_ct
