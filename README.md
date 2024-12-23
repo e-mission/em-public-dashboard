@@ -11,7 +11,7 @@ So the steps are:
 #### Launch dev environment
 
 ```
-$ docker-compose -f docker-compose.dev.yml  up
+$ docker-compose -f docker-compose.dev.yml up
 Creating network "em-public-dashboard_emission" with the default driver
 Creating em-public-dashboard_db_1 ... done
 Creating em-public-dashboard_plot-gen_1  ... done
@@ -19,33 +19,26 @@ Creating em-public-dashboard_dashboard_1 ... done
 ...
 dashboard_1  | Starting up http-server, serving ./
 dashboard_1  | Available on:
-dashboard_1  |   http://127.0.0.1:8080
-dashboard_1  |   http://172.25.0.3:8080
+dashboard_1  |   http://127.0.0.1:3274
+dashboard_1  |   http://172.25.0.3:3274
 dashboard_1  | Hit CTRL-C to stop the server
 ...
 notebook-server_1  |
 notebook-server_1  |     To access the notebook, open this file in a browser:
 notebook-server_1  |         file:///root/.local/share/jupyter/runtime/nbserver-22-open.html
 notebook-server_1  |     Or copy and paste one of these URLs:
-notebook-server_1  |         http://f8317197efaf:8888/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
-notebook-server_1  |      or http://127.0.0.1:8888/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
+notebook-server_1  |         http://f8317197efaf:47962/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
+notebook-server_1  |      or http://127.0.0.1:47962/?token=5cfd541b7461a47310c9c8aaa4114f921457a6f17b8ca159
 ...
 ```
 
 #### Test the frontend install
 
-Go to http://localhost:3274/ to see the front-end. Note that the port is *3274*
-instead of the *8080* in the logs, since we remap it as part of the docker-compose.
+Go to http://localhost:3274/ to see the front-end.
 
 #### Test the notebook install
 
-Use the notebook URL from the console but change `8888` to `47962`
-
-```
-http://127.0.0.1:8888/?token=<token>
-```
-
-becomes
+Use the notebook URL from the console:
 
 ```
 http://127.0.0.1:47962/?token=<token>
@@ -75,6 +68,14 @@ Note that this expects a standard setup with:
 ### Using `docker compose`
 
 When working with `docker compose`, it's generally recommended to avoid committing changes to the `docker-compose.dev.yml` file, especially if you're running the `./load_mongodump <dump tar>` script. This file is typically configured to work in a specific way for your development environment, and changes might not be applicable or useful for others working on the same project.
+
+If you feel the need to adjust the Dockerfiles or any scripts pertaining to the production containers, you must rebuild the images with:
+
+```bash
+docker-compose -f docker-compose.yml build
+```
+
+Otherwise, your edits will not have any effect. This is not needed for the dev version.
 
 ### `.gitignore` Configuration
 
