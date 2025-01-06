@@ -28,7 +28,7 @@ services:
       - STUDY_CONFIG=stage-program
     ports:
       # ipynb in numbers
-      - "47962:8888"
+      - "47962:47962"
     networks:
       - emission
     volumes:
