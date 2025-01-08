@@ -222,7 +222,7 @@ def energy_impact(x,y,color,plot_title,file_name, values_to_translations={}):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Energy Savings', 'Energy Loss')
     
-    y_labels = y.map(values_to_translations)
+    y_labels = y.map(lambda value: values_to_translations.get(value, value))
     plt.figure(figsize=(15, 8))
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
@@ -346,7 +346,7 @@ def CO2_impact(x,y,color,plot_title, xLabel, yLabel, file_name, values_to_transl
     color = color.map({True: 'green', False: 'red'})
     objects = ('CO2 Reduction', 'CO2 Increase')
 
-    y_labels = y.map(values_to_translations)
+    y_labels = y.map(lambda value: values_to_translations.get(value, value))
     plt.figure(figsize=(15, 8))
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
