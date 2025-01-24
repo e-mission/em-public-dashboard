@@ -218,11 +218,11 @@ def set_title_and_save(fig, text_results, plot_title, file_name):
     fig.savefig(SAVE_DIR + file_name + ".png", bbox_inches='tight')
     plt.show()
 
-def energy_impact(x,y,color,plot_title,file_name):
+def energy_impact(x,y,color,plot_title,file_name, values_to_translations={}):
     color = color.map({True: 'green', False: 'red'})
     objects = ('Energy Savings', 'Energy Loss')
     
-    y_labels = y
+    y_labels = y.map(lambda value: values_to_translations.get(value, value))
     plt.figure(figsize=(15, 8))
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
@@ -264,18 +264,25 @@ def energy_impact(x,y,color,plot_title,file_name):
     plt.legend(labels=objects, handles=patches, loc='upper right', borderaxespad=0, fontsize=15, frameon=True)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def barplot_mode(data,x,y,plot_title, labels, file_name):
+def barplot_mode(data,x,y,x_label,plot_title, labels, file_name, values_to_translations={}):
     colours = dict(zip(labels, plt.cm.tab20.colors[:len(labels)]))
     sns.set(font_scale=1.5)
     f = plt.subplots(figsize=(15, 6))
     sns.set(style='whitegrid')
     ax = sns.barplot(x=x, y=y, palette=colours,data=data, ci=None)
-    plt.xlabel(x, fontsize=23)
+    plt.xlabel(x_label, fontsize=23)
     plt.ylabel(y, fontsize=23)
     plt.title(plot_title, fontsize=25)
+
+    if values_to_translations:
+        x_ticks = ax.get_xticklabels()
+        translated_labels = [values_to_translations.get(label.get_text(), label.get_text()) for label in x_ticks]
+        ax.set_xticklabels(translated_labels)
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
     # y should be based on the max range + the biggest label ("Gas Car, with others")
     plt.text(0,-(data[y].max()/8 + 3.3),f"Last updated {arrow.get()}", fontsize=10)
-    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def barplot_mode2(data,x,y,y2,plot_title,file_name):
@@ -335,11 +342,11 @@ def barplot_day(data,x,y,plot_title,file_name):
     plt.text(0,-(data[y].max())/8,f"Last updated {arrow.get()}", fontsize=10)
     plt.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def CO2_impact(x,y,color,plot_title, xLabel, yLabel, file_name):
+def CO2_impact(x,y,color,plot_title, xLabel, yLabel, file_name, values_to_translations={}):
     color = color.map({True: 'green', False: 'red'})
     objects = ('CO2 Reduction', 'CO2 Increase')
 
-    y_labels = y
+    y_labels = y.map(lambda value: values_to_translations.get(value, value))
     plt.figure(figsize=(15, 8))
     width = 0.8
     ax = x.plot(kind='barh',width=width, color=color)
@@ -388,12 +395,16 @@ def timeseries_plot(x,y,plot_title,ylab,file_name):
     plt.subplots_adjust(bottom=0.25)
     ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
-def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name):
+def timeseries_multi_plot(data,x,y,hue,plot_title,ylab,legend_title,file_name, values_to_translations={}):
     fig, ax = plt.subplots(figsize=(16,4))
     sns.lineplot(ax=ax, data=data, x=x, y=y, hue=hue).set(title=plot_title, xlabel='Date', ylabel=ylab)
     plt.xticks(rotation=45)
     plt.subplots_adjust(bottom=0.25)
-    plt.legend(bbox_to_anchor=(1.02, 1), loc='best', borderaxespad=0, title=legend_title)
+    #  Get the current legend labels
+    handles, labels = ax.get_legend_handles_labels()
+    if values_to_translations:
+        labels = [values_to_translations.get(label, label) for label in labels]
+    ax.legend(handles,labels, bbox_to_anchor=[1.02, 1], loc='best', borderaxespad=0, title=legend_title)
     ax.figure.savefig(SAVE_DIR+file_name+".png", bbox_inches='tight')
 
 def access_alt_text(alt_text, chart_name):
