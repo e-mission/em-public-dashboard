@@ -207,7 +207,8 @@ async def load_viz_notebook_data(year, month, program, study_type, labels, inclu
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
             "Trips_with_mode_confirm_label": trip_label_count("mode_confirm_w_other", expanded_ct),
-            "Trips_with_trip_purpose_label": trip_label_count("purpose_confirm_w_other", expanded_ct)
+            "Trips_with_trip_purpose_label": trip_label_count("purpose_confirm_w_other", expanded_ct),
+            "Trips_with_replaced_mode_label": trip_label_count("replaced_mode_w_other", expanded_ct)
             },
         orient='index', columns=["value"])
 
@@ -275,7 +276,8 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, labe
             "Participant_with_at_least_one_inferred_trip": unique_users(inferred_ct),
             "Trips_with_at_least_one_inferred_label": len(inferred_ct),
             "Trips_with_mode_confirm_inferred_label": trip_label_count("mode_confirm_w_other", expanded_it),
-            "Trips_with_trip_purpose_inferred_label": trip_label_count("purpose_confirm_w_other", expanded_it)
+            "Trips_with_trip_purpose_inferred_label": trip_label_count("purpose_confirm_w_other", expanded_it),
+            "Trips_with_replaced_mode_inferred_label": trip_label_count("replaced_mode_w_other", expanded_it)
             },
         orient='index', columns=["value"])
 
