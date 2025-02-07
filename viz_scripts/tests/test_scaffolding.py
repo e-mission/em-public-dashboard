@@ -377,36 +377,6 @@ async def test_translate_values_to_labels_empty_input():
     assert isinstance(purpose_translations, dict)
     assert isinstance(replaced_translations, dict)
 
-# @pytest.fixture
-# def inferred_ct():
-#     return pd.DataFrame({
-#         'user_input':[
-#             {'purpose_confirm': 'work', 'mode_confirm':'own_car'},
-#             {'mode_confirm':'bus'},
-#             {'purpose_confirm': 'school'},
-#             {'purpose_confirm': 'at_work', 'mode_confirm': 'own_car'},
-#             {'purpose_confirm': 'access_recreation', 'mode_confirm':'car'},
-#             {'mode_confirm':'bike', 'purpose_confirm':'pick_drop_person'},
-#             {'purpose_confirm':'work', 'mode_confirm':'bike'}
-#         ],
-#         "distance": [100, 150, 50, 20, 50, 10, 60],
-#         "user_id":["user_1", "user_1", "user_1", "user_2", "user_2", "user_3", "user_4"],
-#         "raw_trip":["trip_0", "trip_1", "trip_2", "trip_3", "trip_4", "trip_5", "trip_6"],
-#         "start_ts":[1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09, 1.690e+09],
-#         "duration": [1845.26, 1200.89, 1000.56, 564.54, 456.456, 156.45, 1564.456],
-#         "distance": [100, 150, 600, 500, 300, 200, 50],
-#         "inferred_trip":["itrip_0", "itrip_1", "itrip_2", "itrip_3", "itrip_4", "itrip_5", "itrip_6"],
-#         "confidence_threshold":[0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55],
-#         "inferred_labels" : pd.Series([
-#             [[{'labels': {'mode_confirm': 'shared_ride', 'purpose_confirm': 'school'}, 'p': 0.99}],
-#             [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'at_work'}, 'p': 0.9899999407250384}],
-#             [{'labels': {'mode_confirm': 'motorcycle', 'purpose_confirm': 'work'}, 'p': 0.9899999998030119}],
-#             [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': ''}, 'p': 0.99}],
-#             [{'labels': {'mode_confirm': 'drove_alone', 'purpose_confirm': 'work'}, 'p': 0.99}]],
-#             [],
-#             []
-#         ])
-#     })
 @pytest.fixture
 def inferred_ct():
     return pd.DataFrame({
