@@ -364,7 +364,7 @@ async def test_translate_values_to_labels_spanish(dynamic_labels, language="es")
     })
     assert mode_translations_es == expected_mode_translations_es
     assert purpose_translations_es == expected_purpose_translations_es
-    assert replaced_translations_es == expected_result_replaced_translations_es
+    assert replaced_translations_es == expected_replaced_translations_es
 
 @pytest.mark.asyncio
 async def test_translate_values_to_labels_empty_input():
