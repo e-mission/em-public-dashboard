@@ -5,6 +5,7 @@ import sys
 from collections import defaultdict
 from collections import OrderedDict
 import difflib
+import logging
 
 import emission.storage.timeseries.abstract_timeseries as esta
 import emission.storage.timeseries.tcquery as esttc
@@ -54,11 +55,11 @@ def get_participant_uuids(program, load_test_users):
     disp.display(participant_list.user_email)
     return participant_uuid_str
 
-async def add_base_mode_footprint(trip_list):
+async def add_base_mode_footprint(trip_list, labels):
     #TODO filter ahead of this so only labeled trips get a footprint OR display uncertainties
-    labels = await emcu.read_json_resource("label-options.default.json")
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
     
+    counter_trip_error = 0
     for trip in trip_list:
         #format so emffc can get id for metadata
         trip['data']['_id'] = trip['_id']
@@ -75,20 +76,21 @@ async def add_base_mode_footprint(trip_list):
                     trip['data']['replaced_base_mode'] = "UNKNOWN"
                     trip['data']['replaced_mode_footprint'] = {}
                     
-            except:
-                print("hit exception")
+            except Exception as e:
+                counter_trip_error = counter_trip_error + 1
+                logging.exception(f"Exception in add_base_mode_footprint for trip - {trip['data']['_id']}")
                 trip['data']['base_mode'] = "UNKNOWN"
                 trip['data']['replaced_base_mode'] = "UNKNOWN"
                 trip['data']['mode_confirm_footprint'] = {}
                 trip['data']['replaced_mode_footprint'] = {}
-            
+    logging.debug(f"There are {counter_trip_error} trip errors")
     return trip_list
 
-async def load_all_confirmed_trips(tq, add_footprint):
+async def load_all_confirmed_trips(tq, labels, add_footprint):
     agg = esta.TimeSeries.get_aggregate_time_series()
     result_it = agg.find_entries(["analysis/confirmed_trip"], tq)
     if add_footprint:
-        processed_list = await add_base_mode_footprint(list(result_it))
+        processed_list = await add_base_mode_footprint(list(result_it), labels)
         all_ct = agg.to_data_df("analysis/confirmed_trip", processed_list)
     else:
         all_ct = agg.to_data_df("analysis/confirmed_trip", result_it)
@@ -96,9 +98,9 @@ async def load_all_confirmed_trips(tq, add_footprint):
     disp.display(all_ct.head())
     return all_ct
 
-async def load_all_participant_trips(program, tq, load_test_users, add_footprint=False):
+async def load_all_participant_trips(program, tq, load_test_users, labels, add_footprint=False):
     participant_list = get_participant_uuids(program, load_test_users)
-    all_ct = await load_all_confirmed_trips(tq, add_footprint)
+    all_ct = await load_all_confirmed_trips(tq, labels, add_footprint)
     # CASE 1 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if len(all_ct) == 0:
         return all_ct
@@ -177,7 +179,7 @@ def expand_inferredlabels(labeled_inferred_ct):
 unique_users = lambda df: len(df.user_id.unique()) if "user_id" in df.columns else 0
 trip_label_count = lambda s, df: len(df[s].dropna()) if s in df.columns else 0
 
-async def load_viz_notebook_data(year, month, program, study_type, dynamic_labels, include_test_users=False, add_footprint=False):
+async def load_viz_notebook_data(year, month, program, study_type, labels, include_test_users=False, add_footprint=False):
     #TODO - see how slow the loading the footprint is compared to just the baseMode, and evaluate if passing param around is needed
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
@@ -187,11 +189,11 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, add_footprint)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, labels, add_footprint)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     expanded_ct = expand_userinputs(labeled_ct)
     expanded_ct = data_quality_check(expanded_ct)
-    expanded_ct = await map_trip_data(expanded_ct, study_type, dynamic_labels)
+    expanded_ct = map_trip_data(expanded_ct, study_type, labels)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -204,25 +206,18 @@ async def load_viz_notebook_data(year, month, program, study_type, dynamic_label
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_labeled_trip": unique_users(labeled_ct),
             "Trips_with_at_least_one_label": len(labeled_ct),
-            "Trips_with_mode_confirm_label": trip_label_count("Mode_confirm", expanded_ct),
-            "Trips_with_trip_purpose_label": trip_label_count("Trip_purpose", expanded_ct)
+            "Trips_with_mode_confirm_label": trip_label_count("mode_confirm_w_other", expanded_ct),
+            "Trips_with_trip_purpose_label": trip_label_count("purpose_confirm_w_other", expanded_ct)
             },
         orient='index', columns=["value"])
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
+def map_trip_data(expanded_trip_df, study_type, labels):
     # Change meters to miles
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
     if "distance" in expanded_trip_df.columns:
         unit_conversions(expanded_trip_df)
-
-    # Select the labels from dynamic_labels is available,
-    # else get it from emcommon/resources/label-options.default.json
-    if (len(dynamic_labels)):
-        labels = dynamic_labels
-    else:
-        labels = await emcu.read_json_resource("label-options.default.json")
 
     # Map new mode labels with translations dictionary from dynamic_labels
     # CASE 2 of https://github.com/e-mission/em-public-dashboard/issues/69#issuecomment-1256835867
@@ -254,7 +249,7 @@ async def map_trip_data(expanded_trip_df, study_type, dynamic_labels):
 
     return expanded_trip_df
 
-async def load_viz_notebook_inferred_data(year, month, program, study_type, dynamic_labels, include_test_users=False):
+async def load_viz_notebook_inferred_data(year, month, program, study_type, labels, include_test_users=False, add_footprint=False):
     """ Inputs:
     year/month/program/study_type = parameters from the visualization notebook
     dic_* = label mappings; if dic_pur is included it will be used to recode trip purpose
@@ -263,10 +258,10 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, dyna
     """
     # Access database
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, labels, add_footprint)
     inferred_ct = filter_inferred_trips(participant_ct_df)
     expanded_it = expand_inferredlabels(inferred_ct)
-    expanded_it = await map_trip_data(expanded_it, study_type, dynamic_labels)
+    expanded_it = map_trip_data(expanded_it, study_type, labels)
 
     # Document data quality
     file_suffix = get_file_suffix(year, month, program)
@@ -279,8 +274,8 @@ async def load_viz_notebook_inferred_data(year, month, program, study_type, dyna
             "Participants_with_at_least_one_trip": unique_users(participant_ct_df),
             "Participant_with_at_least_one_inferred_trip": unique_users(inferred_ct),
             "Trips_with_at_least_one_inferred_label": len(inferred_ct),
-            "Trips_with_mode_confirm_inferred_label": trip_label_count("Mode_confirm", expanded_it),
-            "Trips_with_trip_purpose_inferred_label": trip_label_count("Trip_purpose", expanded_it)
+            "Trips_with_mode_confirm_inferred_label": trip_label_count("mode_confirm_w_other", expanded_it),
+            "Trips_with_trip_purpose_inferred_label": trip_label_count("purpose_confirm_w_other", expanded_it)
             },
         orient='index', columns=["value"])
 
@@ -307,19 +302,18 @@ def mapping_labels(dynamic_labels, label_type):
 # Function: Maps "MODE", "PURPOSE", and "REPLACED_MODE" to colors.
 # Input: dynamic_labels
 # Output: Dictionary mapping between color with mode/purpose/sensed
-async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
-    # Load default options from e-mission-common
-    labels = await emcu.read_json_resource("label-options.default.json")
+def mapping_color_labels(labels = {}, unique_keys = []):
     sensed_values = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "OTHER", "INVALID"]
-
-    # If dynamic_labels are provided, then we will use the dynamic labels for mapping
-    if len(dynamic_labels) > 0:
-        labels = dynamic_labels
 
     # Load base mode values and purpose values
     mode_values =  [mode["value"] for mode in labels["MODE"]] if "MODE" in labels else []
     purpose_values = [mode["value"] for mode in labels["PURPOSE"]] if "PURPOSE" in labels else []
     replaced_values = [mode["value"] for mode in labels["REPLACED_MODE"]] if "REPLACED_MODE" in labels else []
+
+    # Append 'other' to the list if not present
+    for values in [mode_values, purpose_values, replaced_values]:
+        if "other" not in values:
+            values.append("other")
 
     # Mapping between mode values and base_mode OR baseMode (backwards compatibility)
     value_to_basemode = {mode["value"]: mode.get("base_mode", mode.get("baseMode", "UNKNOWN")) for mode in labels["MODE"]}
@@ -343,19 +337,17 @@ async def mapping_color_labels(dynamic_labels = {}, unique_keys = []):
     ], adjustment_range=[1,1.8])
     return colors_mode, colors_replaced, colors_purpose, colors_sensed, colors_ble
 
-async def translate_values_to_labels(dynamic_labels, language="en"):
-    # Load default options from e-mission-common
-    labels = await emcu.read_json_resource("label-options.default.json")
-
-    # If dynamic_labels are provided, then we will use the dynamic labels for mapping
-    if len(dynamic_labels) > 0:
-        labels = dynamic_labels
+def translate_values_to_labels(labels, language="en"):
     # Mapping between values and translations for display on plots (for Mode)
     values_to_translations_mode = mapping_labels(labels, "MODE")
     # Mapping between values and translations for display on plots (for Purpose)
     values_to_translations_purpose = mapping_labels(labels, "PURPOSE")
     # Mapping between values and translations for display on plots (for Replaced mode)
     values_to_translations_replaced = mapping_labels(labels, "REPLACED_MODE")
+
+    # Add "other": "Other" to the values_to_translations_* dictionary if "other" key is unavailable
+    for dict_update in [values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced]:
+        dict_update.setdefault("other", "Other")
 
     return values_to_translations_mode, values_to_translations_purpose, values_to_translations_replaced
 
@@ -373,14 +365,14 @@ def mapping_color_surveys(dic_options):
 
     return colors
 
-async def load_viz_notebook_sensor_inference_data(year, month, program, include_test_users=False, sensed_algo_prefix="cleaned"):
+async def load_viz_notebook_sensor_inference_data(year, month, program, labels, include_test_users=False, sensed_algo_prefix="cleaned"):
     """ Inputs:
     year/month/program = parameters from the visualization notebook
 
     Pipeline to load and process the data before use in sensor-based visualization notebooks.
     """
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, False)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, labels, False)
     expanded_ct = participant_ct_df
     print(f"Loaded expanded_ct with length {len(expanded_ct)} for {tq}")
     
@@ -427,14 +419,14 @@ async def load_viz_notebook_sensor_inference_data(year, month, program, include_
 
     return expanded_ct, file_suffix, quality_text, debug_df
 
-async def load_viz_notebook_survey_data(year, month, program, include_test_users=False):
+async def load_viz_notebook_survey_data(year, month, program, labels, include_test_users=False):
     """ Inputs:
     year/month/program/test users = parameters from the visualization notebook
 
     Returns: df of all trips taken by participants, df of all trips with user_input
     """
     tq = get_time_query(year, month)
-    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, False)
+    participant_ct_df = await load_all_participant_trips(program, tq, include_test_users, labels, False)
     labeled_ct = filter_labeled_trips(participant_ct_df)
     
     # Document data quality
@@ -501,29 +493,21 @@ def unit_conversions(df):
     df['distance_miles']= df["distance"]*0.00062 #meters to miles
     df['distance_kms'] = df["distance"] / 1000 #meters to kms
 
-def extract_kwh(footprint_dict):
-    if 'kwh' in footprint_dict.keys():
-        return footprint_dict['kwh']
+def extract_footprint(footprint_dict, footprint_key):
+    if footprint_key in footprint_dict.keys():
+        return footprint_dict[footprint_key]
     else:
-        print("missing kwh", footprint_dict)
-        return np.nan 
-
-def extract_co2(footprint_dict):
-    if 'kg_co2' in footprint_dict.keys():
-        return footprint_dict['kg_co2']
-    else:
-        print("missing co2", footprint_dict)
         return np.nan
 
 def unpack_energy_emissions(expanded_ct):
-    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_co2)
+    expanded_ct['Mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kg_co2')
     expanded_ct['Mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['Mode_confirm_kg_CO2'])
-    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_co2)
+    expanded_ct['Replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kg_co2')
     expanded_ct['Replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['Replaced_mode_kg_CO2'])
     CO2_impact(expanded_ct)
 
-    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_kwh)
-    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_kwh)
+    expanded_ct['Replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kwh')
+    expanded_ct['Mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kwh')
     energy_impact(expanded_ct)
 
     return expanded_ct
