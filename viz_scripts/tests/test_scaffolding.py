@@ -1,6 +1,3 @@
-import unittest.mock as mock
-import emission.core.wrapper.localdate as ecwl
-import emission.storage.timeseries.tcquery as esttc
 import importlib
 import pandas as pd
 import numpy as np
@@ -8,10 +5,11 @@ import collections as colls
 import pytest
 import asyncio
 import matplotlib.pyplot as plt
-import emcommon.util as emcu
 
 # Dynamically import saved-notebooks.plots
 scaffolding = importlib.import_module('saved-notebooks.scaffolding')
+ecwl = importlib.import_module('emission.core.wrapper.localdate')
+esttc = importlib.import_module('emission.storage.timeseries.tcquery')
 
 def test_get_time_query():
     # Test with both year and month
