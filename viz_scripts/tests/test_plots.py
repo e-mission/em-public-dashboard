@@ -156,3 +156,78 @@ class TestAccessAltText(BaseAltTextTest):
         file_path = pathlib.Path(plots.SAVE_DIR) / f"{chart_name}.txt"
         content = file_path.read_text()
         assert content == sample_alt_text
+
+@pytest.fixture
+def sample_alt_html():
+    return '''<!DOCTYPE html>
+                    <html>
+                    <body>
+                        <p>Number of trips for each mode</p>
+                    <div style='float: left; padding-left: 20px, position: relative; width: 45%'>
+                        <p>Trip Type: Labeled by user
+                9389 trips (46.87%)
+                from 24 users</p>
+                        <table border="1" style="background-color: white;">
+                            <tr>
+                                <th>Label</th>
+                                <th>Value</th>
+                                <th>Proportion</th>
+                            </tr>
+
+                <tr><td>Gas Car Shared Ride</td><td>2233</td><td>23.8%</td></tr><tr><td>E-bike</td><td>2010</td><td>21.4%</td></tr><tr><td>Walk</td><td>1626</td><td>17.3%</td></tr><tr><td>Gas Car Drove Alone</td><td>1586</td><td>16.9%</td></tr><tr><td>Other</td><td>716</td><td>7.6%</td></tr><tr><td>Hybrid Drove Alone</td><td>455</td><td>4.8%</td></tr><tr><td>Hybrid Shared Ride</td><td>350</td><td>3.7%</td></tr><tr><td>Taxi / Uber / Lyft</td><td>117</td><td>1.2%</td></tr><tr><td>Bus</td><td>85</td><td>0.9%</td></tr><tr><td>Regular Bike</td><td>80</td><td>0.9%</td></tr><tr><td>Not a trip</td><td>59</td><td>0.6%</td></tr><tr><td>E-Car Shared Ride</td><td>34</td><td>0.4%</td></tr><tr><td>E-Car Drove Alone</td><td>11</td><td>0.1%</td></tr><tr><td>Free Shuttle</td><td>10</td><td>0.1%</td></tr><tr><td>Train</td><td>8</td><td>0.1%</td></tr><tr><td>Air</td><td>4</td><td>0.0%</td></tr><tr><td>Scooter share</td><td>3</td><td>0.0%</td></tr><tr><td>Bikeshare</td><td>2</td><td>0.0%</td></tr>
+                        </table>
+                    </div><div style='float: left; padding-left: 20px, position: relative; width: 45%'>
+                        <p>Trip Type: Inferred from prior labels
+                14087 trips (70.33%)
+                from 24 users</p>
+                        <table border="1" style="background-color: white;">
+                            <tr>
+                                <th>Label</th>
+                                <th>Value</th>
+                                <th>Proportion</th>
+                            </tr>
+
+                <tr><td>E-bike</td><td>4428</td><td>31.4%</td></tr><tr><td>Gas Car Shared Ride</td><td>2980</td><td>21.2%</td></tr><tr><td>Gas Car Drove Alone</td><td>2453</td><td>17.4%</td></tr><tr><td>Walk</td><td>2142</td><td>15.2%</td></tr><tr><td>Other</td><td>726</td><td>5.2%</td></tr><tr><td>Hybrid Drove Alone</td><td>455</td><td>3.2%</td></tr><tr><td>Hybrid Shared Ride</td><td>351</td><td>2.5%</td></tr><tr><td>Taxi / Uber / Lyft</td><td>172</td><td>1.2%</td></tr><tr><td>Bus</td><td>117</td><td>0.8%</td></tr><tr><td>Regular Bike</td><td>114</td><td>0.8%</td></tr><tr><td>Not a trip</td><td>69</td><td>0.5%</td></tr><tr><td>E-Car Shared Ride</td><td>41</td><td>0.3%</td></tr><tr><td>E-Car Drove Alone</td><td>11</td><td>0.1%</td></tr><tr><td>Free Shuttle</td><td>11</td><td>0.1%</td></tr><tr><td>Train</td><td>8</td><td>0.1%</td></tr><tr><td>Air</td><td>4</td><td>0.0%</td></tr><tr><td>Scooter share</td><td>3</td><td>0.0%</td></tr><tr><td>Bikeshare</td><td>2</td><td>0.0%</td></tr>
+                        </table>
+                    </div><div style='float: left; padding-left: 20px, position: relative; width: 45%'>
+                        <p>Trip Type: Sensed by OpenPATH
+                20030 trips (100%)
+                from 27 users</p>
+                        <table border="1" style="background-color: white;">
+                            <tr>
+                                <th>Label</th>
+                                <th>Value</th>
+                                <th>Proportion</th>
+                            </tr>
+
+                <tr><td>IN_VEHICLE</td><td>12269</td><td>61.3%</td></tr><tr><td>WALKING</td><td>3312</td><td>16.5%</td></tr><tr><td>UNKNOWN</td><td>2682</td><td>13.4%</td></tr><tr><td>BICYCLING</td><td>1735</td><td>8.7%</td></tr><tr><td>AIR_OR_HSR</td><td>32</td><td>0.2%</td></tr>
+                        </table>
+                    </div>
+                    </body>
+                    </html>
+        '''
+
+class BaseAltHtmlTest:
+
+    def setup_method(self):
+        pathlib.Path(plots.SAVE_DIR).mkdir(exist_ok=True)
+
+    def teardown_method(self):
+        for file in pathlib.Path(plots.SAVE_DIR).glob('test_*.html'):
+            file.unlink()
+
+class TestAccessAltHtml(BaseAltHtmlTest):
+
+    def test_access_alt_html_creates_file(self, sample_alt_html):
+        chart_name = "ntrips_total_default"
+        result = plots.access_alt_html(sample_alt_html, chart_name)
+        assert result == sample_alt_html
+        file_path = pathlib.Path(plots.SAVE_DIR) / f"{chart_name}.html"
+        assert file_path.exists()
+
+    def test_access_alt_html_writes_content(self, sample_alt_html):
+        chart_name = "ntrips_total_default"
+        plots.access_alt_html(sample_alt_html, chart_name)
+        file_path = pathlib.Path(plots.SAVE_DIR) / f"{chart_name}.html"
+        content = file_path.read_text()
+        assert content == sample_alt_html
