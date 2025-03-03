@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import collections as colls
 import pytest
-import asyncio
 import matplotlib.pyplot as plt
 
 # Dynamically import saved-notebooks.plots
@@ -142,7 +141,7 @@ def test_mapping_color_surveys():
 def test_mapping_color_surveys_empty():
     # Test with an empty dictionary
     with pytest.raises(Exception):
-        mapping_color_surveys({})
+        scaffolding.mapping_color_surveys({})
 
 @pytest.fixture
 def before_df():
