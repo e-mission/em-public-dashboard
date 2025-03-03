@@ -38,7 +38,7 @@ services:
       - ./viz_scripts:/usr/src/app/saved-notebooks
       - ./plots:/plots
   db:
-    image: mongo:4.4.0
+    image: mongo:8.0.4
     volumes:
       - mongo-data:/data/db
     networks:
