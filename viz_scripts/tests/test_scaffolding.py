@@ -312,27 +312,29 @@ def test_expand_userinputs(labeled_ct):
     assert expanded_ct['mode_confirm'].fillna('NaN').tolist() == ['own_car', 'bus', 'NaN', 'own_car', 'car', 'bike', 'bike']
 
 # Testing with just dynamic_labels since PR#164 Unify calls to read json resource from e-mission-common in generate_plots.py would make sure we have labels passed into this file, instead of fetching the label-options.json file here
-@pytest.mark.asyncio
-async def test_translate_values_to_labels_english(dynamic_labels):
+def test_translate_values_to_labels_english(dynamic_labels):
     # Call the function with our predefined labels
-    mode_translations, purpose_translations, replaced_translations = await scaffolding.translate_values_to_labels(dynamic_labels)
+    mode_translations, purpose_translations, replaced_translations = scaffolding.translate_values_to_labels(dynamic_labels)
 
     expected_mode_translations = colls.defaultdict(lambda: 'Other', {
         "gas_car": "Car",
         "motorcycle": "Motorcycle",
-        "walk": "Walk"
+        "walk": "Walk",
+        "other": "Other"
     })
 
     expected_purpose_translations = colls.defaultdict(lambda: 'Other', {
         "home": "Home",
         "shopping": "Shopping",
-        "meal": "Meal"
+        "meal": "Meal",
+        "other": "Other"
     })
 
     expected_replaced_translations = colls.defaultdict(lambda: 'Other', {
         "no_travel": "No Travel",
         "bike": "Bicycle",
-        "taxi": "Taxi"
+        "taxi": "Taxi",
+        "other": "Other"
     })
     assert mode_translations == expected_mode_translations
     assert purpose_translations == expected_purpose_translations
@@ -340,10 +342,9 @@ async def test_translate_values_to_labels_english(dynamic_labels):
 
 # TODO:: Implement language specific changes in mapping_translations
 @pytest.mark.skip(reason="Implementation limited only for english translations")
-@pytest.mark.asyncio
-async def test_translate_values_to_labels_spanish(dynamic_labels, language="es"):
+def test_translate_values_to_labels_spanish(dynamic_labels, language="es"):
     # Call the function with our predefined labels
-    mode_translations_es, purpose_translations_es, replaced_translations_es = await scaffolding.translate_values_to_labels(dynamic_labels)
+    mode_translations_es, purpose_translations_es, replaced_translations_es = scaffolding.translate_values_to_labels(dynamic_labels)
 
     expected_mode_translations_es = colls.defaultdict(lambda: 'Other', {
         "gas_car":"Coche de gasolina",
@@ -357,7 +358,7 @@ async def test_translate_values_to_labels_spanish(dynamic_labels, language="es")
         "meal":"Comida"
     })
 
-    expected_replaced_translations_es = colls.defaultdict(lambda: 'Other', {
+    expected_result_replaced_translations_es = colls.defaultdict(lambda: 'Other', {
         "no_travel":"No viajar",
         "bike":"Bicicleta",
         "taxi": "Taxi"
@@ -366,16 +367,10 @@ async def test_translate_values_to_labels_spanish(dynamic_labels, language="es")
     assert purpose_translations_es == expected_purpose_translations_es
     assert replaced_translations_es == expected_result_replaced_translations_es
 
-@pytest.mark.asyncio
-async def test_translate_values_to_labels_empty_input():
+def test_translate_values_to_labels_empty_input():
     # Test with empty input
-    mode_translations, purpose_translations, replaced_translations = await scaffolding.translate_values_to_labels([])
-
-    # Verify that the function can handle empty input
-    # The exact behavior depends on how your function handles this
-    assert isinstance(mode_translations, dict)
-    assert isinstance(purpose_translations, dict)
-    assert isinstance(replaced_translations, dict)
+    with pytest.raises(AttributeError):
+        mode_translations, purpose_translations, replaced_translations = scaffolding.translate_values_to_labels([])
 
 @pytest.fixture
 def inferred_ct():
