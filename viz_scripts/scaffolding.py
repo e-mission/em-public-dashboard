@@ -493,29 +493,28 @@ def extract_footprint(footprint_dict, footprint_key):
     else:
         return np.nan
 
-def unpack_energy_emissions(expanded_ct):
-    expanded_ct['mode_confirm_kg_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kg_co2')
-    expanded_ct['mode_confirm_lb_CO2'] = kg_to_lb(expanded_ct['mode_confirm_kg_CO2'])
-    expanded_ct['replaced_mode_kg_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kg_co2')
-    expanded_ct['replaced_mode_lb_CO2'] = kg_to_lb(expanded_ct['replaced_mode_kg_CO2'])
+def unpack_energy_emissions(expanded_ct, use_imperial):
+    expanded_ct['mode_confirm_CO2'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kg_co2')
+    expanded_ct['replaced_mode_CO2'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kg_co2')
+    if use_imperial:
+        expanded_ct['mode_confirm_CO2'] = kg_to_lb(expanded_ct['mode_confirm_CO2'])
+        expanded_ct['replaced_mode_CO2'] = kg_to_lb(expanded_ct['replaced_mode_CO2'])
     CO2_impact(expanded_ct)
 
-    expanded_ct['replaced_mode_EI(kWH)'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kwh')
-    expanded_ct['mode_confirm_EI(kWH)'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kwh')
+    expanded_ct['replaced_mode_EI'] = expanded_ct['replaced_mode_footprint'].apply(extract_footprint, footprint_key='kwh')
+    expanded_ct['mode_confirm_EI'] = expanded_ct['mode_confirm_footprint'].apply(extract_footprint, footprint_key='kwh')
     energy_impact(expanded_ct)
 
     return expanded_ct
 
 def energy_impact(df):
-    df['Energy_Impact(kWH)']  = round((df['replaced_mode_EI(kWH)'] - df['mode_confirm_EI(kWH)']),3)
+    df['Energy_Impact']  = round((df['replaced_mode_EI'] - df['mode_confirm_EI']),3)
 
 def kg_to_lb(kg):
     return kg * 2.20462
 
 def CO2_impact(df):
-    df['CO2_Impact(kg)']  = round((df['replaced_mode_kg_CO2'] - df['mode_confirm_kg_CO2']), 3)
-    df['CO2_Impact(lb)'] = round(kg_to_lb(df['CO2_Impact(kg)']), 3)
-    
+    df['CO2_Impact']  = round((df['replaced_mode_CO2'] - df['mode_confirm_CO2']), 3)
     return df
 
 # Function to print the emission calculations in both Metric and Imperial System. Helps in debugging for emission calculation.
