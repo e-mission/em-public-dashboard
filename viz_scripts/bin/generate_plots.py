@@ -38,7 +38,10 @@ else:
         f"and data collection URL {dynamic_config['server']['connectUrl'] if 'server' in dynamic_config else 'default'}")
 
 if dynamic_config['intro']['program_or_study'] == 'program':
-    mode_studied = dynamic_config['intro']['mode_studied']
+    if type(dynamic_config['intro']['mode_studied']) == list:
+        mode_studied = dynamic_config['intro']['mode_studied'][0]
+    else:
+        mode_studied = dynamic_config['intro']['mode_studied'] 
 else:
     mode_studied = None
 

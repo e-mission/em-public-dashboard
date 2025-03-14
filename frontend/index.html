@@ -405,7 +405,12 @@
           // get units
           const dist_units = (data.display_config.use_imperial) ? "miles" : "kilometers";
           console.log("Units for display are", data.display_config.use_imperial, dist_units);
-          mode_studied = data.intro.mode_studied
+          if (Array.isArray(data.intro.mode_studied)) {
+            mode_studied = data.intro.mode_studied[0];
+          }
+          else {
+            mode_studied = data.intro.mode_studied
+          }
           // Load list of plots corresponding to study/program
           dynamic_labels = data.label_options
           survey_list = []
