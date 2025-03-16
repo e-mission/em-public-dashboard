@@ -7,7 +7,7 @@ services:
       - db
     ports:
       # DASH in numbers
-      - "3274:6060"
+      - "3274:3274"
     volumes:
       - ./plots:/public/plots
     networks:
