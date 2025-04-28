@@ -1,3 +1,4 @@
+0 8 * * * python bin/generate_plots.py precompute_metrics.ipynb default >> /var/log/intake.stdinout 2>&1
 0 8 * * * python bin/generate_plots.py generic_metrics.ipynb default >> /var/log/intake.stdinout 2>&1
 0 8 * * * python bin/generate_plots.py generic_metrics_sensed.ipynb default >> /var/log/intake.stdinout 2>&1
 0 8 * * * python bin/generate_plots.py generic_timeseries.ipynb default >> /var/log/intake.stdinout 2>&1

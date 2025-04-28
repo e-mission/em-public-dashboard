@@ -99,6 +99,10 @@ def compute_for_date(month, year):
         year=year,
         month=month,
         program=args.program,
+        dynamic_config=dynamic_config,
+        # TODO: The below params are all derived from dynamic_config.
+        # Since we are now passing the entire dynamic_config, we should be able to
+        # refactor the notebooks to not need these params anymore
         study_type=dynamic_config['intro']['program_or_study'],
         mode_of_interest=mode_studied,
         include_test_users=dynamic_config.get('metrics', {}).get('include_test_users', False),
