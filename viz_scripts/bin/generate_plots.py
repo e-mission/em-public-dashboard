@@ -121,9 +121,9 @@ def compute_for_date(month, year):
     # Execute the notebook with the new parameters
     nbclient.execute(new_nb)
 
-# Compute the overall metrics
-compute_for_date(None, None)
-
 # Compute for every month until now
 for month_year in compute_range:
     compute_for_date(month_year.month, month_year.year)
+
+# Compute the overall metrics
+compute_for_date(None, None)
