@@ -35,6 +35,8 @@ RUN chmod u+x /usr/src/app/.docker/start_notebook.sh
 
 ADD docker/crontab /usr/src/app/crontab
 
-EXPOSE 8888
+# expose directive does not do anything, but for documentation purposes,
+# the port 47962 is mapped in the docker-compose.yml.
+EXPOSE 47962
 
 CMD ["/bin/bash", "/usr/src/app/.docker/start_notebook.sh"]
