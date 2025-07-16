@@ -65,7 +65,7 @@ async def add_base_mode_footprint(trip_list, labels):
         trip['data']['_id'] = trip['_id']
         if trip['data']['user_input'] != {}:
             try:
-                trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input']['mode_confirm'], "UNKNOWN")
+                trip['data']['base_mode'] = value_to_basemode.get(trip['data']['user_input'].get('mode_confirm'), "UNKNOWN")
                 trip['data']['mode_confirm_footprint'], trip['data']['mode_confirm_footprint_metadata'] = await emffc.calc_footprint_for_trip(trip['data'], labels, mode_key='mode')
                 
                 if 'replaced_mode' in trip['data']['user_input'].keys():
@@ -171,7 +171,10 @@ def expand_inferredlabels(labeled_inferred_ct):
     disp.display(labeled_inferred_labels.head())
     expanded_labeled_inferred_ct = pd.concat([labeled_inferred_ct, labeled_inferred_labels], axis=1)
     # Filter out the dataframe in which mode_confirm is uncertain
-    expanded_labeled_inferred_ct = expanded_labeled_inferred_ct[(expanded_labeled_inferred_ct['mode_confirm'] != 'uncertain')]
+    expanded_labeled_inferred_ct = expanded_labeled_inferred_ct[
+        ('mode_confirm' in expanded_labeled_inferred_ct.columns) and
+        (expanded_labeled_inferred_ct['mode_confirm'] != 'uncertain')
+    ]
     disp.display(expanded_labeled_inferred_ct.head())
     return expanded_labeled_inferred_ct
 
@@ -390,7 +393,9 @@ async def load_viz_notebook_sensor_inference_data(year, month, program, labels, 
         )
     
     if len(expanded_ct) > 0:
-        expanded_ct["primary_mode_non_other"] = participant_ct_df.cleaned_section_summary.apply(get_max_mode_from_summary)
+        if 'cleaned_section_summary' not in participant_ct_df.columns:
+            expanded_ct["cleaned_section_summary"] = pd.NA
+        expanded_ct["primary_mode_non_other"] = participant_ct_df['cleaned_section_summary'].apply(get_max_mode_from_summary)
         expanded_ct.primary_mode_non_other.replace({"ON_FOOT": "WALKING"}, inplace=True)
         valid_sensed_modes = ["WALKING", "BICYCLING", "IN_VEHICLE", "AIR_OR_HSR", "UNKNOWN", "INVALID"]
         expanded_ct["primary_mode"] = expanded_ct.primary_mode_non_other.apply(lambda pm: "OTHER" if pm not in valid_sensed_modes else pm)
