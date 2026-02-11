@@ -4,6 +4,7 @@ VOLUME /public/plots
 RUN mkdir -p /public
 WORKDIR /public
 
+RUN npm install -g npm@latest
 RUN npm i -g http-server
 
 COPY client /public/client
