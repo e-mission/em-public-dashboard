@@ -1,4 +1,4 @@
-FROM node:24.7.0-alpine3.22
+FROM node:25.6.0-alpine3.23
 VOLUME /public/plots
 
 RUN mkdir -p /public
