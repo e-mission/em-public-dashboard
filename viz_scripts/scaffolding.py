@@ -520,8 +520,8 @@ def CO2_impact(df):
     return df
 
 # Function to print the emission calculations in both Metric and Imperial System. Helps in debugging for emission calculation.
-# Used this function specifically to test with label_options: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-program-label-options.json
-# Config: https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/configs/dev-emulator-program.nrel-op.json
+# Used this function specifically to test with label_options: https://github.com/e-mission/op-deployment-configs/blob/main/label_options/example-program-label-options.json
+# Config: https://github.com/e-mission/op-deployment-configs/blob/main/configs/dev-emulator-program.nrel-op.json
 def print_CO2_emission_calculations(data_eb, ebco2_lb, ebco2_kg, dynamic_labels):
     #TODO update this function with new columns after switching to emcommon emissions
     filtered_taxi_data = data_eb[data_eb['Replaced_mode'] == "Taxi/Uber/Lyft"]

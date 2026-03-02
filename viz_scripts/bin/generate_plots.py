@@ -13,7 +13,7 @@ import emcommon.util as emcu
 # Configuration settings to use for all generated plots by this instance
 # This could also be specified as a parser argument, if we want to generate plots for all programs from one instance
 # Full list is at
-# https://github.com/e-mission/nrel-openpath-deploy-configs/tree/main/configs
+# https://github.com/e-mission/op-deployment-configs/tree/main/configs
 STUDY_CONFIG = os.getenv('STUDY_CONFIG', "stage-program")
 
 parser = argparse.ArgumentParser(prog="generate_metrics")
@@ -25,7 +25,7 @@ parser.add_argument("-d", "--date", nargs=2, type=int,
 args = parser.parse_args()
 
 # Read and use parameters from the unified config file on the e-mission Github page
-download_url = "https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/" + STUDY_CONFIG + ".nrel-op.json"
+download_url = "https://raw.githubusercontent.com/e-mission/op-deployment-configs/main/configs/" + STUDY_CONFIG + ".nrel-op.json"
 print("About to download config from %s" % download_url)
 r = requests.get(download_url)
 if r.status_code is not 200:
@@ -46,7 +46,7 @@ else:
     mode_studied = None
 
 # dynamic_labels can  be referenced from 
-# https://github.com/e-mission/nrel-openpath-deploy-configs/blob/main/label_options/example-study-label-options.json
+# https://github.com/e-mission/op-deployment-configs/blob/main/label_options/example-study-label-options.json
 labels = { }
 
 async def load_default_label_options():
@@ -63,7 +63,7 @@ if 'label_options' in dynamic_config:
         print(f"Unable to download dynamic_labels_url, status code: {req.status_code} for {STUDY_CONFIG}")
     else:
         labels = json.loads(req.text)
-        print(f"Dynamic labels download was successful for nrel-openpath-deploy-configs: {STUDY_CONFIG}" )
+        print(f"Dynamic labels download was successful for op-deployment-configs: {STUDY_CONFIG}" )
 else:
     # load default labels from e-mission-common
     # https://raw.githubusercontent.com/JGreenlee/e-mission-common/refs/heads/master/src/emcommon/resources/label-options.default.json
@@ -71,7 +71,7 @@ else:
     if not labels:
         print(f"Unable to load labels for : {STUDY_CONFIG}")
     else:
-        print(f"Labels loading was successful for nrel-openpath-deploy-configs: {STUDY_CONFIG}")
+        print(f"Labels loading was successful for op-deployment-configs: {STUDY_CONFIG}")
 
 if args.date is None:
     start_date = arrow.get(int(dynamic_config['intro']['start_year']),
