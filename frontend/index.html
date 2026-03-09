@@ -127,7 +127,7 @@
 						</div>
 
           <div class="col-md-6 col-xl-8 order-md-1">
-            <a id="link_to_join_page" href="https://nlr.gov/openpath" class="app-name">NREL OpenPATH dashboard</a>
+            <a id="link_to_join_page" href="https://nlr.gov/openpath" class="app-name">NLR OpenPATH dashboard</a>
           </div>
 
 					</div>
@@ -418,7 +418,7 @@
       $(document).ready(function () {
         // Simple solution to program/study plots dropdown; load the config and corresponding metrics.html
         const STUDY_CONFIG = _getStudyName(window.location);
-        $.getJSON('https://raw.githubusercontent.com/e-mission/nrel-openpath-deploy-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function (data) {
+        $.getJSON('https://raw.githubusercontent.com/e-mission/op-deployment-configs/main/configs/' + STUDY_CONFIG + '.nrel-op.json', function (data) {
           // get units
           const dist_units = (data.display_config.use_imperial) ? "miles" : "kilometers";
           console.log("Units for display are", data.display_config.use_imperial, dist_units);
