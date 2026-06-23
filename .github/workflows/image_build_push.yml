@@ -2,7 +2,7 @@ name: docker-image-push-public-dash
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, '**__image_build_**' ]
     
   workflow_dispatch:
     inputs:
@@ -23,6 +23,12 @@ jobs:
       
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Set docker image tag from .env file
       run: |
@@ -57,27 +63,37 @@ jobs:
     - name: build docker image
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_WORKFLOW_DISPATCH docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_WORKFLOW_DISPATCH docker buildx bake \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --set *.cache-to=type=gha
         else
-          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_PUSH docker compose -f docker-compose.yml build
+          SERVER_IMAGE_TAG=$DOCKER_TAG_FROM_PUSH docker buildx bake \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --set *.cache-to=type=gha
         fi
         docker images
 
-    - name: rename docker images
+    - name: Create tags to store later
       run: |
         if [ "${{ github.event_name }}" == "push" ]; then
-          docker image tag em-pub-dash-prod/frontend:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+          # docker image tag em-pub-dash-prod/frontend:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
           echo "FRONTEND_IMAGE_TAG=${{ steps.date.outputs.date }}" >> $GITHUB_ENV
         fi
-        docker image tag em-pub-dash-prod/viz-scripts:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        # docker image tag em-pub-dash-prod/viz-scripts:latest $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
         echo "NOTEBOOK_IMAGE_TAG=${{ steps.date.outputs.date }}" >> $GITHUB_ENV
 
     - name: push docker images
       run: |
         if [ "${{ github.event_name }}" == "push" ]; then
-          docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+          docker buildx bake dashboard --set *.cache-from=type=gha \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --set dashboard.tags=$DOCKER_USER/${GITHUB_REPOSITORY#*/}_frontend:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} \
+            --push
         fi
-        docker push $DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }}
+        docker buildx bake notebook-server --set *.cache-from=type=gha \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --set notebook-server.tags=$DOCKER_USER/${GITHUB_REPOSITORY#*/}_notebook:${GITHUB_REF##*/}_${{ steps.date.outputs.date }} \
+            --push
 
     - name: Update .env file 
       run: |
