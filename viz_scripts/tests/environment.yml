@@ -1,0 +1,7 @@
+name: emission
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+  - coverage
+  - pytest-asyncio

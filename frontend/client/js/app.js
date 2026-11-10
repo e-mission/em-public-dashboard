@@ -1,7 +1,6 @@
 'use strict';
 
 /*
- *  moakley
  *  Set site-level variables (required)
  */
  $(document).ready( function(){
@@ -44,5 +43,29 @@
     } else {
         $('#contact-link').attr( 'href', '/webmaster.html' );
     }
+	
+	});
 
-});
+	 /*
+     * Custom Threads button for ShareThis
+     */
+	function updateThreadsLink() {
+		const currentUrl = window.location.href;
+		const currentTitle = document.title;
+		const encodedTitle = encodeURIComponent(currentTitle);
+		const encodedUrl = encodeURIComponent(currentUrl);
+		const updatedUrl = `https://www.threads.net/intent/post?text=${encodedTitle}%0A${encodedUrl}`;
+
+		// Calculate the position to center the window
+		const screenWidth = window.screen.width;
+		const screenHeight = window.screen.height;
+		const windowWidth = 785;
+		const windowHeight = 450;
+		const left = (screenWidth - windowWidth) / 2;
+		const top = (screenHeight - windowHeight) / 2;
+
+		// Open the link in a new window with specific size and position
+		const windowFeatures = `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`;
+		window.open(updatedUrl, 'myWindow', windowFeatures);
+	}
+	document.getElementById("thispage").addEventListener("click", updateThreadsLink);

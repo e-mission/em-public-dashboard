@@ -6,12 +6,11 @@ ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/c
 
 VOLUME /plots
 
-ADD docker/environment36.dashboard.additions.yml /
+ADD environment.yml /
 
 WORKDIR /usr/src/app
 
-RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file setup/environment36.notebook.additions.yml"
-RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file /environment36.dashboard.additions.yml"
+RUN /bin/bash -c "source setup/activate.sh && conda env update --name emission --file /environment.yml"
 
 RUN mkdir -p /usr/src/app/saved-notebooks
 WORKDIR /usr/src/app/saved-notebooks
@@ -23,10 +22,25 @@ COPY *.py .
 # Delete all test packages since they generate false positives in the vulnerability scan
 # e.g.
 # root/miniconda-4.12.0/pkgs/conda-4.12.0-py38h06a4308_0/info/test/tests/data/env_metadata/py27-osx-no-binary/lib/python2.7/site-packages/requests-2.19.1-py2.7.egg-info/PKG-INFO
-# root/miniconda-4.12.0/pkgs/conda-4.12.0-py38h06a4308_0/info/test/tests/data/env_metadata/py36-osx-whl/lib/python3.6/site-packages/Django-2.1.dist-info/METADATA
-# root/miniconda-4.12.0/pkgs/conda-4.12.0-py38h06a4308_0/info/test/tests/data/env_metadata/py36-osx-whl/lib/python3.6/site-packages/Scrapy-1.5.1.dist-info/METADATA
+# RUN rm -rf /root/miniconda-26.1.1/pkgs/jupyterlab-4.4.6-pyhd8ed1ab_0/site-packages/jupyterlab/staging
+# RUN rm -rf /root/miniconda-26.1.1/pkgs/jupyterlab-4.4.6-pyhd8ed1ab_0/site-packages/jupyterlab/tests
+# RUN rm -rf /root/miniconda-26.1.1/envs/emission/lib/python3.11/site-packages/jupyterlab/tests
+# RUN rm -rf /root/miniconda-26.1.1/lib/python3.12/site-packages/jupyterlab/tests
 
+# These are from the conda cache
 RUN /bin/bash -c "find /root/miniconda-*/pkgs -wholename \*info/test\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/pkgs -wholename \*staging\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/pkgs -wholename \*tests\* -type d | xargs rm -rf"
+
+# These are from the installed versions
+RUN /bin/bash -c "find /root/miniconda-*/lib/python*/site-packages -wholename \*info/test\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/lib/python*/site-packages -wholename \*staging\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/lib/python*/site-packages -wholename \*tests\* -type d | xargs rm -rf"
+
+# And this is from our environment
+RUN /bin/bash -c "find /root/miniconda-*/envs/emission -wholename \*info/test\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/envs/emission -wholename \*staging\* -type d | xargs rm -rf"
+RUN /bin/bash -c "find /root/miniconda-*/envs/emission -wholename \*tests\* -type d | xargs rm -rf"
 
 WORKDIR /usr/src/app
 

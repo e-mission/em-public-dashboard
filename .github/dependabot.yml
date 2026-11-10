@@ -1,0 +1,16 @@
+version: 2
+enable-beta-ecosystems: true
+updates:
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "conda"
+    directory: "/viz_scripts"
+    schedule:
+      interval: "weekly"
+    groups:
+      viz-scripts-python:
+        patterns:
+          - "*"

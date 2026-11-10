@@ -8,8 +8,7 @@ header .logo{
 }
 @media (min-width:768px){
 	#content {
-		margin-top:1em;
-		overflow-x: scroll
+		margin-top:1em
 	}
 	header .logo{
 		background-position:center right
@@ -31,7 +30,7 @@ header a.app-name,header a.app-name:hover,header a.app-name:visited{
 @media (min-width:768px){
 	header a.app-name,header a.app-name:hover,header a.app-name:visited {
 		font-size:1.85rem;
-		margin-top:28px;
+		margin-top:0;
 		text-align:left
 	}
 }
@@ -45,6 +44,11 @@ header .logo.interior {
 	.banner-logo {
 		min-height: 75px;
 	}
+}
+/* Login/Help links */
+.navbar-light .navbar-nav.ml-auto .nav-link {
+	color: #045881;
+	font-weight: 400;
 }
 /* Search */
 .site-searchbar-toggle {
@@ -66,9 +70,12 @@ header .logo.interior {
 	border: none;
 }
 .site-navbar-toggler {
-	font-size: 1.25rem;
+	font-size: 1rem;
 	line-height: 1;
 	background-color: transparent;
+}
+.custom-toggler .navbar-toggler-icon {
+	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgb(255,255,255)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
 }
 .site-search-bar {
 	margin: 0;
