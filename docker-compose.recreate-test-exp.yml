@@ -19,8 +19,6 @@ services:
     build:
       context: viz_scripts
       dockerfile: tests/Dockerfile.test
-      args:
-        SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
     depends_on:
       db:
         condition: service_healthy

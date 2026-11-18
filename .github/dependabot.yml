@@ -6,6 +6,16 @@ updates:
     schedule:
       interval: "weekly"
 
+  - package-ecosystem: "docker"
+    directory: "/viz_scripts"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/viz_scripts/tests"
+    schedule:
+      interval: "weekly"
+
   - package-ecosystem: "conda"
     directory: "/viz_scripts"
     schedule:
