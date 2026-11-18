@@ -1,0 +1,65 @@
+# Test-only: rebuild viz_scripts/tests/data/openpath_prod_stage_program.tar.gz from the server's real_examples,
+# then regenerate the expected summary statistics and plot outputs from it
+#   docker compose -f docker-compose.recreate-test-exp.yml run --rm regenerate
+#   docker compose -f docker-compose.recreate-test-exp.yml down -v
+# Separate project, so this never shares containers with the dev stack
+name: em-public-dashboard-recreate-test-exp
+services:
+  # No named volume, so every run starts from an empty database
+  db:
+    image: mongo:8.0.4
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 2s
+      retries: 30
+    networks:
+      - emission
+  create:
+    image: em-pub-dash-dev/viz-scripts
+    build:
+      context: viz_scripts
+      dockerfile: tests/Dockerfile.test
+      args:
+        SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mongodb://db/openpath_prod_stage_program
+      - STUDY_CONFIG=stage-program
+    volumes:
+      - ./viz_scripts:/usr/src/app/saved-notebooks
+    command: bash -c "source setup/activate.sh && PYTHONPATH=/usr/src/app python saved-notebooks/tests/create_test_db.py"
+    networks:
+      - emission
+  # Same dump/<db>/ layout that db-restore and viz_scripts/docker/load_mongodump.sh expect
+  dump:
+    image: mongo:8.0.4
+    depends_on:
+      create:
+        condition: service_completed_successfully
+    volumes:
+      - ./viz_scripts/tests/data:/out
+    command: >
+      bash -c "mongodump --quiet --host db --db openpath_prod_stage_program --out /tmp/dump
+      && tar czf /out/openpath_prod_stage_program.tar.gz.new -C /tmp dump
+      && mv /out/openpath_prod_stage_program.tar.gz.new /out/openpath_prod_stage_program.tar.gz"
+    networks:
+      - emission
+  # Reads the database that create just built, which is what the dump contains
+  regenerate:
+    image: em-pub-dash-dev/viz-scripts
+    depends_on:
+      dump:
+        condition: service_completed_successfully
+    environment:
+      - DB_HOST=db
+      - STUDY_CONFIG=stage-program
+    volumes:
+      - ./viz_scripts:/usr/src/app/saved-notebooks
+    command: bash -c "source setup/activate.sh && cd saved-notebooks/tests && PYTHONPATH=/usr/src/app python regenerate_expected_plots.py"
+    networks:
+      - emission
+
+networks:
+  emission:

@@ -1,0 +1,3 @@
+Bar chart of Number of trips by weekday
+Based on 12 confirmed trips from 3 testers and participants
+of 206 total  trips from 37 users (5.83%). Mon is 8. Tue is 4.

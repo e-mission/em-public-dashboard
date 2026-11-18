@@ -1,0 +1,4 @@
+Bar chart of Average Kilometers for each replaced mode with > 3 entries
+'Other' represents trips with a non-standard or missing replacement
+Based on 6 confirmed e-bike trips from 2 testers and participants
+of 12 total confirmed trips from 3 users (50.00%). drove_alone is 4.1.

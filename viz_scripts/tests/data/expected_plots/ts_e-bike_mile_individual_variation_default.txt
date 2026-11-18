@@ -1,0 +1,3 @@
+Scatter chart of Daily e-bike Trip Proportion for Individual users (Running average and variation)
+Based on 6 confirmed e-bike trips from 2 testers and participants
+of 12 total confirmed trips from 3 users (50.00%). First minimum is 0.0 on 2016-06-20 00:00:00. First maximum is 11.4 on 2016-06-20 00:00:00.

@@ -1,0 +1,3 @@
+Bar chart of Average Kilometers for each mode with > 3 entries
+Based on 12 confirmed trips from 3 testers and participants
+of 206 total  trips from 37 users (5.83%). e-bike is 3.7. walk is 0.6.

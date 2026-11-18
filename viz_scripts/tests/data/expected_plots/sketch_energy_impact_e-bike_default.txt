@@ -1,0 +1,4 @@
+Bar chart of Sketch of Energy Impact of e-bike trips
+ Contribution by replaced mode towards a total of 14.56(kWH)
+Based on 12 confirmed trips from 3 testers and participants
+of 206 total  trips from 37 users (5.83%). drove_alone is 10.8. bus is 3.9. walk is -0.1.

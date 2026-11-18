@@ -1,0 +1,34 @@
+{
+  "collection_counts": {
+    "Stage_Profiles": 40,
+    "Stage_analysis_timeseries": 15398,
+    "Stage_pipeline_state": 440,
+    "Stage_timeseries": 102728,
+    "Stage_updateable_models": 0,
+    "Stage_uuids": 40
+  },
+  "composite_trips": 216,
+  "confirmed_trips": 206,
+  "label_counts": {
+    "mode_confirm": {
+      "e-bike": 6,
+      "shared_ride": 2,
+      "walk": 4
+    },
+    "purpose_confirm": {
+      "entertainment": 1,
+      "home": 4,
+      "karate": 1,
+      "pick_drop": 4,
+      "work": 2
+    },
+    "replaced_mode": {
+      "bus": 2,
+      "drove_alone": 6,
+      "no_travel": 2,
+      "walk": 2
+    }
+  },
+  "labeled_confirmed_trips": 12,
+  "users_with_composite_trips": 37
+}

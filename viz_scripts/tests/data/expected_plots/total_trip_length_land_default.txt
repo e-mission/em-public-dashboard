@@ -1,0 +1,24 @@
+Total trip length (kilometers) covered by each mode on land
+Stacked Bar of: Labeled by user
+12 trips (100% of all labeled,
+6% of all trips)
+from 3 testers and participants
+E-bike is 22.23144136964304(64.3%).
+Gas Car Shared Ride is 9.918122887767108(28.7%).
+Walk is 2.4090206253129494(7.0%).
+
+Stacked Bar of: Inferred from prior labels
+12 trips (100% of all inferred,
+6% of all trips)
+from 3 testers and participants
+E-bike is 22.23144136964304(64.3%).
+Gas Car Shared Ride is 9.918122887767108(28.7%).
+Walk is 2.4090206253129494(7.0%).
+
+Stacked Bar of: Sensed by OpenPATH
+202 trips (98% of all trips)
+from 37 testers and participants
+IN_VEHICLE is 1432.0428337449323(58.3%).
+UNKNOWN is 942.7206123634306(38.4%).
+BICYCLING is 40.447601986440816(1.6%).
+WALKING is 39.38297526750925(1.6%).

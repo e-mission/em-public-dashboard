@@ -1,0 +1,14 @@
+Number of trips for replaced mode
+Stacked Bar of: Labeled `e-bike` by user
+6 trips (50.00%)
+ from 2 testers and participants
+Gas Car Drove Alone is 3(50.0%).
+Bus is 2(33.3%).
+Walk is 1(16.7%).
+
+Stacked Bar of: Inferred `e-bike` from prior labels
+6 trips (50.00%)
+ from 2 testers and participants
+Gas Car Drove Alone is 3(50.0%).
+Bus is 2(33.3%).
+Walk is 1(16.7%).

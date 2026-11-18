@@ -42,7 +42,7 @@ if args.date is None:
         int(deployment_config['intro']['start_month']), 1)
     end_date = arrow.get()
 else:
-    start_date = arrow.get()
+    start_date = arrow.get(args.date[0], args.date[1], 1)
     end_date = start_date
 
 compute_range = list(arrow.Arrow.range('month', start_date, end_date))
@@ -80,7 +80,7 @@ def compute_for_date(month, year):
     print(f"Running at {arrow.get()} with params {params}")
 
     # Make a notebook object with these definitions
-    new_nb = nbp.replace_definitions(nb, params, execute=False)
+    new_nb = nbp.replace_definitions(nb, params)
 
     # Execute the notebook with the new parameters
     nbclient.execute(new_nb)
