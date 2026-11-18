@@ -33,4 +33,5 @@ jobs:
       working-directory: .github/workflows
       run:  |
         docker compose -f ../../docker-compose.tests.yml build
-        docker compose -f ../../docker-compose.tests.yml up --exit-code-from notebook-server
+        # Not `up --exit-code-from`: it aborts the stack as soon as the one-shot db-restore service exits
+        docker compose -f ../../docker-compose.tests.yml run --rm notebook-server
