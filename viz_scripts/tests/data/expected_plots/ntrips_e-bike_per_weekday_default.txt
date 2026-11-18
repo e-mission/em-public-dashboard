@@ -1,0 +1,3 @@
+Bar chart of Number of e-bike trips by weekday
+Based on 6 confirmed e-bike trips from 2 testers and participants
+of 12 total confirmed trips from 3 users (50.00%). Mon is 4. Tue is 2.

@@ -1,0 +1,16 @@
+Total trip length (kilometers) covered by replaced mode
+Stacked Bar of: Labeled by user
+ (Trip distance)
+6 trips (50.00%)
+ from 2 testers and participants
+Gas Car Drove Alone is 12.161318683396365(54.7%).
+Walk is 7.252196800071338(32.6%).
+Bus is 2.8179258861753373(12.7%).
+
+Stacked Bar of: Inferred from prior labels
+ (Trip distance)
+6 trips (50.00%)
+ from 2 testers and participants
+Gas Car Drove Alone is 12.161318683396365(54.7%).
+Walk is 7.252196800071338(32.6%).
+Bus is 2.8179258861753373(12.7%).

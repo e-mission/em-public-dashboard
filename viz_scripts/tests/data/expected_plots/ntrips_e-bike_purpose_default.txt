@@ -1,0 +1,14 @@
+Number of trips for each purpose for e-bike
+Stacked Bar of: Labeled `e-bike` by user
+6 trips (50.00%)
+ from 2 testers and participants
+Other is 4(66.7%).
+Entertainment / Social is 1(16.7%).
+Home is 1(16.7%).
+
+Stacked Bar of: Inferred `e-bike` from prior labels
+6 trips (50.00%)
+ from 2 testers and participants
+Other is 4(66.7%).
+Entertainment / Social is 1(16.7%).
+Home is 1(16.7%).

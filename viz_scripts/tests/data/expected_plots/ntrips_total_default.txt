@@ -1,0 +1,23 @@
+Number of trips for each mode
+Stacked Bar of: Labeled by user
+12 trips (5.83%)
+ from 3 testers and participants
+E-bike is 6(50.0%).
+Walk is 4(33.3%).
+Gas Car Shared Ride is 2(16.7%).
+
+Stacked Bar of: Inferred from prior labels
+12 trips (5.83%)
+ from 3 testers and participants
+E-bike is 6(50.0%).
+Walk is 4(33.3%).
+Gas Car Shared Ride is 2(16.7%).
+
+Stacked Bar of: Sensed by OpenPATH
+206 trips (100%)
+ from 37 testers and participants
+IN_VEHICLE is 79(38.3%).
+WALKING is 61(29.6%).
+UNKNOWN is 38(18.4%).
+BICYCLING is 24(11.7%).
+AIR_OR_HSR is 4(1.9%).

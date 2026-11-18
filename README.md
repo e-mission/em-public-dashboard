@@ -130,6 +130,43 @@ The one part where we are NOT cutting corners is in the parts where we expect
 contributions from others. We are going to build in automated tests for that
 part to ensure non-bitrotted code.
 
+## Tests
+
+### Running the tests
+
+```
+$ docker compose -f docker-compose.tests.yml build
+$ docker compose -f docker-compose.tests.yml run --rm notebook-server
+$ docker compose -f docker-compose.tests.yml down -v
+```
+
+This is what CI runs. The `db-restore` service loads `viz_scripts/tests/data/openpath_prod_stage_program.tar.gz`
+with `mongorestore` before the tests start. `test_generate_plots.py` checks summary statistics of that database,
+runs `bin/generate_plots.py` on it, and compares the outputs with `viz_scripts/tests/data/expected_plots`.
+The test stack uses its own throwaway database and `/plots` directory, so it does not touch your dev data or local `plots/`.
+
+The tests use the local copy of the `stage-program` config in `viz_scripts/tests/data/configs`, not the one on GitHub.
+If `viz_scripts/conf/storage/db.conf` exists, it overrides `DB_HOST` and the plot test fails; remove it before running the tests.
+
+### Regenerating the test data
+
+Only do this when you intend to change the test data or the expected outputs, and review the results with `git diff`.
+
+- To rebuild the dump from the server's `real_examples` (e.g. after editing `viz_scripts/tests/create_test_db.py`)
+  and regenerate the expected summary statistics and plot outputs from it:
+   ```
+   $ docker compose -f docker-compose.recreate-test-exp.yml run --rm regenerate
+   $ docker compose -f docker-compose.recreate-test-exp.yml down -v
+   ```
+- To regenerate only the expected values from the existing dump (e.g. after an intentional change to the plots):
+   ```
+   $ docker compose -f docker-compose.tests.yml run --rm notebook-server bash -c \
+       "source setup/activate.sh && cd saved-notebooks/tests && PYTHONPATH=/usr/src/app python regenerate_expected_plots.py"
+   $ docker compose -f docker-compose.tests.yml down -v
+   ```
+
+Commit the dump, `expected_summary_statistics.json` and `expected_plots/` together.
+
 ## Trobleshooting Tips
 
 Please be sure you are running analysis notebooks through the notebook server, not another avenue such as VScode, this is to prevent dependency issues. 

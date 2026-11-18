@@ -1,0 +1,3 @@
+Scatter chart of Number of Active Users
+Based on 12 confirmed trips from 3 testers and participants
+of 206 total  trips from 37 users (5.83%). First minimum is 1 on 2016-06-20 00:00:00. First maximum is 1 on 2016-06-20 00:00:00.

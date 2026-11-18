@@ -1,0 +1,4 @@
+Bar chart of Sketch of Total kg of CO2 Emissions of e-bike trips
+ Contribution by replaced mode towards a total of 4.58(kg CO2 Emissions )
+Based on 12 confirmed trips from 3 testers and participants
+of 206 total  trips from 37 users (5.83%). drove_alone is 3.5. bus is 1.1. walk is -0.0.

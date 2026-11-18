@@ -1,0 +1,25 @@
+Number of trips per travel model under 9.6 kilometers
+[9.6 kilometers represents 80th percentile of trip length]
+Stacked Bar of: Labeled by user
+12 trips (100% of all labeled,
+6% of all trips)
+from 3 testers and participants
+E-bike is 6(50.0%).
+Walk is 4(33.3%).
+Gas Car Shared Ride is 2(16.7%).
+
+Stacked Bar of: Labeled and Inferred by OpenPATH
+12 trips (100% of all inferred,
+6% of all trips)
+from 3 testers and participants
+E-bike is 6(50.0%).
+Walk is 4(33.3%).
+Gas Car Shared Ride is 2(16.7%).
+
+Stacked Bar of: Sensed by OpenPATH
+165 trips (80% of all trips)
+from 37 testers and participants
+WALKING is 61(37.0%).
+IN_VEHICLE is 49(29.7%).
+UNKNOWN is 31(18.8%).
+BICYCLING is 24(14.5%).

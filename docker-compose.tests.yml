@@ -8,7 +8,10 @@ services:
       args:
         SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      db-restore:
+        condition: service_completed_successfully
     environment:
       - DB_HOST=db
       - WEB_SERVER_HOST=0.0.0.0
@@ -18,16 +21,25 @@ services:
       - emission
     volumes:
       - ./viz_scripts:/usr/src/app/saved-notebooks
-      - ./plots:/plots
+  # No named volume, so tests always start from an empty database and never share the dev volume
   db:
-    image: mongo:4.4.0
-    volumes:
-      - mongo-data:/data/db
+    image: mongo:8.0.4
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 2s
+      retries: 30
     networks:
        - emission
+  db-restore:
+    image: mongo:8.0.4
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./viz_scripts/tests/data/openpath_prod_stage_program.tar.gz:/dump.tar.gz:ro
+    command: bash -c "mkdir -p /tmp/restore && tar xzf /dump.tar.gz -C /tmp/restore && mongorestore --host db --drop /tmp/restore/dump"
+    networks:
+      - emission
 
 networks:
   emission:
-
-volumes:
-  mongo-data:

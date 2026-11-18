@@ -1,0 +1,16 @@
+Number of trips for each purpose
+Stacked Bar of: Labeled by user
+12 trips (5.83%)
+ from 3 testers and participants
+Other is 5(41.7%).
+Home is 4(33.3%).
+To Work is 2(16.7%).
+Entertainment / Social is 1(8.3%).
+
+Stacked Bar of: Inferred from prior labels
+12 trips (5.83%)
+ from 3 testers and participants
+Other is 5(41.7%).
+Home is 4(33.3%).
+To Work is 2(16.7%).
+Entertainment / Social is 1(8.3%).

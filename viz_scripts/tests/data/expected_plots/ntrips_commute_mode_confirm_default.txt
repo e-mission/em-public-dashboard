@@ -1,0 +1,10 @@
+Number of commute trips for each mode
+Stacked Bar of: Labeled by user
+2 trips (16.67%)
+ from 2 testers and participants
+Walk is 2(100.0%).
+
+Stacked Bar of: Inferred from prior labels
+2 trips (16.67%)
+ from 2 testers and participants
+Walk is 2(100.0%).

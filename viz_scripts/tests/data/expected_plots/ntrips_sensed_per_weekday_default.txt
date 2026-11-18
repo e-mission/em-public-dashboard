@@ -1,0 +1,3 @@
+Bar chart of Number of trips by weekday
+(inferred by OpenPATH from phone sensors)
+Based on 206 trips from 37 testers and participants. Mon is 65. Tue is 23. Wed is 52. Thu is 25. Fri is 19. Sat is 8. Sun is 14.

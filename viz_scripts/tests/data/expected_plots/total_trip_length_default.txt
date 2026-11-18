@@ -1,0 +1,23 @@
+Kilometers for each mode
+Stacked Bar of: Labeled by user
+12 trips (5.83%)
+ from 3 testers and participants
+E-bike is 22.23144136964304(64.3%).
+Gas Car Shared Ride is 9.918122887767108(28.7%).
+Walk is 2.4090206253129494(7.0%).
+
+Stacked Bar of: Inferred from prior labels
+12 trips (5.83%)
+ from 3 testers and participants
+E-bike is 22.23144136964304(64.3%).
+Gas Car Shared Ride is 9.918122887767108(28.7%).
+Walk is 2.4090206253129494(7.0%).
+
+Stacked Bar of: Sensed by OpenPATH
+206 trips (100%)
+ from 37 testers and participants
+AIR_OR_HSR is 8586.60969669029(77.8%).
+IN_VEHICLE is 1432.0428337449323(13.0%).
+UNKNOWN is 942.7206123634306(8.5%).
+BICYCLING is 40.447601986440816(0.4%).
+WALKING is 39.38297526750925(0.4%).

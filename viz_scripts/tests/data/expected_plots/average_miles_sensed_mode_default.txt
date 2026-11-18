@@ -1,0 +1,3 @@
+Bar chart of Average Kilometers for each mode with > 3 entries
+(inferred by OpenPATH from phone sensors)
+Based on 206 trips from 37 testers and participants. AIR_OR_HSR is 2146.7. UNKNOWN is 24.8. IN_VEHICLE is 18.1. BICYCLING is 1.7. WALKING is 0.6.
