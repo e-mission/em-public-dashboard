@@ -1,6 +1,5 @@
 # python 3
-ARG SERVER_IMAGE_TAG
-FROM shankari/e-mission-server:{SERVER_IMAGE_TAG}
+FROM ghcr.io/e-mission/e-mission-server:v4.0.1
 
 VOLUME /plots
 

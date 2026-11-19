@@ -6,6 +6,17 @@ updates:
     schedule:
       interval: "weekly"
 
+  - package-ecosystem: "docker"
+    directories:
+      - "/viz_scripts"
+      - "/viz_scripts/tests"
+    schedule:
+      interval: "weekly"
+    groups:
+      notebook-server-base:
+        patterns:
+          - "ghcr.io/e-mission/e-mission-server"
+
   - package-ecosystem: "conda"
     directory: "/viz_scripts"
     schedule:

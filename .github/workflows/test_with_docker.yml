@@ -12,6 +12,7 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron:  '5 4 * * 0'
+  workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,12 +27,29 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Make sure that the workflow works
-      run: echo Smoke test
-
     - name: Run the tests using docker-compose
       working-directory: .github/workflows
       run:  |
         docker compose -f ../../docker-compose.tests.yml build
         # Not `up --exit-code-from`: it aborts the stack as soon as the one-shot db-restore service exits
         docker compose -f ../../docker-compose.tests.yml run --rm notebook-server
+
+    - name: Build public dashboard frontend for smoke test
+      run: |
+        image="public-dashboard-frontend-smoke-test:${GITHUB_RUN_ID}-$$"
+        echo "image=$image" >> "$GITHUB_ENV"
+        docker build --tag "$image" ./frontend
+
+    - name: Smoke test public dashboard frontend
+      run: |
+        container_id=$(docker run --detach --rm --publish 127.0.0.1::6060 "$image")
+        trap 'docker stop "$container_id" >/dev/null 2>&1 || true' EXIT
+        port=$(docker port "$container_id" 6060/tcp | sed 's/.*://')
+        for attempt in $(seq 1 30); do
+          if curl --fail --silent "http://127.0.0.1:$port/" > /tmp/public-dashboard-index.html; then
+            break
+          fi
+          sleep 1
+        done
+        test -s /tmp/public-dashboard-index.html
+        grep -qi '<html' /tmp/public-dashboard-index.html

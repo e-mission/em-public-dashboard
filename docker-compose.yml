@@ -17,8 +17,6 @@ services:
     build: 
       context: viz_scripts
       dockerfile: Dockerfile
-      args:
-        SERVER_IMAGE_TAG: ${SERVER_IMAGE_TAG}
     depends_on:
       - db
     environment:
