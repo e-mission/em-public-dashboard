@@ -11,7 +11,8 @@ updates:
       - "/viz_scripts"
       - "/viz_scripts/tests"
     schedule:
-      interval: "yearly"
+      interval: "cron"
+      cronjob: "0 * * * *"
     groups:
       notebook-server-base:
         patterns:
