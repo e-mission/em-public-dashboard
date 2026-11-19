@@ -12,7 +12,7 @@ updates:
       - "/viz_scripts/tests"
     schedule:
       interval: "cron"
-      cronjob: "0 * * * *"
+      cronjob: "0 0 * * *"
     groups:
       notebook-server-base:
         patterns:
