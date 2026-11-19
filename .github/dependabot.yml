@@ -11,7 +11,7 @@ updates:
       - "/viz_scripts"
       - "/viz_scripts/tests"
     schedule:
-      interval: "weekly"
+      interval: "yearly"
     groups:
       notebook-server-base:
         patterns:
