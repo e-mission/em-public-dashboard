@@ -1,5 +1,7 @@
 # A simple dashboard for e-mission
 
+[![Dashboard tests on pushes to main](https://github.com/e-mission/em-public-dashboard/actions/workflows/test_with_docker.yml/badge.svg?branch=main&event=push)](https://github.com/e-mission/em-public-dashboard/actions/workflows/test_with_docker.yml?query=branch%3Amain+event%3Apush)
+
 Issues: Since this repository is part of a larger project, all issues are tracked in the central docs repository. If you have a question, as suggested by the open source guide, please file an issue instead of sending an email. Since issues are public, other contributors can try to answer the question and benefit from the answer.
 
 ## Development
