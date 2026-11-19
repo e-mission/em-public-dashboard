@@ -1,4 +1,4 @@
-FROM node:26.13.0-alpine3.24
+FROM node:26.13.1-alpine3.24
 LABEL org.opencontainers.image.source=https://github.com/e-mission/em-public-dashboard
 
 VOLUME /public/plots
