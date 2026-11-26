@@ -3,11 +3,11 @@ channels:
   - conda-forge
 dependencies:
   - branca=0.8.2
-  - folium=0.20.0
-  - ipython=9.18.1
+  - folium=1.0.0
+  - ipython=9.19.1
   - jedi=0.20.1
   - jupyterlab=4.6.6
-  - matplotlib=3.9.2
+  - matplotlib=3.11.2
   - seaborn=0.13.2
   - pip:
     - nbparameterise==1.0.0
